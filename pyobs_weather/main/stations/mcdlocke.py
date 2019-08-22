@@ -1,20 +1,16 @@
 import logging
 from datetime import datetime
-
 import pytz
 from astropy.time import Time
 import requests
 
-from pyobs_weather.celery import app
+from pyobs_weather.main.models import Weather
 
 
 log = logging.getLogger(__name__)
 
 
-@app.task
-def update():
-    from pyobs_weather.main.models import Weather
-
+def update(station_id):
     # do request
     r = requests.get('http://weather.as.utexas.edu/latest_5min.dat')
 
@@ -109,13 +105,13 @@ def update():
     rain = s[8] == 'Y'
 
     # got all values, now try to find in database
-    if Weather.objects.filter(station='mcd_locke', time=time.to_datetime(pytz.UTC)).count() > 0:
+    if Weather.objects.filter(station_id=station_id, time=time.to_datetime(pytz.UTC)).count() > 0:
         return
 
     # add it
     w = Weather()
     w.time = time.to_datetime(pytz.UTC)
-    w.station = 'mcd_locke'
+    w.station_id = station_id
     w.temp = temp
     w.humid = humid
     w.dewpoint = dew_pt
