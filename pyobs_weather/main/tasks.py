@@ -26,7 +26,7 @@ def update_stations(station_code: str):
 
 
 @app.task
-def update_averages():
+def update_averages(*args):
     from pyobs_weather.main.models import Station, Weather
 
     # get now
@@ -50,4 +50,13 @@ def update_averages():
         # append to values
         values = values.append(mean, ignore_index=True)
 
-    print(values)
+    # calculate mean of values
+    mean = values.mean().to_dict()
+
+    # get average station
+    station = Station.objects.get(code='average')
+
+    # write to database
+    v = {k: v for k, v in mean.items() if k in fields}
+    w = Weather(station=station, time=now, **v)
+    w.save()
