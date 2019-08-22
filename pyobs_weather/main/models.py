@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 class Evaluator(models.Model):
     """A sensor evaluator."""
     name = models.CharField('Name of evaluator', max_length=15, unique=True)
-    klass = models.CharField('Python class to call', max_length=50)
+    class_name = models.CharField('Python class to call', max_length=50)
     kwargs = models.CharField('JSON encoded kwargs to pass to method.', max_length=50)
 
 
