@@ -1,0 +1,17 @@
+amqp==2.5.1
+billiard==3.6.1.0
+celery==4.3.0
+Django==2.2.4
+django-celery-beat==1.5.0
+django-timezone-field==3.0
+importlib-metadata==0.19
+kombu==4.6.4
+pkg-resources==0.0.0
+python-crontab==2.3.8
+python-dateutil==2.8.0
+pytz==2019.2
+redis==3.3.8
+six==1.12.0
+sqlparse==0.3.0
+vine==1.3.0
+zipp==0.5.2
