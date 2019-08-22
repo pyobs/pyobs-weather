@@ -5,6 +5,13 @@ from django_celery_beat.models import CrontabSchedule, IntervalSchedule, Periodi
 log = logging.getLogger(__name__)
 
 
+class Evaluator(models.Model):
+    """A sensor evaluator."""
+    name = models.CharField('Name of evaluator', max_length=15, unique=True)
+    klass = models.CharField('Python class to call', max_length=50)
+    kwargs = models.CharField('JSON encoded kwargs to pass to method.', max_length=50)
+
+
 class Station(models.Model):
     """A weather station."""
     code = models.CharField('Code for weather station.', max_length=10, unique=True)
