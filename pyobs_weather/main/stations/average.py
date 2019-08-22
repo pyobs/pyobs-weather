@@ -7,8 +7,8 @@ import pytz
 log = logging.getLogger(__name__)
 
 
-def update(station_id):
-    from pyobs_weather.main.models import Station, Weather
+def update(station_id, current=False):
+    from pyobs_weather.main.models import Station, Weather, CurrentAverage
     log.info('Updating averages...')
 
     # get now
