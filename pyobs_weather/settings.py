@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_beat',
     'pyobs_weather.main',
-    'pyobs_weather.mcd_locke'
+    'pyobs_weather.mcdonald_locke'
 ]
 
 MIDDLEWARE = [

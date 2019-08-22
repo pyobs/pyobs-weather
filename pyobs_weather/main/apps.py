@@ -5,9 +5,9 @@ class MainConfig(AppConfig):
     name = 'pyobs_weather.main'
 
     def ready(self):
-        print("test")
         from django_celery_beat.models import CrontabSchedule, PeriodicTask
 
+        """
         schedule, _ = CrontabSchedule.objects.get_or_create(
             minute='*',
             hour='*',
@@ -18,6 +18,7 @@ class MainConfig(AppConfig):
 
         PeriodicTask.objects.get_or_create(
             crontab=schedule,
-            name='Update weather',
-            task='mcd_locke.tasks.update_weather',
+            name='mcdonald_locke',
+            task='pyobs_weather.mcdonald_locke.tasks.update',
         )
+        """
