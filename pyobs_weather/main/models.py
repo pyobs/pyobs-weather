@@ -22,18 +22,14 @@ class Station(models.Model):
         try:
             # get current database object
             old = Station.objects.get(id=self.id)
-            print("old", old)
 
             # find PeriodicTask and delete it
             try:
-                print("delete")
                 PeriodicTask.objects.filter(name=old.name).delete()
             except PeriodicTask.DoesNotExist:
-                print("not deleted")
                 pass
 
         except Station.DoesNotExist:
-            print("no old")
             pass
 
         # actually save model
