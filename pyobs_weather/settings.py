@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_beat',
-    'pyobs_weather.weather'
+    'pyobs_weather.weather',
+    'pyobs_weather.frontend'
 ]
 
 MIDDLEWARE = [
