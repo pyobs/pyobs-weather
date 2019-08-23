@@ -1,6 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% load plot_tags %}
+
 Hello world!
 
 {% for station in stations %}
     <h2>{{ station.name }}</h2>
 
 {% endfor %}
+
+{% weather weather %}
+
+{% endblock %}
