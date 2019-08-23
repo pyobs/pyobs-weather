@@ -4,7 +4,7 @@ import pytz
 from astropy.time import Time
 import requests
 
-from pyobs_weather.main.models import Weather
+from pyobs_weather.weather.models import Weather
 
 
 log = logging.getLogger(__name__)

@@ -10,8 +10,8 @@ log = logging.getLogger(__name__)
 
 
 def update(station_id):
-    from pyobs_weather.main.models import Station, Weather
-    log.info('Updating current...')
+    from pyobs_weather.weather.models import Station, Weather
+    log.info('Updating averages...')
 
     # get now
     now = datetime.utcnow().astimezone(pytz.UTC)
@@ -20,23 +20,23 @@ def update(station_id):
     fields = ['temp', 'humid', 'press', 'winddir', 'windspeed', 'rain', 'skytemp', 'dewpoint', 'particles']
 
     # loop all stations
-    values = pd.DataFrame({k: [] for k in fields})
+    values = pd.DataFrame({k: [] for k in fields + ['weight']})
     for station in Station.objects.all():
         # exclude 'average' and 'current'
         if station.code in ['average', 'current']:
             continue
 
-        # get last data point
-        latest = Weather.objects.filter(station=station).order_by('-time').first()
+        # query all data from the last 5 minutes
+        qs = Weather.objects.filter(station=station, time__gte=now - timedelta(minutes=6))
+        q = qs.values(*fields)
+        df = pd.DataFrame.from_records(q)
 
-        # too old?
-        too_old = latest.time < now - timedelta(minutes=10)
-
-        # fill fields
-        latest_dict = {f: None if too_old else getattr(latest, f) for f in fields}
+        # average
+        mean = df.mean()
+        mean['weight'] = station.weight
 
         # append to values
-        values = values.append(pd.Series(latest_dict), ignore_index=True)
+        values = values.append(mean, ignore_index=True)
 
     # calculate mean of values
     mean = values.mean().to_dict()

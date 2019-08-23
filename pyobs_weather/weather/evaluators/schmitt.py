@@ -1,4 +1,4 @@
-from pyobs_weather.main.models import Weather
+from pyobs_weather.weather.models import Weather
 
 
 class SchmittTrigger:

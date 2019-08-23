@@ -1,9 +1,9 @@
-from pyobs_weather.main.models import Weather
+from pyobs_weather.weather.models import Weather
 
 
-class Valid:
-    def __init__(self):
-        pass
+class Boolean:
+    def __init__(self, invert=False):
+        self._invert = invert
 
     def __call__(self, station, sensor):
         # get last value
@@ -11,7 +11,9 @@ class Valid:
         value = tmp[sensor.type.code]
 
         # are we good?
-        is_good = value is not None
+        is_good = value
+        if self._invert:
+            is_good = not is_good
 
         # since when?
         since = 0

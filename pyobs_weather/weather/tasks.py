@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 @app.task
 def update_stations(station_code: str):
-    from pyobs_weather.main.models import Station
+    from pyobs_weather.weather.models import Station
     log.info('Updating station %s...' % station_code)
 
     # get station
@@ -40,7 +40,7 @@ def create_evaluator(evaluator):
 
 @app.task
 def evaluate():
-    from pyobs_weather.main.models import Station
+    from pyobs_weather.weather.models import Station
 
     # get now
     now = datetime.utcnow()

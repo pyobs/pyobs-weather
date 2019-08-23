@@ -24,7 +24,7 @@
     "pk": 1,
     "fields": {
       "name": "Averaged values",
-      "task": "pyobs_weather.main.tasks.update_stations",
+      "task": "pyobs_weather.weather.tasks.update_stations",
       "interval": null,
       "crontab": 1,
       "solar": null,
@@ -51,7 +51,7 @@
     "pk": 2,
     "fields": {
       "name": "Current weather",
-      "task": "pyobs_weather.main.tasks.update_stations",
+      "task": "pyobs_weather.weather.tasks.update_stations",
       "interval": 1,
       "crontab": null,
       "solar": null,
@@ -74,12 +74,12 @@
     }
   },
   {
-    "model": "main.station",
+    "model": "weather.station",
     "pk": 1,
     "fields": {
       "code": "average",
       "name": "Averaged values",
-      "module": "pyobs_weather.main.stations.average",
+      "module": "pyobs_weather.weather.stations.average",
       "crontab": 1,
       "interval": null,
       "weight": 1.0,
@@ -88,12 +88,12 @@
     }
   },
   {
-    "model": "main.station",
+    "model": "weather.station",
     "pk": 2,
     "fields": {
       "code": "current",
       "name": "Current weather",
-      "module": "pyobs_weather.main.stations.current",
+      "module": "pyobs_weather.weather.stations.current",
       "crontab": null,
       "interval": 1,
       "weight": 1.0,
@@ -102,7 +102,7 @@
     }
   },
   {
-    "model": "main.sensortype",
+    "model": "weather.sensortype",
     "pk": 1,
     "fields": {
       "code": "temp",
@@ -111,7 +111,7 @@
     }
   },
   {
-    "model": "main.sensortype",
+    "model": "weather.sensortype",
     "pk": 2,
     "fields": {
       "code": "humid",
@@ -120,7 +120,7 @@
     }
   },
   {
-    "model": "main.sensortype",
+    "model": "weather.sensortype",
     "pk": 4,
     "fields": {
       "code": "press",
@@ -129,7 +129,7 @@
     }
   },
   {
-    "model": "main.sensortype",
+    "model": "weather.sensortype",
     "pk": 5,
     "fields": {
       "code": "winddir",
@@ -138,7 +138,7 @@
     }
   },
   {
-    "model": "main.sensortype",
+    "model": "weather.sensortype",
     "pk": 6,
     "fields": {
       "code": "windspeed",
@@ -147,7 +147,7 @@
     }
   },
   {
-    "model": "main.sensortype",
+    "model": "weather.sensortype",
     "pk": 7,
     "fields": {
       "code": "rain",
@@ -156,7 +156,7 @@
     }
   },
   {
-    "model": "main.sensortype",
+    "model": "weather.sensortype",
     "pk": 8,
     "fields": {
       "code": "skytemp",
@@ -165,7 +165,7 @@
     }
   },
   {
-    "model": "main.sensortype",
+    "model": "weather.sensortype",
     "pk": 9,
     "fields": {
       "code": "dewpoint",
@@ -174,12 +174,48 @@
     }
   },
   {
-    "model": "main.sensortype",
+    "model": "weather.sensortype",
     "pk": 10,
     "fields": {
       "code": "particles",
       "name": "Particle count",
       "unit": "ppcm"
+    }
+  },
+  {
+    "model": "weather.evaluator",
+    "pk": 1,
+    "fields": {
+      "name": "humid",
+      "class_name": "pyobs_weather.weather.evaluators.SchmittTrigger",
+      "kwargs": "{\"good\": 80, \"bad\": 85}"
+    }
+  },
+  {
+    "model": "weather.evaluator",
+    "pk": 2,
+    "fields": {
+      "name": "windspeed",
+      "class_name": "pyobs_weather.weather.evaluators.SchmittTrigger",
+      "kwargs": "{\"good\": 35, \"bad\": 45}"
+    }
+  },
+  {
+    "model": "weather.evaluator",
+    "pk": 3,
+    "fields": {
+      "name": "rain",
+      "class_name": "pyobs_weather.weather.evaluators.Boolean",
+      "kwargs": "{\"invert\": true}"
+    }
+  },
+  {
+    "model": "weather.evaluator",
+    "pk": 4,
+    "fields": {
+      "name": "Valid",
+      "class_name": "pyobs_weather.weather.evaluators.Valid",
+      "kwargs": null
     }
   }
 ]

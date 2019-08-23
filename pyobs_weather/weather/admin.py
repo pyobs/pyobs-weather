@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from pyobs_weather.main.models import Station, SensorType, Sensor, Evaluator
+from pyobs_weather.weather.models import Station, SensorType, Sensor, Evaluator
 
 admin.site.register(Station)
 admin.site.register(SensorType)

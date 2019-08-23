@@ -52,7 +52,7 @@ class Station(models.Model):
             crontab=self.crontab,
             interval=self.interval,
             name=self.name,
-            task='pyobs_weather.main.tasks.update_stations',
+            task='pyobs_weather.weather.tasks.update_stations',
             args='["%s"]' % self.code
         )
 
