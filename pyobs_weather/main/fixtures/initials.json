@@ -93,7 +93,7 @@
     "fields": {
       "code": "current",
       "name": "Current weather",
-      "module": "pyobs_weather.main.stations.average",
+      "module": "pyobs_weather.main.stations.current",
       "crontab": null,
       "interval": 1,
       "weight": 1.0,
