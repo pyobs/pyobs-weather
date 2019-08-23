@@ -3,7 +3,7 @@
     "model": "django_celery_beat.intervalschedule",
     "pk": 1,
     "fields": {
-      "every": 30,
+      "every": 10,
       "period": "seconds"
     }
   },
@@ -83,7 +83,8 @@
       "crontab": 1,
       "interval": null,
       "weight": 1.0,
-      "active": true
+      "active": true,
+      "history": true
     }
   },
   {
@@ -96,7 +97,8 @@
       "crontab": null,
       "interval": 1,
       "weight": 1.0,
-      "active": true
+      "active": true,
+      "history": false
     }
   },
   {

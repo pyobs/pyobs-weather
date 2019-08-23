@@ -3,8 +3,6 @@ import logging
 from django.db import models
 from django_celery_beat.models import CrontabSchedule, IntervalSchedule, PeriodicTask
 
-from pyobs_weather.main.stations import average
-
 
 log = logging.getLogger(__name__)
 
@@ -28,6 +26,7 @@ class Station(models.Model):
     crontab = models.ForeignKey(CrontabSchedule, on_delete=models.CASCADE, blank=True, null=True)
     interval = models.ForeignKey(IntervalSchedule, on_delete=models.CASCADE, blank=True, null=True)
     weight = models.FloatField('Weight for station in global average', default=1)
+    history = models.BooleanField('Whether to keep more than one point.', default=True)
     active = models.BooleanField('Whether station is currently active.', default=True)
 
     def __str__(self):
@@ -91,12 +90,20 @@ class Weather(models.Model):
     """A line of weather information."""
     time = models.DateTimeField('Date and time of weather information')
     station = models.ForeignKey(Station, on_delete=models.CASCADE)
-    temp = models.FloatField('Temperature in C', null=True, default=None)
-    humid = models.FloatField('Humidity in percent', null=True, default=None)
-    press = models.FloatField('Pressure in hPa', null=True, default=None)
-    winddir = models.FloatField('Wind direction in degrees azimuth', null=True, default=None)
-    windspeed = models.FloatField('Wind speed in km/h', null=True, default=None)
-    rain = models.BooleanField('Raining', null=True, default=None)
-    skytemp = models.FloatField('Sky  temperature in C', null=True, default=None)
-    dewpoint = models.FloatField('Dew point in C', null=True, default=None)
-    particles = models.FloatField('Particle count in particles per cubic m', null=True, default=None)
+    temp = models.FloatField('Temperature in C', null=True, blank=True)
+    humid = models.FloatField('Humidity in percent', null=True, blank=True)
+    press = models.FloatField('Pressure in hPa', null=True, blank=True)
+    winddir = models.FloatField('Wind direction in degrees azimuth', null=True, blank=True)
+    windspeed = models.FloatField('Wind speed in km/h', null=True, blank=True)
+    rain = models.BooleanField('Raining', null=True, blank=True)
+    skytemp = models.FloatField('Sky  temperature in C', null=True, blank=True)
+    dewpoint = models.FloatField('Dew point in C', null=True, blank=True)
+    particles = models.FloatField('Particle count in particles per cubic m', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # actually save model
+        models.Model.save(self, *args, **kwargs)
+
+        # if station doesn't want to keep history, delete old
+        if not self.station.history:
+            Weather.objects.filter(time__lt=self.time, station=self.station).delete()

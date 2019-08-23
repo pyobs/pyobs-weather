@@ -1,5 +1,7 @@
 import logging
 from datetime import datetime, timedelta
+
+import numpy as np
 import pandas as pd
 import pytz
 
@@ -7,8 +9,8 @@ import pytz
 log = logging.getLogger(__name__)
 
 
-def update(station_id, current=False):
-    from pyobs_weather.main.models import Station, Weather, CurrentAverage
+def update(station_id):
+    from pyobs_weather.main.models import Station, Weather
     log.info('Updating averages...')
 
     # get now
@@ -20,8 +22,12 @@ def update(station_id, current=False):
     # loop all stations
     values = pd.DataFrame({k: [] for k in fields + ['weight']})
     for station in Station.objects.all():
+        # exclude 'average' and 'current'
+        if station.code in ['average', 'current']:
+            continue
+
         # query all data from the last 5 minutes
-        qs = Weather.objects.filter(station=station, time__gte=now - timedelta(minutes=5))
+        qs = Weather.objects.filter(station=station, time__gte=now - timedelta(minutes=6))
         q = qs.values(*fields)
         df = pd.DataFrame.from_records(q)
 
@@ -36,6 +42,6 @@ def update(station_id, current=False):
     mean = values.mean().to_dict()
 
     # write to database
-    v = {k: v for k, v in mean.items() if k in fields}
+    v = {k: None if np.isnan(v) else v for k, v in mean.items() if k in fields}
     w = Weather(station_id=station_id, time=now, **v)
     w.save()
