@@ -1,6 +1,7 @@
 import importlib
 import json
 import logging
+from datetime import datetime
 
 from pyobs_weather.celery import app
 
@@ -39,7 +40,7 @@ def create_evaluator(evaluator):
 
 @app.task
 def evaluate():
-    from pyobs_weather.main.models import Station, Sensor, Evaluator
+    from pyobs_weather.main.models import Station
 
     # loop all stations
     for station in Station.objects.all():
@@ -56,6 +57,11 @@ def evaluate():
                 # and evaluate
                 res = eva(station, sensor)
                 is_good, since = is_good and res
+
+            # did status change_
+            if is_good != sensor.good:
+                # store time
+                sensor.since = datetime.utcnow()
 
             # store it
             sensor.good = is_good
