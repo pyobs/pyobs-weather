@@ -79,6 +79,8 @@ class Sensor(models.Model):
     since = models.DateTimeField('Time the good parameter last changed', blank=True, null=True)
     delay_good = models.IntegerField('Delay in seconds before switching to good weather.', default=0)
     delay_bad = models.IntegerField('Delay in seconds before switching to bad weather.', default=0)
+    bad_since = models.DateTimeField('Time of last bad sensor value', blank=True, null=True)
+    good_since = models.DateTimeField('Time of last good sensor value', blank=True, null=True)
     active = models.BooleanField('Whether evaluator is currently active', default=True)
 
     def __str__(self):

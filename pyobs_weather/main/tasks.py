@@ -42,6 +42,9 @@ def create_evaluator(evaluator):
 def evaluate():
     from pyobs_weather.main.models import Station
 
+    # get now
+    now = datetime.utcnow()
+
     # loop all stations
     for station in Station.objects.all():
         # loop all sensors at station
@@ -58,9 +61,25 @@ def evaluate():
                 res = eva(station, sensor)
                 is_good, since = is_good and res
 
-            # did status change_
+            # status changed?
             if is_good != sensor.good:
-                # store time
+                # reset good/bad since
+                if is_good:
+                    sensor.good_since = now
+                    sensor.bad_since = None
+                else:
+                    sensor.good_since = None
+                    sensor.bad_since = now
+
+            # if there's a delay, we may want to switch back
+            if sensor.good and (now - sensor.bad_since).total_seconds() < sensor.delay_bad:
+                is_good = sensor.good
+            if not sensor.good and (now - sensor.good_since).total_seconds() < sensor.good_bad:
+                is_good = sensor.good
+
+            # did status still change?
+            if is_good != sensor.good:
+                # then store time
                 sensor.since = datetime.utcnow()
 
             # store it
