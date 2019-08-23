@@ -77,6 +77,8 @@ class Sensor(models.Model):
     evaluators = models.ManyToManyField(Evaluator)
     good = models.BooleanField('Whether the evaluators currently claim this sensor to be good', blank=True, null=True)
     since = models.DateTimeField('Time the good parameter last changed', blank=True, null=True)
+    delay_good = models.IntegerField('Delay in seconds before switching to good weather.', default=0)
+    delay_bad = models.IntegerField('Delay in seconds before switching to bad weather.', default=0)
     active = models.BooleanField('Whether evaluator is currently active', default=True)
 
     def __str__(self):

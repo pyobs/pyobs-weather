@@ -1,4 +1,5 @@
 import importlib
+import json
 import logging
 
 from pyobs_weather.celery import app
@@ -21,3 +22,41 @@ def update_stations(station_code: str):
 
     # run it
     update_func(station.id)
+
+
+def create_evaluator(evaluator):
+    # get module and class name
+    module = evaluator.class_name[:evaluator.class_name.rfind('.')]
+    class_name = evaluator.class_name[evaluator.class_name.rfind('.') + 1:]
+
+    # import
+    kls = getattr(importlib.import_module(module), class_name)
+
+    # instantiate and store
+    kwargs = {} if evaluator.kwargs is None else json.loads(evaluator.kwargs)
+    return kls(**kwargs)
+
+
+@app.task
+def evaluate():
+    from pyobs_weather.main.models import Station, Sensor, Evaluator
+
+    # loop all stations
+    for station in Station.objects.all():
+        # loop all sensors at station
+        for sensor in station.sensor_set.all():
+            # init good
+            is_good = True
+
+            # evaluate all evaluators
+            for evaluator in sensor.evaluators.all():
+                # get evaluator
+                eva = create_evaluator(evaluator)
+
+                # and evaluate
+                res = eva(station, sensor)
+                is_good, since = is_good and res
+
+            # store it
+            sensor.good = is_good
+            sensor.save()
