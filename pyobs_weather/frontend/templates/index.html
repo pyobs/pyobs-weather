@@ -1,15 +1,17 @@
 {% extends "base.html" %}
+{% load plot_sensor_type_tags %}
 {% block content %}
 
-{% load plot_tags %}
+    <h3>Current values</h3>
 
-Hello world!
-
-{% for station in stations %}
-    <h2>{{ station.name }}</h2>
-
-{% endfor %}
-
-{% weather weather %}
+    <h3>Temperature</h3>
+    {% plot_sensor_type "temp" %}
+    {% plot_sensor_type "humid" %}
+    {% plot_sensor_type "press" %}
+    {% plot_sensor_type "windspeed" %}
+    {% plot_sensor_type "winddir" %}
+    {% plot_sensor_type "rain" %}
+    {% plot_sensor_type "skytemp" %}
+    {% plot_sensor_type "particles" %}
 
 {% endblock %}
