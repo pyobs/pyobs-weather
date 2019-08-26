@@ -14,8 +14,5 @@ class Boolean:
         if self._invert:
             is_good = not is_good
 
-        # since when?
-        since = 0
-
         # return it
-        return is_good, since
+        return is_good

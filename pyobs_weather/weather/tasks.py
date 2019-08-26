@@ -56,7 +56,7 @@ def evaluate():
 
                 # and evaluate
                 res = eva(sensor)
-                is_good, since = is_good and res
+                is_good = is_good and res
 
             # status changed?
             if is_good != sensor.good:

@@ -18,8 +18,5 @@ class SchmittTrigger:
             # if current value of sensor is not good, we must be below good to become bad
             is_good = value.value >= self._good
 
-        # since when?
-        since = 0
-
         # return it
-        return is_good, since
+        return is_good

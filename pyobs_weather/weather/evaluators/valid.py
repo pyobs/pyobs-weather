@@ -12,8 +12,5 @@ class Valid:
         # are we good?
         is_good = value is not None and value.value is not None
 
-        # since when?
-        since = 0
-
         # return it
-        return is_good, since
+        return is_good
