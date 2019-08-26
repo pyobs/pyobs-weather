@@ -3,8 +3,20 @@
 {% block content %}
 
     <h3>Current values</h3>
+    <table class="table">
+        <tr>
+            {% for value in current %}
+                <th>{{ value.sensor.type.name }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for value in current %}
+                <td>{{ value.value|floatformat:1 }}</td>
+            {% endfor %}
+        </tr>
+    </table>
 
-    <h3>Temperature</h3>
+    <h3>Plots for last 24h</h3>
     {% plot_sensor_type "temp" %}
     {% plot_sensor_type "humid" %}
     {% plot_sensor_type "press" %}
