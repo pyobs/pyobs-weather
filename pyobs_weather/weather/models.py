@@ -3,6 +3,7 @@ import logging
 from django.db import models
 from django_celery_beat.models import CrontabSchedule, IntervalSchedule, PeriodicTask
 
+from pyobs_weather.weather.utils import get_class
 
 log = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ class Evaluator(models.Model):
     """A sensor evaluator."""
     name = models.CharField('Name of evaluator', max_length=15, unique=True)
     class_name = models.CharField('Python class to call', max_length=50)
-    kwargs = models.CharField('JSON encoded kwargs to pass to constructor.', max_length=50, blank=True, null=True)
+    kwargs = models.CharField('JSON encoded kwargs to pass to constructor', max_length=50, blank=True, null=True)
 
     def __str__(self):
         params = ['%s=%s' % (k, str(v)) for k, v in json.loads(self.kwargs).items()] if self.kwargs else ''
@@ -20,19 +21,26 @@ class Evaluator(models.Model):
 
 class Station(models.Model):
     """A weather station."""
-    code = models.CharField('Code for weather station.', max_length=10, unique=True)
-    name = models.CharField('Name of weather station.', max_length=50)
-    module = models.CharField('Python module with an update() method to use for station.', max_length=50)
+    code = models.CharField('Code for weather station', max_length=10, unique=True)
+    name = models.CharField('Name of weather station', max_length=50)
+    class_name = models.CharField('Name of Python class to handle station', max_length=50)
     crontab = models.ForeignKey(CrontabSchedule, on_delete=models.CASCADE, blank=True, null=True)
     interval = models.ForeignKey(IntervalSchedule, on_delete=models.CASCADE, blank=True, null=True)
     weight = models.FloatField('Weight for station in global average', default=1)
-    history = models.BooleanField('Whether to keep more than one point.', default=True)
-    active = models.BooleanField('Whether station is currently active.', default=True)
+    history = models.BooleanField('Whether to keep more than one point', default=True)
+    active = models.BooleanField('Whether station is currently active', default=True)
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
+        # actually save model
+        models.Model.save(self, *args, **kwargs)
+
+        # create sensors for station
+        station_class = get_class(self.class_name)
+        station_class.create_sensors(self)
+
         # if exists, delete old schedule
         try:
             # get current database object
@@ -56,9 +64,6 @@ class Station(models.Model):
             args='["%s"]' % self.code
         )
 
-        # actually save model
-        models.Model.save(self, *args, **kwargs)
-
 
 class SensorType(models.Model):
     """A sensor type."""
@@ -75,10 +80,10 @@ class Sensor(models.Model):
     station = models.ForeignKey(Station, on_delete=models.CASCADE)
     type = models.ForeignKey(SensorType, on_delete=models.CASCADE)
     evaluators = models.ManyToManyField(Evaluator)
-    good = models.BooleanField('Whether the evaluators currently claim this sensor to be good', blank=True, null=True)
+    good = models.BooleanField('Whether its current value was evaluated as good', blank=True, null=True)
     since = models.DateTimeField('Time the good parameter last changed', blank=True, null=True)
-    delay_good = models.IntegerField('Delay in seconds before switching to good weather.', default=0)
-    delay_bad = models.IntegerField('Delay in seconds before switching to bad weather.', default=0)
+    delay_good = models.IntegerField('Delay in seconds before switching to good weather', default=0)
+    delay_bad = models.IntegerField('Delay in seconds before switching to bad weather', default=0)
     bad_since = models.DateTimeField('Time of last bad sensor value', blank=True, null=True)
     good_since = models.DateTimeField('Time of last good sensor value', blank=True, null=True)
     active = models.BooleanField('Whether evaluator is currently active', default=True)
@@ -90,24 +95,17 @@ class Sensor(models.Model):
         unique_together = ('station', 'type')
 
 
-class Weather(models.Model):
-    """A line of weather information."""
-    time = models.DateTimeField('Date and time of weather information')
-    station = models.ForeignKey(Station, on_delete=models.CASCADE)
-    temp = models.FloatField('Temperature in C', null=True, blank=True)
-    humid = models.FloatField('Humidity in percent', null=True, blank=True)
-    press = models.FloatField('Pressure in hPa', null=True, blank=True)
-    winddir = models.FloatField('Wind direction in degrees azimuth', null=True, blank=True)
-    windspeed = models.FloatField('Wind speed in km/h', null=True, blank=True)
-    rain = models.BooleanField('Raining', null=True, blank=True)
-    skytemp = models.FloatField('Sky  temperature in C', null=True, blank=True)
-    dewpoint = models.FloatField('Dew point in C', null=True, blank=True)
-    particles = models.FloatField('Particle count in particles per cubic m', null=True, blank=True)
+class Value(models.Model):
+    """A single value from a sensor."""
+    sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE)
+    time = models.DateTimeField('Date and time when value was measured')
+    value = models.FloatField('Measured value', null=True, blank=True)
+    good = models.BooleanField('Whether this value was evaluated as good', null=True, blank=True)
 
     def save(self, *args, **kwargs):
         # actually save model
         models.Model.save(self, *args, **kwargs)
 
         # if station doesn't want to keep history, delete old
-        if not self.station.history:
-            Weather.objects.filter(time__lt=self.time, station=self.station).delete()
+        if not self.sensor.station.history:
+            Value.objects.filter(time__lt=self.time, sensor=self.sensor).delete()

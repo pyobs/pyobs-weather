@@ -79,7 +79,7 @@
     "fields": {
       "code": "average",
       "name": "Averaged values",
-      "module": "pyobs_weather.weather.stations.average",
+      "class_name": "pyobs_weather.weather.stations.Average",
       "crontab": 1,
       "interval": null,
       "weight": 1.0,
@@ -93,93 +93,12 @@
     "fields": {
       "code": "current",
       "name": "Current weather",
-      "module": "pyobs_weather.weather.stations.current",
+      "class_name": "pyobs_weather.weather.stations.Current",
       "crontab": null,
       "interval": 1,
       "weight": 1.0,
       "active": true,
       "history": false
-    }
-  },
-  {
-    "model": "weather.sensortype",
-    "pk": 1,
-    "fields": {
-      "code": "temp",
-      "name": "Temperature",
-      "unit": "\u00b0C"
-    }
-  },
-  {
-    "model": "weather.sensortype",
-    "pk": 2,
-    "fields": {
-      "code": "humid",
-      "name": "Relative humidity",
-      "unit": "%"
-    }
-  },
-  {
-    "model": "weather.sensortype",
-    "pk": 4,
-    "fields": {
-      "code": "press",
-      "name": "Pressure",
-      "unit": "hPa"
-    }
-  },
-  {
-    "model": "weather.sensortype",
-    "pk": 5,
-    "fields": {
-      "code": "winddir",
-      "name": "Wind direction",
-      "unit": "\u00b0"
-    }
-  },
-  {
-    "model": "weather.sensortype",
-    "pk": 6,
-    "fields": {
-      "code": "windspeed",
-      "name": "Wind speed",
-      "unit": "km/h"
-    }
-  },
-  {
-    "model": "weather.sensortype",
-    "pk": 7,
-    "fields": {
-      "code": "rain",
-      "name": "Precipitation",
-      "unit": ""
-    }
-  },
-  {
-    "model": "weather.sensortype",
-    "pk": 8,
-    "fields": {
-      "code": "skytemp",
-      "name": "Sky temperature",
-      "unit": "\u00b0C"
-    }
-  },
-  {
-    "model": "weather.sensortype",
-    "pk": 9,
-    "fields": {
-      "code": "dewpoint",
-      "name": "Dew point",
-      "unit": "\u00b0C"
-    }
-  },
-  {
-    "model": "weather.sensortype",
-    "pk": 10,
-    "fields": {
-      "code": "particles",
-      "name": "Particle count",
-      "unit": "ppcm"
     }
   },
   {

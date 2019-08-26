@@ -9,39 +9,34 @@ import pytz
 log = logging.getLogger(__name__)
 
 
-def update(station_id):
-    from pyobs_weather.weather.models import Station, Weather
-    log.info('Updating current...')
+class Current:
+    @staticmethod
+    def update(station):
+        from pyobs_weather.weather.models import Station, SensorType, Sensor, Value
+        log.info('Updating current...')
 
-    # get now
-    now = datetime.utcnow().astimezone(pytz.UTC)
+        # get now
+        now = datetime.utcnow().astimezone(pytz.UTC)
 
-    # define fields
-    fields = ['temp', 'humid', 'press', 'winddir', 'windspeed', 'rain', 'skytemp', 'dewpoint', 'particles']
+        # loop all sensor types
+        for sensor_type in SensorType.objects.all():
+            values = []
 
-    # loop all stations
-    values = pd.DataFrame({k: [] for k in fields})
-    for station in Station.objects.all():
-        # exclude 'average' and 'current'
-        if station.code in ['average', 'current']:
-            continue
+            # loop all sensors of that type
+            for sensor in Sensor.objects.filter(type=sensor_type):
+                # get latest value of that sensor
+                value = Value.objects.filter(sensor=sensor).order_by('-time').first()
 
-        # get last data point
-        latest = Weather.objects.filter(station=station).order_by('-time').first()
+                # valid?
+                if value is not None and value.value is not None:
+                    # and not too old?
+                    if value.time > now - timedelta(minutes=10):
+                        # add it
+                        values.append(value.value)
 
-        # too old?
-        too_old = latest.time < now - timedelta(minutes=10)
+            # calculate average
+            avg = np.nanmean(values) if values else None
 
-        # fill fields
-        latest_dict = {f: None if too_old else getattr(latest, f) for f in fields}
-
-        # append to values
-        values = values.append(pd.Series(latest_dict), ignore_index=True)
-
-    # calculate mean of values
-    mean = values.mean().to_dict()
-
-    # write to database
-    v = {k: None if np.isnan(v) else v for k, v in mean.items() if k in fields}
-    w = Weather(station_id=station_id, time=now, **v)
-    w.save()
+            # and store it
+            sensor, _ = Sensor.objects.get_or_create(station=station, type=sensor_type)
+            Value.objects.get_or_create(sensor=sensor, time=now, value=avg, good=avg is not None)

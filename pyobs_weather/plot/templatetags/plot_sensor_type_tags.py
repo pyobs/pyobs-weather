@@ -5,7 +5,7 @@ import plotly.graph_objs as go
 from django import template
 import pandas as pd
 
-from pyobs_weather.weather.models import Weather, Station, SensorType
+from pyobs_weather.weather.models import Station, SensorType
 
 register = template.Library()
 
@@ -26,6 +26,8 @@ def plot_sensor_type(sensor_type, start=None, end=None):
     # get plot data
     data = []
     for station in Station.objects.all():
+        pass
+        """
         # get data points
         weather = Weather.objects.filter(station=station, time__gte=start, time__lte=end).order_by('-time')
 
@@ -35,6 +37,7 @@ def plot_sensor_type(sensor_type, start=None, end=None):
             y=[getattr(w, sensor_type) for w in weather],
             name=station.name,
         ))
+        """
 
     # set layout
     fig.update_layout(
