@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 from pyobs_weather.celery import app
-
+from pyobs_weather.weather.utils import get_class
 
 log = logging.getLogger(__name__)
 
@@ -17,12 +17,9 @@ def update_stations(station_code: str):
     # get station
     station = Station.objects.get(code=station_code)
 
-    # get module and update method
-    module = importlib.import_module(station.module)
-    update_func = getattr(module, 'update')
-
-    # run it
-    update_func(station.id)
+    # get class and update station
+    kls = get_class(station.class_name)
+    kls.update(station)
 
 
 def create_evaluator(evaluator):

@@ -56,7 +56,7 @@
       "crontab": null,
       "solar": null,
       "clocked": null,
-      "args": "[\"average\"]",
+      "args": "[\"current\"]",
       "kwargs": "{}",
       "queue": null,
       "exchange": null,

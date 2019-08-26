@@ -34,10 +34,8 @@ class Average:
 
                 # valid?
                 if value is not None and value['value__avg'] is not None:
-                    # and not too old?
-                    if value.time > now - timedelta(minutes=10):
-                        # add it
-                        values.append(value['value__avg'])
+                    # add it
+                    values.append(value['value__avg'])
 
             # calculate average of all sensors
             avg = np.nanmean(values) if values else None
