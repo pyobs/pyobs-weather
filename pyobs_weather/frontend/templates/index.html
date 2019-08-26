@@ -3,7 +3,7 @@
 {% block content %}
 
     <h3>Current values</h3>
-    <table class="table">
+    <table id="current">
         <tr>
             {% for value in current %}
                 <th>{{ value.sensor.type.name }}</th>
@@ -12,6 +12,11 @@
         <tr>
             {% for value in current %}
                 <td>{{ value.value|floatformat:1 }}</td>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for value in current %}
+                <th>{{ value.sensor.type.unit }}</th>
             {% endfor %}
         </tr>
     </table>
