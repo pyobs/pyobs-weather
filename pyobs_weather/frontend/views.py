@@ -19,5 +19,4 @@ class OverView(TemplateView):
                 values.append(Value.objects.filter(sensor=sensor).order_by('-time').first())
 
         # return it
-        print(values)
         return {'current': values}
