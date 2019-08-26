@@ -32,6 +32,8 @@ class McDonaldLocke:
 
     @staticmethod
     def update(station):
+        log.info('Updating McDonald Locke station %s...' % station.code)
+
         # do request
         r = requests.get('http://weather.as.utexas.edu/latest_5min.dat')
 

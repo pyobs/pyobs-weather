@@ -28,6 +28,8 @@ class Monet:
 
     @staticmethod
     def update(station):
+        log.info('Updating MONET station %s...' % station.code)
+
         # do request
         r = requests.get('https://monet.as.utexas.edu/?type=current')
 

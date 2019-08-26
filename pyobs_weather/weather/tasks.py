@@ -12,7 +12,6 @@ log = logging.getLogger(__name__)
 @app.task
 def update_stations(station_code: str):
     from pyobs_weather.weather.models import Station
-    log.warning('Updating station %s...' % station_code)
 
     # get station
     station = Station.objects.get(code=station_code)
