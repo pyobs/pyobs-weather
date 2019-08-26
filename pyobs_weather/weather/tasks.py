@@ -55,7 +55,7 @@ def evaluate():
                 eva = create_evaluator(evaluator)
 
                 # and evaluate
-                res = eva(station, sensor)
+                res = eva(sensor)
                 is_good, since = is_good and res
 
             # status changed?
@@ -69,9 +69,9 @@ def evaluate():
                     sensor.bad_since = now
 
             # if there's a delay, we may want to switch back
-            if sensor.good and (now - sensor.bad_since).total_seconds() < sensor.delay_bad:
+            if sensor.good and sensor.bad_since and (now - sensor.bad_since).total_seconds() < sensor.delay_bad:
                 is_good = sensor.good
-            if not sensor.good and (now - sensor.good_since).total_seconds() < sensor.good_bad:
+            if not sensor.good and sensor.good_since and (now - sensor.good_since).total_seconds() < sensor.delay_bad:
                 is_good = sensor.good
 
             # did status still change?

@@ -82,7 +82,7 @@ class Sensor(models.Model):
     """A sensor."""
     station = models.ForeignKey(Station, on_delete=models.CASCADE)
     type = models.ForeignKey(SensorType, on_delete=models.CASCADE)
-    evaluators = models.ManyToManyField(Evaluator)
+    evaluators = models.ManyToManyField(Evaluator, blank=True)
     good = models.BooleanField('Whether its current value was evaluated as good', blank=True, null=True)
     since = models.DateTimeField('Time the good parameter last changed', blank=True, null=True)
     delay_good = models.IntegerField('Delay in seconds before switching to good weather', default=0)
@@ -103,7 +103,6 @@ class Value(models.Model):
     sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE)
     time = models.DateTimeField('Date and time when value was measured')
     value = models.FloatField('Measured value', null=True, blank=True)
-    good = models.BooleanField('Whether this value was evaluated as good', null=True, blank=True)
 
     def save(self, *args, **kwargs):
         # actually save model

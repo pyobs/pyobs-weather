@@ -26,7 +26,7 @@
       "name": "Averaged values",
       "task": "pyobs_weather.weather.tasks.update_stations",
       "crontab": 1,
-      "args": "[\"average\"]",
+      "args": "[\"average\"]"
     }
   },
   {
@@ -36,7 +36,7 @@
       "name": "Current weather",
       "task": "pyobs_weather.weather.tasks.update_stations",
       "interval": 1,
-      "args": "[\"current\"]",
+      "args": "[\"current\"]"
     }
   },
   {
