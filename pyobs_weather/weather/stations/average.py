@@ -11,6 +11,10 @@ log = logging.getLogger(__name__)
 
 class Average:
     @staticmethod
+    def create_sensors(station):
+        pass
+
+    @staticmethod
     def update(station):
         from pyobs_weather.weather.models import Station, SensorType, Sensor, Value
         log.info('Updating averages...')
