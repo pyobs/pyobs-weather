@@ -26,6 +26,10 @@ def plot_sensor_type(sensor_type, start=None, end=None):
 
     # loop all sensors with this type
     for sensor in Sensor.objects.filter(type=st).all():
+        # don't plot it?
+        if not sensor.station.plot:
+            continue
+
         # get data points
         values = Value.objects.filter(sensor=sensor, time__gte=start, time__lte=end).order_by('-time')
         print(values)
@@ -35,6 +39,7 @@ def plot_sensor_type(sensor_type, start=None, end=None):
             x=[v.time for v in values],
             y=[v.value for v in values],
             name=sensor.station.name,
+            line={'color': sensor.station.color}
         ))
 
     # set layout

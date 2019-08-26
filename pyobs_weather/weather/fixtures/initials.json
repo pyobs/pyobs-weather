@@ -25,25 +25,8 @@
     "fields": {
       "name": "Averaged values",
       "task": "pyobs_weather.weather.tasks.update_stations",
-      "interval": null,
       "crontab": 1,
-      "solar": null,
-      "clocked": null,
       "args": "[\"average\"]",
-      "kwargs": "{}",
-      "queue": null,
-      "exchange": null,
-      "routing_key": null,
-      "headers": "{}",
-      "priority": null,
-      "expires": null,
-      "one_off": false,
-      "start_time": null,
-      "enabled": true,
-      "last_run_at": "2019-08-22T19:38:11.117Z",
-      "total_run_count": 1,
-      "date_changed": "2019-08-22T19:38:11.141Z",
-      "description": ""
     }
   },
   {
@@ -53,24 +36,7 @@
       "name": "Current weather",
       "task": "pyobs_weather.weather.tasks.update_stations",
       "interval": 1,
-      "crontab": null,
-      "solar": null,
-      "clocked": null,
       "args": "[\"current\"]",
-      "kwargs": "{}",
-      "queue": null,
-      "exchange": null,
-      "routing_key": null,
-      "headers": "{}",
-      "priority": null,
-      "expires": null,
-      "one_off": false,
-      "start_time": null,
-      "enabled": true,
-      "last_run_at": null,
-      "total_run_count": 0,
-      "date_changed": "2019-08-23T06:28:44.192Z",
-      "description": ""
     }
   },
   {
@@ -84,7 +50,8 @@
       "interval": null,
       "weight": 1.0,
       "active": true,
-      "history": true
+      "history": true,
+      "plot": true
     }
   },
   {
@@ -98,7 +65,8 @@
       "interval": 1,
       "weight": 1.0,
       "active": true,
-      "history": false
+      "history": false,
+      "plot": false
     }
   },
   {
