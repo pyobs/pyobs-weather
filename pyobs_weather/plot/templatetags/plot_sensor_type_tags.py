@@ -18,7 +18,6 @@ def plot_sensor_type(sensor_type, start=None, end=None):
         start = end - timedelta(days=1)
 
     # get sensor type
-    print(sensor_type)
     st = SensorType.objects.get(code=sensor_type)
 
     # init figure
@@ -32,7 +31,6 @@ def plot_sensor_type(sensor_type, start=None, end=None):
 
         # get data points
         values = Value.objects.filter(sensor=sensor, time__gte=start, time__lte=end).order_by('-time')
-        print(values)
 
         # add plot
         fig.add_trace(go.Scatter(
