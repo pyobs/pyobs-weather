@@ -23,7 +23,7 @@ class Station(models.Model):
     """A weather station."""
     code = models.CharField('Code for weather station', max_length=10, unique=True)
     name = models.CharField('Name of weather station', max_length=50)
-    class_name = models.CharField('Name of Python class to handle station', max_length=50)
+    class_name = models.CharField('Name of Python class to handle station', max_length=100)
     crontab = models.ForeignKey(CrontabSchedule, on_delete=models.CASCADE, blank=True, null=True)
     interval = models.ForeignKey(IntervalSchedule, on_delete=models.CASCADE, blank=True, null=True)
     weight = models.FloatField('Weight for station in global average', default=1)
@@ -70,6 +70,7 @@ class SensorType(models.Model):
     code = models.CharField('Code for sensor type', max_length=10, unique=True)
     name = models.CharField('Name of sensor type', max_length=50)
     unit = models.CharField('Unit for value', max_length=5)
+    average = models.BooleanField('Calculate average for this type', default=True)
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.code)

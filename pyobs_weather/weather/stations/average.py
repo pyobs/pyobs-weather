@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-
+from django.db import models
 import numpy as np
 import pandas as pd
 import pytz
@@ -11,39 +11,37 @@ log = logging.getLogger(__name__)
 
 class Average:
     @staticmethod
-    def update(station_id):
-        from pyobs_weather.weather.models import Station, Value
+    def update(station):
+        from pyobs_weather.weather.models import Station, SensorType, Sensor, Value
         log.info('Updating averages...')
 
-        # get now
+        # get now and since
         now = datetime.utcnow().astimezone(pytz.UTC)
+        since = now - timedelta(minutes=5, seconds=30)
 
-        # define fields
-        fields = ['temp', 'humid', 'press', 'winddir', 'windspeed', 'rain', 'skytemp', 'dewpoint', 'particles']
+        # loop all sensor types
+        for sensor_type in SensorType.objects.all():
+            values = []
 
-        # loop all stations
-        values = pd.DataFrame({k: [] for k in fields + ['weight']})
-        for station in Station.objects.all():
-            # exclude 'average' and 'current'
-            if station.code in ['average', 'current']:
+            # skip those that we don't want to calculate averages for
+            if not sensor_type.average:
                 continue
 
-            # query all data from the last 5 minutes
-            qs = Weather.objects.filter(station=station, time__gte=now - timedelta(minutes=6))
-            q = qs.values(*fields)
-            df = pd.DataFrame.from_records(q)
+            # loop all sensors of that type
+            for sensor in Sensor.objects.filter(type=sensor_type):
+                # get average value for this sensor for last 5:30 minutes
+                value = Value.objects.filter(sensor=sensor, time__gte=since).aggregate(models.Avg('value'))
 
-            # average
-            mean = df.mean()
-            mean['weight'] = station.weight
+                # valid?
+                if value is not None and value['value__avg'] is not None:
+                    # and not too old?
+                    if value.time > now - timedelta(minutes=10):
+                        # add it
+                        values.append(value['value__avg'])
 
-            # append to values
-            values = values.append(mean, ignore_index=True)
+            # calculate average of all sensors
+            avg = np.nanmean(values) if values else None
 
-        # calculate mean of values
-        mean = values.mean().to_dict()
-
-        # write to database
-        v = {k: None if np.isnan(v) else v for k, v in mean.items() if k in fields}
-        w = Weather(station_id=station_id, time=now, **v)
-        w.save()
+            # and store it
+            sensor, _ = Sensor.objects.get_or_create(station=station, type=sensor_type)
+            Value.objects.get_or_create(sensor=sensor, time=now, value=avg)

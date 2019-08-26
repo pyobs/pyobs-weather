@@ -39,4 +39,4 @@ class Current:
 
             # and store it
             sensor, _ = Sensor.objects.get_or_create(station=station, type=sensor_type)
-            Value.objects.get_or_create(sensor=sensor, time=now, value=avg, good=avg is not None)
+            Value.objects.get_or_create(sensor=sensor, time=now, value=avg)
