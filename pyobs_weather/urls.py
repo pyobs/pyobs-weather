@@ -19,4 +19,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('pyobs_weather.frontend.urls')),
+    path('api/', include('pyobs_weather.api.urls')),
 ]
