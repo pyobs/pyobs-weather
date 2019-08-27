@@ -30,12 +30,5 @@
     </table>
 
     <h3>Plots for last 24h</h3>
-    {% plot_sensor_type "temp" %}
-    {% plot_sensor_type "humid" %}
-    {% plot_sensor_type "press" %}
-    {% plot_sensor_type "windspeed" %}
-    {% plot_sensor_type "winddir" %}
-    {% plot_sensor_type "rain" %}
-    {% plot_sensor_type "particles" %}
-
+    <canvas id="myChart" width="400" height="200"></canvas>
 {% endblock %}

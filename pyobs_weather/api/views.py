@@ -1,8 +1,11 @@
+import pytz
+from astropy.time import Time, TimeDelta
+import astropy.units as u
 from django.db.models import F
 from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import render
 
-from pyobs_weather.weather.models import Station, Sensor, Value
+from pyobs_weather.weather.models import Station, Sensor, Value, SensorType
 
 
 def stations_list(request):
@@ -106,3 +109,40 @@ def current(request):
         'good': good,
         'sensors': list(sensors)
     })
+
+
+def history(request, sensor_type):
+    # get sensor_type
+    st = SensorType.objects.get(code=sensor_type)
+    if st is None:
+        return HttpResponseNotFound('Could not find sensor type.')
+
+    # start and end
+    start = request.GET.get('start', None)
+    end = request.GET.get('end', None)
+
+    # parse
+    if start is not None and end is not None:
+        start = Time(start)
+        end = Time(end)
+    else:
+        end = Time.now()
+        start = end - TimeDelta(1 * u.day)
+
+    # loop all sensors of that type
+    stations = []
+    for sensor in Sensor.objects.filter(type=st):
+        # get data
+        values = Value.objects.filter(sensor=sensor,
+                                      time__gte=start.to_datetime(pytz.UTC),
+                                      time__lte=end.to_datetime(pytz.UTC)).order_by('-time').values('time', 'value')
+
+        # store it
+        stations.append({
+            'code': sensor.station.code,
+            'name': sensor.station.name,
+            'color': sensor.station.color,
+            'data': list(values)
+        })
+
+    return JsonResponse(stations, safe=False)
