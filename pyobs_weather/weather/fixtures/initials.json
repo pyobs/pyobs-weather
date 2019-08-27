@@ -68,6 +68,20 @@
     }
   },
   {
+    "model": "weather.station",
+    "pk": 3,
+    "fields": {
+      "code": "observer",
+      "name": "Observer",
+      "class_name": "pyobs_weather.weather.stations.Observer",
+      "interval": 1,
+      "weight": 1.0,
+      "history": false,
+      "active": true,
+      "plot": false
+    }
+  },
+  {
     "model": "weather.evaluator",
     "pk": 1,
     "fields": {
