@@ -1,10 +1,8 @@
-$(function () {
+function plot(type, name, unit) {
     $.ajax({
-        url: '/api/history/humid/',
+        url: '/api/history/' + type + '/',
         dataType: 'json',
     }).done(function (results) {
-        console.log(results);
-
         let plot = [];
         results.forEach(function (station) {
             let data = [];
@@ -21,10 +19,9 @@ $(function () {
             });
             // , 'YYYY-MM-DDTHH:mm:ss.SSZ'
         });
-        console.log(plot);
 
-        var ctx = document.getElementById('myChart').getContext('2d');
-        var myChart = new Chart(ctx, {
+        let ctx = document.getElementById('plot-' + type).getContext('2d');
+        new Chart(ctx, {
             type: 'line',
             data: {
                 datasets: plot
@@ -33,11 +30,25 @@ $(function () {
                 scales: {
                     xAxes: [{
                         type: 'time',
-                        distribution: 'linear'
+                        distribution: 'linear',
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time [UT]'
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: name + ' [' + unit + ']'
+                        }
                     }]
                 }
             }
         });
 
     });
+}
+
+$(function () {
+    //plot("humid");
 });
