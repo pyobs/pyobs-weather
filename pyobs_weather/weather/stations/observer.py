@@ -1,5 +1,6 @@
 import logging
 from astropy.coordinates import EarthLocation, get_sun, AltAz
+import astropy.units as u
 import pytz
 from astropy.time import Time
 from django.conf import settings
@@ -22,10 +23,9 @@ class Observer:
         log.info('Updating observer info %s...' % station.code)
 
         # get location
-        if type(settings.OBSERVER_LOCATION) == str:
-            location = EarthLocation.of_site(settings.OBSERVER_LOCATION)
-        else:
-            location = EarthLocation(**settings.OBSERVER_LOCATION)
+        location = EarthLocation(lon=settings.OBSERVER_LOCATION['longitude'] * u.deg,
+                                 lat=settings.OBSERVER_LOCATION['latitude'] * u.deg,
+                                 height=settings.OBSERVER_LOCATION['elevation'] * u.m)
 
         # get sun coordinates
         time = Time.now()

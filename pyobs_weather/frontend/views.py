@@ -1,4 +1,5 @@
 from astropy.coordinates import EarthLocation
+import astropy.units as u
 from django.conf import settings
 from django.views.generic import TemplateView
 
@@ -21,10 +22,9 @@ class OverView(TemplateView):
                 values.append(Value.objects.filter(sensor=sensor).order_by('-time').first())
 
         # get location
-        if type(settings.OBSERVER_LOCATION) == str:
-            location = EarthLocation.of_site(settings.OBSERVER_LOCATION)
-        else:
-            location = EarthLocation(**settings.OBSERVER_LOCATION)
+        location = EarthLocation(lon=settings.OBSERVER_LOCATION['longitude'] * u.deg,
+                                 lat=settings.OBSERVER_LOCATION['latitude'] * u.deg,
+                                 height=settings.OBSERVER_LOCATION['elevation'] * u.m)
 
         # lon and lat
         lon = location.longitude.to_string(sep='°\'"', precision=1)

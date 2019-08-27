@@ -132,4 +132,4 @@ CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 
 # observer
 OBSERVER_NAME = 'MONET/N @ McDonald Observatory'
-OBSERVER_LOCATION = 'McDonald'
+OBSERVER_LOCATION = {'longitude': -104.0217, 'latitude': 30.6717, 'elevation': 2075.}
