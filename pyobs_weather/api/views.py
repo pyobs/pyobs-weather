@@ -58,5 +58,5 @@ def sensor_detail(request, station_code, sensor_code):
         'value': None if value is None else value.value,
         'time': None if value is None else value.time,
         'good': sensor.good,
-        'since': sensor.good_since if sensor.good else sensor.bad_since
+        'since': sensor.since
     })
