@@ -22,3 +22,7 @@ table#current td {
 #main {
     margin-top: 70px;
 }
+
+#header {
+    text-align: center;
+}

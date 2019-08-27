@@ -2,6 +2,14 @@
 {% load plot_sensor_type_tags %}
 {% block content %}
 
+    <div id="header">
+        <h2>{{ site }}</h2>
+        <p>
+            Location: {{ location.longitude }} {{ location.latitude }},
+            Elevation: {{ location.elevation|floatformat:0 }}m
+        </p>
+    </div>
+
     <h3>Current values</h3>
     <table id="current">
         <tr>

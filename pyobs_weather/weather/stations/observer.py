@@ -1,0 +1,42 @@
+import logging
+from astropy.coordinates import EarthLocation, get_sun, AltAz
+import pytz
+from astropy.time import Time
+from django.conf import settings
+
+from pyobs_weather.weather.models import Value, Sensor, SensorType
+
+log = logging.getLogger(__name__)
+
+
+class Observer:
+    @staticmethod
+    def create_sensors(station):
+        # get or create types
+        type_sunalt, _ = SensorType.objects.get_or_create(code='sunalt', name='Solar altitude', unit='°')
+
+        # get or create sensors
+        Sensor.objects.get_or_create(station=station, type=type_sunalt)
+
+    def update(self, station):
+        log.info('Updating observer info %s...' % station.code)
+
+        # get location
+        if type(settings.OBSERVER_LOCATION) == str:
+            location = EarthLocation.of_site(settings.OBSERVER_LOCATION)
+        else:
+            location = EarthLocation(**settings.OBSERVER_LOCATION)
+
+        # get sun coordinates
+        time = Time.now()
+        sun = get_sun(time)
+
+        # create alt/az frame
+        altaz_frame = AltAz(location=location, obstime=time,)
+
+        # convert to alt/az
+        sun_altaz = sun.transform_to(altaz_frame)
+
+        # store it
+        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='sunalt'),
+                                    time=time.to_datetime(pytz.UTC), value=sun_altaz.alt.degree)
