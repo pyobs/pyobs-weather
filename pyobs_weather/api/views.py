@@ -56,7 +56,53 @@ def sensor_detail(request, station_code, sensor_code):
         'name': sensor.type.name,
         'code': sensor.type.code,
         'value': None if value is None else value.value,
+        'unit': sensor.type.unit,
         'time': None if value is None else value.time,
         'good': sensor.good,
         'since': sensor.since
+    })
+
+
+def current(request):
+    # get average station
+    average = Station.objects.get(code='average')
+    if average is None:
+        return HttpResponseNotFound('Could not access average weather.')
+
+    # loop all sensors
+    data = {}
+    for sensor in Sensor.objects.all():
+        # create, if necessary
+        if sensor.type.code not in data:
+            data[sensor.type.code] = {
+                'code': sensor.type.code,
+                'name': sensor.type.name,
+                'unit': sensor.type.unit,
+                'good': True,
+                'value': None
+            }
+
+        # set it
+        data[sensor.type.code]['good'] = sensor.good and data[sensor.type.code]['good']
+
+        # is average sensor?
+        if sensor.station == average:
+            # get latest value
+            value = Value.objects.filter(sensor=sensor).order_by('-time').first()
+
+            # set it
+            data[sensor.type.code]['value'] = None if value is None else value.value
+
+    # get list of sensors
+    sensors = sorted(data.values(), key=lambda d: d['code'])
+
+    # totally good?
+    good = True
+    for sensor in sensors:
+        good = good and sensor['good']
+
+    # return all
+    return JsonResponse({
+        'good': good,
+        'sensors': list(sensors)
     })
