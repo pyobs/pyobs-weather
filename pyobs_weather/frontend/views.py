@@ -20,3 +20,7 @@ class OverView(TemplateView):
 
         # return it
         return {'current': values}
+
+
+class Documentation(TemplateView):
+    template_name = "documentation.html"
