@@ -11,10 +11,17 @@ function plot(canvas) {
         // format data so that Chart.js can digest it
         let plotData = [];
         results.forEach(function (station) {
+            // don't plot average values
+            if (station.code === 'average')
+                return;
+
+            // format data
             let data = [];
             station.data.forEach(function (value) {
                 data.push({t: new Date(value.time), y: value.value})
             });
+
+            // create plot dict
             plotData.push({
                 label: station.name,
                 data: data,

@@ -14,7 +14,7 @@ class Observer:
     @staticmethod
     def create_sensors(station):
         # get or create types
-        type_sunalt, _ = SensorType.objects.get_or_create(code='sunalt', name='Solar altitude', unit='°')
+        type_sunalt, _ = SensorType.objects.get_or_create(code='sunalt', name='Solar altitude', unit='°', average=False)
 
         # get or create sensors
         Sensor.objects.get_or_create(station=station, type=type_sunalt)

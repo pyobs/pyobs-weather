@@ -24,7 +24,7 @@ class Average:
         since = now - timedelta(minutes=5, seconds=30)
 
         # loop all sensor types
-        for sensor_type in SensorType.objects.all():
+        for sensor_type in SensorType.objects.filter(average=True):
             values = []
 
             # skip those that we don't want to calculate averages for
@@ -32,7 +32,7 @@ class Average:
                 continue
 
             # loop all sensors of that type
-            for sensor in Sensor.objects.filter(type=sensor_type):
+            for sensor in Sensor.objects.filter(type=sensor_type, station__active=True):
                 # get average value for this sensor for last 5:30 minutes
                 value = Value.objects.filter(sensor=sensor, time__gte=since).aggregate(models.Avg('value'))
 

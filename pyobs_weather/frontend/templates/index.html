@@ -5,6 +5,9 @@
         <div class="col-md-3 current">
             <div class="affix">
                 <h3>Current</h3>
+                <h4 class="sensor">Time</h4>
+                <p class="sensorValue">{% with current|first as c %}{{ c.time|date:'H:i:s' }}{% endwith %}</p>
+                <p class="sensorUnit">UT</p>
                 {% for value in current %}
                     <h4 class="sensor">{{ value.sensor.type.name }}</h4>
                     <p class="sensorValue">{{ value.value|floatformat:1 }}</p>
@@ -17,14 +20,13 @@
             <div id="header">
                 <h2>{{ site }}</h2>
                 <p>
-                    Location: {{ location.longitude }} {{ location.latitude }},
-                    Elevation: {{ location.elevation|floatformat:0 }}m
+                    {{ location.longitude }}, {{ location.latitude }}, {{ location.elevation|floatformat:0 }}m
                 </p>
             </div>
 
             <h3>Plots for last 24h</h3>
-            {% for value in current %}
-                <canvas data-sensor-type="{{ value.sensor.type.code }}" data-sensor-label="{{ value.sensor.type.name }}"
+            {% for type in plot_types %}
+                <canvas data-sensor-type="{{ type.code }}" data-sensor-label="{{ type.name }}"
                         class="plot" width="600" height="150"></canvas>
             {% endfor %}
         </div>

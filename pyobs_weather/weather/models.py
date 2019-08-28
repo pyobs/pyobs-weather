@@ -30,7 +30,6 @@ class Station(models.Model):
     weight = models.FloatField('Weight for station in global average', default=1)
     history = models.BooleanField('Whether to keep more than one point', default=True)
     active = models.BooleanField('Whether station is currently active', default=True)
-    plot = models.BooleanField('Add station to plots', default=True)
     color = models.CharField('Plot color', max_length=10, default='black')
 
     def __str__(self):
@@ -90,7 +89,6 @@ class Sensor(models.Model):
     delay_bad = models.IntegerField('Delay in seconds before switching to bad weather', default=0)
     bad_since = models.DateTimeField('Time of last bad sensor value', blank=True, null=True)
     good_since = models.DateTimeField('Time of last good sensor value', blank=True, null=True)
-    active = models.BooleanField('Whether evaluator is currently active', default=True)
 
     def __str__(self):
         return self.station.name + ': ' + self.type.name

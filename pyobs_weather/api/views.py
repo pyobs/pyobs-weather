@@ -74,6 +74,7 @@ def current(request):
 
     # loop all sensors
     data = {}
+    time = None
     for sensor in Sensor.objects.all():
         # create, if necessary
         if sensor.type.code not in data:
@@ -95,6 +96,7 @@ def current(request):
 
             # set it
             data[sensor.type.code]['value'] = None if value is None else value.value
+            time = value.time
 
     # get list of sensors
     sensors = sorted(data.values(), key=lambda d: d['code'])
@@ -106,9 +108,17 @@ def current(request):
 
     # return all
     return JsonResponse({
+        'time': time,
         'good': good,
         'sensors': list(sensors)
     })
+
+
+def history_types(request):
+    # loop sensors
+    qs = Sensor.objects.filter(station__history=True).values('type__code')
+    types = list(set(v['type__code'] for v in qs))
+    return JsonResponse(types, safe=False)
 
 
 def history(request, sensor_type):
@@ -131,11 +141,7 @@ def history(request, sensor_type):
 
     # loop all sensors of that type
     stations = []
-    for sensor in Sensor.objects.filter(type=st):
-        # do we want to store it?
-        if not sensor.station.plot:
-            continue
-
+    for sensor in Sensor.objects.filter(type=st, station__history=True):
         # get data
         values = Value.objects.filter(sensor=sensor,
                                       time__gte=start.to_datetime(pytz.UTC),

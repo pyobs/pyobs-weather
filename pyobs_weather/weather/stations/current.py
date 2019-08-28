@@ -27,7 +27,7 @@ class Current:
             values = []
 
             # loop all sensors of that type
-            for sensor in Sensor.objects.filter(type=sensor_type):
+            for sensor in Sensor.objects.filter(type=sensor_type, station__active=True):
                 # get latest value of that sensor
                 value = Value.objects.filter(sensor=sensor).order_by('-time').first()
 

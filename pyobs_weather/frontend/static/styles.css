@@ -41,6 +41,6 @@ p.sensorValue {
 }
 
 p.sensorUnit {
-    font-size: small;
+    font-size: x-small;
     font-weight: normal;
 }
