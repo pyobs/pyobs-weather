@@ -132,6 +132,10 @@ def history(request, sensor_type):
     # loop all sensors of that type
     stations = []
     for sensor in Sensor.objects.filter(type=st):
+        # do we want to store it?
+        if not sensor.station.plot:
+            continue
+
         # get data
         values = Value.objects.filter(sensor=sensor,
                                       time__gte=start.to_datetime(pytz.UTC),
