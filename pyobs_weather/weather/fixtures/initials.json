@@ -1,87 +1,5 @@
 [
   {
-    "model": "django_celery_beat.intervalschedule",
-    "pk": 1,
-    "fields": {
-      "every": 10,
-      "period": "seconds"
-    }
-  },
-  {
-    "model": "django_celery_beat.crontabschedule",
-    "pk": 1,
-    "fields": {
-      "minute": "*/5",
-      "hour": "*",
-      "day_of_week": "*",
-      "day_of_month": "*",
-      "month_of_year": "*",
-      "timezone": "UTC"
-    }
-  },
-  {
-    "model": "django_celery_beat.periodictask",
-    "pk": 1,
-    "fields": {
-      "name": "Averaged values",
-      "task": "pyobs_weather.weather.tasks.update_stations",
-      "crontab": 1,
-      "args": "[\"average\"]"
-    }
-  },
-  {
-    "model": "django_celery_beat.periodictask",
-    "pk": 2,
-    "fields": {
-      "name": "Current weather",
-      "task": "pyobs_weather.weather.tasks.update_stations",
-      "interval": 1,
-      "args": "[\"current\"]"
-    }
-  },
-  {
-    "model": "weather.station",
-    "pk": 1,
-    "fields": {
-      "code": "average",
-      "name": "Averaged values",
-      "class_name": "pyobs_weather.weather.stations.Average",
-      "crontab": 1,
-      "weight": 1.0,
-      "active": true,
-      "history": true,
-      "plot": true
-    }
-  },
-  {
-    "model": "weather.station",
-    "pk": 2,
-    "fields": {
-      "code": "current",
-      "name": "Current weather",
-      "class_name": "pyobs_weather.weather.stations.Current",
-      "interval": 1,
-      "weight": 1.0,
-      "active": true,
-      "history": false,
-      "plot": false
-    }
-  },
-  {
-    "model": "weather.station",
-    "pk": 3,
-    "fields": {
-      "code": "observer",
-      "name": "Observer",
-      "class_name": "pyobs_weather.weather.stations.Observer",
-      "interval": 1,
-      "weight": 1.0,
-      "history": false,
-      "active": true,
-      "plot": false
-    }
-  },
-  {
     "model": "weather.evaluator",
     "pk": 1,
     "fields": {
@@ -115,6 +33,142 @@
       "name": "Valid",
       "class_name": "pyobs_weather.weather.evaluators.Valid",
       "kwargs": null
+    }
+  },
+  {
+    "model": "weather.station",
+    "pk": 1,
+    "fields": {
+      "code": "current",
+      "name": "Current weather",
+      "class_name": "pyobs_weather.weather.stations.Current",
+      "kwargs": "{}",
+      "crontab": null,
+      "interval": 1,
+      "weight": 1.0,
+      "history": false,
+      "active": true,
+      "color": "rgba(0, 0, 0, 0.1)"
+    }
+  },
+  {
+    "model": "weather.station",
+    "pk": 2,
+    "fields": {
+      "code": "average",
+      "name": "Averaged values",
+      "class_name": "pyobs_weather.weather.stations.Average",
+      "kwargs": "{}",
+      "crontab": 3,
+      "interval": null,
+      "weight": 1.0,
+      "history": true,
+      "active": true,
+      "color": "rgba(0, 0, 0, 0.1)"
+    }
+  },
+  {
+    "model": "weather.station",
+    "pk": 3,
+    "fields": {
+      "code": "observer",
+      "name": "Observer",
+      "class_name": "pyobs_weather.weather.stations.Observer",
+      "kwargs": "{}",
+      "crontab": null,
+      "interval": 1,
+      "weight": 0.0,
+      "history": false,
+      "active": true,
+      "color": "rgba(0, 0, 0, 0.1)"
+    }
+  },
+  {
+    "model": "weather.sensortype",
+    "pk": 1,
+    "fields": {
+      "code": "temp",
+      "name": "Temperature",
+      "unit": "\u00b0C",
+      "average": true
+    }
+  },
+  {
+    "model": "weather.sensortype",
+    "pk": 2,
+    "fields": {
+      "code": "humid",
+      "name": "Relative humidity",
+      "unit": "%",
+      "average": true
+    }
+  },
+  {
+    "model": "weather.sensortype",
+    "pk": 3,
+    "fields": {
+      "code": "press",
+      "name": "Pressure",
+      "unit": "hPa",
+      "average": true
+    }
+  },
+  {
+    "model": "weather.sensortype",
+    "pk": 4,
+    "fields": {
+      "code": "winddir",
+      "name": "Wind dir",
+      "unit": "\u00b0E of N",
+      "average": true
+    }
+  },
+  {
+    "model": "weather.sensortype",
+    "pk": 5,
+    "fields": {
+      "code": "windspeed",
+      "name": "Wind speed",
+      "unit": "km/h",
+      "average": true
+    }
+  },
+  {
+    "model": "weather.sensortype",
+    "pk": 6,
+    "fields": {
+      "code": "particles",
+      "name": "Particle count",
+      "unit": "ppcm",
+      "average": true
+    }
+  },
+  {
+    "model": "weather.sensortype",
+    "pk": 7,
+    "fields": {
+      "code": "rain",
+      "name": "Raining",
+      "unit": "0/1",
+      "average": true
+    }
+  },
+  {
+    "model": "weather.sensortype",
+    "pk": 8,
+    "fields": {
+      "code": "sunalt",
+      "name": "Solar altitude",
+      "unit": "\u00b0",
+      "average": false
+    }
+  },
+    {
+    "model": "weather.sensor",
+    "pk": 1,
+    "fields": {
+      "station": 3,
+      "type": 8
     }
   }
 ]
