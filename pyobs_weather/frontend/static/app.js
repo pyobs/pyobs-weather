@@ -1,15 +1,21 @@
-function plot(el, type, label) {
+function plot(canvas) {
+    // get type and label
+    let type = $(canvas).attr('data-sensor-type');
+    let label = $(canvas).attr('data-sensor-label');
+
+    // do AJAX request
     $.ajax({
         url: '/api/history/' + type + '/',
         dataType: 'json',
     }).done(function (results) {
-        let plot = [];
+        // format data so that Chart.js can digest it
+        let plotData = [];
         results.forEach(function (station) {
             let data = [];
             station.data.forEach(function (value) {
                 data.push({t: new Date(value.time), y: value.value})
             });
-            plot.push({
+            plotData.push({
                 label: station.name,
                 data: data,
                 pointBorderColor: station.color,
@@ -17,14 +23,13 @@ function plot(el, type, label) {
                 borderColor: station.color,
                 fill: false
             });
-            // , 'YYYY-MM-DDTHH:mm:ss.SSZ'
         });
 
-        let ctx = el.getContext('2d');
-        new Chart(ctx, {
+        // create plot
+        new Chart(canvas.getContext('2d'), {
             type: 'line',
             data: {
-                datasets: plot
+                datasets: plotData
             },
             options: {
                 scales: {
@@ -50,10 +55,8 @@ function plot(el, type, label) {
 }
 
 $(function () {
+    // do all plots
     $(".plot").each(function (index) {
-        let type = $(this).attr('data-sensor-type');
-        let label = $(this).attr('data-sensor-label');
-        console.log($(this));
-        plot($(this), type, label);
+        plot(this);
     });
 });

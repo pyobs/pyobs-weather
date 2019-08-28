@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load plot_sensor_type_tags %}
 {% block content %}
 
     <div id="header">
@@ -30,6 +29,10 @@
     </table>
 
     <h3>Plots for last 24h</h3>
-    <canvas data-sensor-type="humid" data-sensor-label="Humidity" class="plot" width="600" height="150"></canvas>
+    {% for value in current %}
+        <canvas data-sensor-type="{{ value.sensor.type.code }}" data-sensor-label="{{ value.sensor.type.name }}"
+                class="plot" width="600" height="150"></canvas>
+    {% endfor %}
+
 
 {% endblock %}
