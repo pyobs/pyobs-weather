@@ -72,7 +72,7 @@ class SensorType(models.Model):
     """A sensor type."""
     code = models.CharField('Code for sensor type', max_length=10, unique=True)
     name = models.CharField('Name of sensor type', max_length=50)
-    unit = models.CharField('Unit for value', max_length=5)
+    unit = models.CharField('Unit for value', max_length=10)
     average = models.BooleanField('Calculate average for this type', default=True)
 
     def __str__(self):
