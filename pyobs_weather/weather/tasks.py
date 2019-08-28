@@ -16,7 +16,11 @@ def update_stations(station_code: str):
     from pyobs_weather.weather.models import Station
 
     # get station
-    station = Station.objects.get(code=station_code, active=True)
+    station = Station.objects.get(code=station_code)
+
+    # not active?
+    if not station.active:
+        return
 
     # get class and update station
     kls = get_class(station.class_name)
