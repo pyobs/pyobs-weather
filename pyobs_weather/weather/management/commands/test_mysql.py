@@ -1,3 +1,5 @@
+import json
+
 from django.core.management.base import BaseCommand
 from pyobs_weather.weather.models import Station
 from pyobs_weather.weather.stations import MySQL
@@ -11,4 +13,5 @@ class Command(BaseCommand):
         station = Station.objects.get(code='mysql')
 
         # add types
-        MySQL.update(station)
+        sql = MySQL(**json.loads(station.kwargs))
+        sql.update(station)
