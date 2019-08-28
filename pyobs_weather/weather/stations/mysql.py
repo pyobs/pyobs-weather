@@ -1,6 +1,7 @@
 import logging
 import MySQLdb
 import pytz
+from astropy.time import Time
 
 from pyobs_weather.weather.models import Value, Sensor, SensorType
 
@@ -56,7 +57,7 @@ class MySQL:
             logging.error('Result from database is empty.')
 
         # evaluate row
-        time = row[0].astimezone(pytz.UTC)
+        time = Time(row[0]).to_datetime(pytz.UTC)
 
         # other values
         values = {columns[i]: row[i] for i in range(1, len(columns))}
