@@ -24,7 +24,7 @@ class Station(models.Model):
     code = models.CharField('Code for weather station', max_length=10, unique=True)
     name = models.CharField('Name of weather station', max_length=50)
     class_name = models.CharField('Name of Python class to handle station', max_length=100)
-    kwargs = models.CharField('JSON encoded kwargs used when instantiating Python class', max_length=100, default='{}')
+    kwargs = models.TextField('JSON encoded kwargs used when instantiating Python class', default='{}')
     crontab = models.ForeignKey(CrontabSchedule, on_delete=models.CASCADE, blank=True, null=True)
     interval = models.ForeignKey(IntervalSchedule, on_delete=models.CASCADE, blank=True, null=True)
     weight = models.FloatField('Weight for station in global average', default=1)
@@ -41,7 +41,8 @@ class Station(models.Model):
 
         # create sensors for station
         station_class = get_class(self.class_name)
-        station_class.create_sensors(self)
+        obj = station_class(**json.loads(self.kwargs))
+        obj.create_sensors(self)
 
         # if exists, delete old schedule
         try:
