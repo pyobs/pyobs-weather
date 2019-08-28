@@ -25,10 +25,13 @@ function plot(canvas) {
             plotData.push({
                 label: station.name,
                 data: data,
+                backgroundColor: station.color,
+                borderColor: station.color,
                 pointBorderColor: station.color,
                 pointBackgroundColor: station.color,
-                borderColor: station.color,
-                fill: false
+                pointRadius: 1,
+                fill: false,
+                lineTension: 0.2
             });
         });
 

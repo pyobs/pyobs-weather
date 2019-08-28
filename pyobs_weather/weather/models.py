@@ -30,7 +30,7 @@ class Station(models.Model):
     weight = models.FloatField('Weight for station in global average', default=1)
     history = models.BooleanField('Whether to keep more than one point', default=True)
     active = models.BooleanField('Whether station is currently active', default=True)
-    color = models.CharField('Plot color', max_length=10, default='black')
+    color = models.CharField('Plot color', max_length=20, default='rgba(0, 0, 0, 0.1)')
 
     def __str__(self):
         return self.name
