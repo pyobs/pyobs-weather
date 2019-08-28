@@ -60,9 +60,6 @@ class MySQL:
         time = Time(row[0]).to_datetime(pytz.UTC)
 
         # other values
-        values = {columns[i]: row[i] for i in range(1, len(columns))}
-
-        # set values
-        for key, val in values.items():
-            Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code=key),
-                                        time=time, value=val)
+        for cfg, value in zip(self.fields.values(), row[1:]):
+            Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code=cfg['code']),
+                                        time=time, value=value)
