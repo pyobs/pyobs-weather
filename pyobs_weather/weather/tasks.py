@@ -3,6 +3,8 @@ import json
 import logging
 from datetime import datetime
 
+import pytz
+
 from pyobs_weather.celery import app
 from pyobs_weather.weather.utils import get_class
 
@@ -77,7 +79,7 @@ def evaluate():
             # did status still change?
             if is_good != sensor.good:
                 # then store time
-                sensor.since = datetime.utcnow()
+                sensor.since = datetime.utcnow().astimezone(pytz.UTC)
 
             # store it
             sensor.good = is_good

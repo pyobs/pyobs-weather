@@ -1,4 +1,4 @@
-function plot(type, name, unit) {
+function plot(el, type, label) {
     $.ajax({
         url: '/api/history/' + type + '/',
         dataType: 'json',
@@ -20,7 +20,7 @@ function plot(type, name, unit) {
             // , 'YYYY-MM-DDTHH:mm:ss.SSZ'
         });
 
-        let ctx = document.getElementById('plot-' + type).getContext('2d');
+        let ctx = el.getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -39,7 +39,7 @@ function plot(type, name, unit) {
                     yAxes: [{
                         scaleLabel: {
                             display: true,
-                            labelString: name + ' [' + unit + ']'
+                            labelString: label
                         }
                     }]
                 }
@@ -50,5 +50,10 @@ function plot(type, name, unit) {
 }
 
 $(function () {
-    //plot("humid");
+    $(".plot").each(function (index) {
+        let type = $(this).attr('data-sensor-type');
+        let label = $(this).attr('data-sensor-label');
+        console.log($(this));
+        plot($(this), type, label);
+    });
 });
