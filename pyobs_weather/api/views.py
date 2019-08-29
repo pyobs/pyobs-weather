@@ -103,7 +103,8 @@ def current(request):
     # totally good?
     good = True
     for sensor in sensors.values():
-        good = good and sensor['good']
+        if sensor['good'] is not None:
+            good = good and sensor['good']
 
     # return all
     return JsonResponse({

@@ -8,6 +8,9 @@
                 <h4 class="sensor">Time</h4>
                 <p class="sensorValue" id="time">&nbsp;</p>
                 <p class="sensorUnit">UT</p>
+                <h4 class="sensor">Overall</h4>
+                <p class="sensorValue" id="good">&nbsp;</p>
+                <p class="sensorUnit">&nbsp;</p>
                 {% for type in value_types %}
                     <h4 class="sensor">{{ type.name }}</h4>
                     <p class="sensorValue" data-sensor-type="{{ type.code }}">&nbsp;</p>

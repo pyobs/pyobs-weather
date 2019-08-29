@@ -120,6 +120,20 @@ function update_values() {
         if (results.hasOwnProperty('time')) {
             $('#time').html(moment.utc(results.time).format('HH:mm:ss'));
         }
+
+        // set goodd
+        if (results.hasOwnProperty('good')) {
+            let p = $('#good');
+            if (results.good === null) {
+                p.html('N/A');
+                p.css('color', 'black');
+            }
+            else {
+                p.html(results.good ? 'GOOD' : 'BAD');
+                p.css('color', results.good ? 'green' : 'red');
+            }
+        }
+
     });
 
     // schedule next run
