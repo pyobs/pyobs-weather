@@ -56,6 +56,7 @@ def evaluate():
             is_good = True
 
             # evaluate all evaluators
+            was_evaluated = False
             for evaluator in sensor.evaluators.all():
                 # get evaluator
                 eva = create_evaluator(evaluator)
@@ -63,15 +64,21 @@ def evaluate():
                 # and evaluate
                 res = eva(sensor)
                 is_good = is_good and res
+                was_evaluated = True
+
+            # has not been evaluated?
+            if not was_evaluated:
+                # reset is_good
+                is_good = None
 
             # status changed?
             if is_good != sensor.good:
                 # reset good/bad since
-                if is_good:
+                sensor.bad_since = None
+                sensor.good_since = None
+                if is_good is True:
                     sensor.good_since = now
-                    sensor.bad_since = None
-                else:
-                    sensor.good_since = None
+                elif is_good is False:
                     sensor.bad_since = now
 
             # if there's a delay, we may want to switch back
@@ -81,7 +88,7 @@ def evaluate():
                 is_good = sensor.good
 
             # did status still change?
-            if is_good != sensor.good:
+            if is_good is not None and is_good != sensor.good:
                 # then store time
                 sensor.since = datetime.utcnow().astimezone(pytz.UTC)
 

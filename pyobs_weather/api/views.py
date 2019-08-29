@@ -68,8 +68,8 @@ def sensor_detail(request, station_code, sensor_code):
 
 def current(request):
     # get average station
-    average = Station.objects.get(code='current')
-    if average is None:
+    station = Station.objects.get(code='current')
+    if station is None:
         return HttpResponseNotFound('Could not access current weather.')
 
     # loop all sensors
@@ -79,15 +79,20 @@ def current(request):
         # create, if necessary
         if sensor.type.code not in sensors:
             sensors[sensor.type.code] = {
-                'good': True,
+                'good': None,
                 'value': None
             }
 
         # set it
-        sensors[sensor.type.code]['good'] = sensor.good and sensors[sensor.type.code]['good']
+        if sensor.good is not None:
+            # if current value is None, set it with new one, otherwise and it
+            if sensors[sensor.type.code]['good'] is None:
+                sensors[sensor.type.code]['good'] = sensor.good
+            else:
+                sensors[sensor.type.code]['good'] = sensor.good and sensors[sensor.type.code]['good']
 
         # is average sensor?
-        if sensor.station == average:
+        if sensor.station == station:
             # get latest value
             value = Value.objects.filter(sensor=sensor).order_by('-time').first()
 

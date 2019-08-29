@@ -23,12 +23,18 @@ class OverView(TemplateView):
 
         # get sensor types
         value_types = []
+        for code in settings.WEATHER_SENSORS:
+            try:
+                a = SensorType.objects.get(code=code)
+                value_types.append(a)
+            except SensorType.DoesNotExist:
+                pass
         plot_types = []
-        for sensor_type in SensorType.objects.all():
-            if sensor_type.code in settings.WEATHER_SENSORS:
-                value_types.append(sensor_type)
-            if sensor_type.code in settings.WEATHER_PLOTS:
-                plot_types.append(sensor_type)
+        for code in settings.WEATHER_PLOTS:
+            try:
+                plot_types.append(SensorType.objects.get(code=code))
+            except SensorType.DoesNotExist:
+                pass
 
         # get location
         location = EarthLocation(lon=settings.OBSERVER_LOCATION['longitude'] * u.deg,

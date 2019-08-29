@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # create average station
         crontab, _ = CrontabSchedule.objects.get_or_create(minute='*/5')
-        if Station.objects.get(code='average') is None:
+        if Station.objects.filter(code='average').count() == 0:
             Station.objects.get_or_create(
                 code='average',
                 name='Average values',
@@ -21,7 +21,7 @@ class Command(BaseCommand):
         # create current station
         interval, _ = IntervalSchedule.objects.get_or_create(every=10, period=IntervalSchedule.SECONDS)
         interval.save()
-        if Station.objects.get(code='current') is None:
+        if Station.objects.filter(code='current').count() == 0:
             Station.objects.get_or_create(
                 code='current',
                 name='Current values',
@@ -33,7 +33,7 @@ class Command(BaseCommand):
         # create observer station
         interval, _ = IntervalSchedule.objects.get_or_create(every=30, period=IntervalSchedule.SECONDS)
         interval.save()
-        if Station.objects.get(code='observer') is None:
+        if Station.objects.filter(code='observer').count() == 0:
             Station.objects.get_or_create(
                 code='observer',
                 name='Observer',
