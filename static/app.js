@@ -89,9 +89,6 @@ function update_values() {
         url: '/api/current/',
         dataType: 'json',
     }).done(function (results) {
-        // do all plots
-        console.log(results);
-
         // loop all fields on page
         $(".sensorValue").each(function (index) {
             // get type
