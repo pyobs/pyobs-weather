@@ -134,8 +134,8 @@ BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 CELERY_RESULT_BACKEND = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 
 # weather
-WEATHER_SENSORS = ['temp', 'humid', 'press', 'windspeed', 'winddir', 'rain', 'sunalt']
-WEATHER_PLOTS = ['temp', 'humid', 'press', 'windspeed', 'winddir', 'rain']
+WEATHER_SENSORS = ['temp', 'humid', 'press', 'windspeed', 'winddir', 'rain', 'skytemp', 'sunalt']
+WEATHER_PLOTS = ['temp', 'humid', 'press', 'windspeed', 'winddir', 'rain', 'skytemp']
 
 # observer
 OBSERVER_NAME = 'MONET/N @ McDonald Observatory'
