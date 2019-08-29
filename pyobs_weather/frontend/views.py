@@ -1,5 +1,8 @@
+import pytz
+from astroplan import Observer
 from astropy.coordinates import EarthLocation
 import astropy.units as u
+from astropy.time import Time
 from django.conf import settings
 from django.views.generic import TemplateView
 
@@ -47,6 +50,12 @@ class OverView(TemplateView):
         lat = location.latitude.to_string(sep='°\'"', precision=1)
         lat = lat[1:] + ' S' if lat[0] == '-' else lat + ' N'
 
+        # get next sunrise and sunset
+        now = Time.now()
+        observer = Observer(location=location)
+        sunrise = observer.sun_rise_time(now).to_datetime(pytz.UTC)
+        sunset = observer.sun_set_time(now).to_datetime(pytz.UTC)
+
         # return it
         return {
             'site': settings.OBSERVER_NAME,
@@ -56,7 +65,9 @@ class OverView(TemplateView):
                 'longitude': lon,
                 'latitude': lat,
                 'elevation': location.height.value
-            }
+            },
+            'sunrise': sunrise,
+            'sunset': sunset
         }
 
 

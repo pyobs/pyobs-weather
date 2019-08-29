@@ -21,6 +21,11 @@ table#current td {
 
 #header {
     text-align: center;
+    margin-bottom: 2em;
+}
+
+#header p {
+    margin: 0;
 }
 
 div.current {
