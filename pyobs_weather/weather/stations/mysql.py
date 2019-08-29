@@ -60,7 +60,7 @@ class MySQL:
             logging.error('Result from database is empty.')
 
         # evaluate row
-        time = Time(row[0]).to_datetime(pytz.UTC) - TimeDelta(self.time_offset * u.sec)
+        time = Time(row[0]).to_datetime(pytz.UTC) - TimeDelta(self.time_offset * u.second)
 
         # other values
         for cfg, value in zip(self.fields.values(), row[1:]):
