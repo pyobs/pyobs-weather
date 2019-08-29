@@ -6,12 +6,12 @@
             <div class="affix">
                 <h3>Current</h3>
                 <h4 class="sensor">Time</h4>
-                <p class="sensorValue">{% with current|first as c %}{{ c.time|date:'H:i:s' }}{% endwith %}</p>
+                <p class="sensorValue" id="time">&nbsp;</p>
                 <p class="sensorUnit">UT</p>
-                {% for value in current %}
-                    <h4 class="sensor">{{ value.sensor.type.name }}</h4>
-                    <p class="sensorValue">{{ value.value|floatformat:1 }}</p>
-                    <p class="sensorUnit">{{ value.sensor.type.unit }}</p>
+                {% for type in value_types %}
+                    <h4 class="sensor">{{ type.name }}</h4>
+                    <p class="sensorValue" data-sensor-type="{{ type.code }}">&nbsp;</p>
+                    <p class="sensorUnit">{{ type.unit }}</p>
                 {% endfor %}
             </div>
         </div>

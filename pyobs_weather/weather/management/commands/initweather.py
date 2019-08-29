@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django_celery_beat.schedulers import CrontabSchedule, IntervalSchedule
+from django_celery_beat.schedulers import CrontabSchedule, IntervalSchedule, PeriodicTask
 
 from pyobs_weather.weather.models import Station, Evaluator
 
@@ -10,33 +10,44 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # create average station
         crontab, _ = CrontabSchedule.objects.get_or_create(minute='*/5')
-        Station.objects.get_or_create(
-            code='average',
-            name='Average values',
-            class_name='pyobs_weather.weather.stations.Average',
-            crontab=crontab
-        )
+        if Station.objects.get(code='average') is None:
+            Station.objects.get_or_create(
+                code='average',
+                name='Average values',
+                class_name='pyobs_weather.weather.stations.Average',
+                crontab=crontab
+            )
 
         # create current station
         interval, _ = IntervalSchedule.objects.get_or_create(every=10, period=IntervalSchedule.SECONDS)
         interval.save()
-        Station.objects.get_or_create(
-            code='current',
-            name='Current values',
-            class_name='pyobs_weather.weather.stations.Current',
-            interval=interval,
-            history=False
-        )
+        if Station.objects.get(code='current') is None:
+            Station.objects.get_or_create(
+                code='current',
+                name='Current values',
+                class_name='pyobs_weather.weather.stations.Current',
+                interval=interval,
+                history=False
+            )
 
         # create observer station
         interval, _ = IntervalSchedule.objects.get_or_create(every=30, period=IntervalSchedule.SECONDS)
         interval.save()
-        Station.objects.get_or_create(
-            code='observer',
-            name='Observer',
-            class_name='pyobs_weather.weather.stations.Observer',
+        if Station.objects.get(code='observer') is None:
+            Station.objects.get_or_create(
+                code='observer',
+                name='Observer',
+                class_name='pyobs_weather.weather.stations.Observer',
+                interval=interval,
+                history=False
+            )
+
+        # create interval for evaluation
+        interval, _ = IntervalSchedule.objects.get_or_create(every=10, period=IntervalSchedule.SECONDS)
+        PeriodicTask.objects.get_or_create(
             interval=interval,
-            history=False
+            name='Evaluate sensor goodness',
+            task='pyobs_weather.weather.tasks.evaluate'
         )
 
         # add some default evaluators

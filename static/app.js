@@ -73,9 +73,63 @@ function plot(canvas) {
     });
 }
 
-$(function () {
+function update_plots() {
     // do all plots
     $(".plot").each(function (index) {
         plot(this);
     });
+
+    // schedule next run
+    setTimeout(update_values, 60000);
+}
+
+function update_values() {
+    // do AJAX request
+    $.ajax({
+        url: '/api/current/',
+        dataType: 'json',
+    }).done(function (results) {
+        // do all plots
+        console.log(results);
+
+        // loop all fields on page
+        $(".sensorValue").each(function (index) {
+            // get type
+            let value_field = $(this);
+            let type = value_field.attr('data-sensor-type');
+
+            // got a value?
+            if (results.hasOwnProperty('sensors') && results.sensors.hasOwnProperty(type) &&
+                    results.sensors[type].value !== null) {
+                value_field.html(results.sensors[type].value.toFixed(1));
+            } else {
+                value_field.html('N/A');
+            }
+
+            // good?
+            let color = 'black';
+            if (results.hasOwnProperty('sensors') && results.sensors.hasOwnProperty(type)) {
+                if (results.sensors[type].good === true) {
+                    color = 'green';
+                }
+                if (results.sensors[type].good === false) {
+                    color = 'red';
+                }
+            }
+            value_field.css('color', color);
+        });
+
+        // set time
+        if (results.hasOwnProperty('time')) {
+            $('#time').html(moment.utc(results.time).format('HH:mm:ss'));
+        }
+    });
+
+    // schedule next run
+    setTimeout(update_values, 10000);
+}
+
+$(function () {
+    update_plots();
+    update_values();
 });

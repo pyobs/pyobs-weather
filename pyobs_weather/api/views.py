@@ -68,26 +68,23 @@ def sensor_detail(request, station_code, sensor_code):
 
 def current(request):
     # get average station
-    average = Station.objects.get(code='average')
+    average = Station.objects.get(code='current')
     if average is None:
-        return HttpResponseNotFound('Could not access average weather.')
+        return HttpResponseNotFound('Could not access current weather.')
 
     # loop all sensors
-    data = {}
+    sensors = {}
     time = None
     for sensor in Sensor.objects.all():
         # create, if necessary
-        if sensor.type.code not in data:
-            data[sensor.type.code] = {
-                'code': sensor.type.code,
-                'name': sensor.type.name,
-                'unit': sensor.type.unit,
+        if sensor.type.code not in sensors:
+            sensors[sensor.type.code] = {
                 'good': True,
                 'value': None
             }
 
         # set it
-        data[sensor.type.code]['good'] = sensor.good and data[sensor.type.code]['good']
+        sensors[sensor.type.code]['good'] = sensor.good and sensors[sensor.type.code]['good']
 
         # is average sensor?
         if sensor.station == average:
@@ -95,22 +92,19 @@ def current(request):
             value = Value.objects.filter(sensor=sensor).order_by('-time').first()
 
             # set it
-            data[sensor.type.code]['value'] = None if value is None else value.value
+            sensors[sensor.type.code]['value'] = None if value is None else value.value
             time = value.time
-
-    # get list of sensors
-    sensors = sorted(data.values(), key=lambda d: d['code'])
 
     # totally good?
     good = True
-    for sensor in sensors:
+    for sensor in sensors.values():
         good = good and sensor['good']
 
     # return all
     return JsonResponse({
         'time': time,
         'good': good,
-        'sensors': list(sensors)
+        'sensors': sensors
     })
 
 

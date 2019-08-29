@@ -21,11 +21,14 @@ class OverView(TemplateView):
                 # get latest value
                 values.append(Value.objects.filter(sensor=sensor).order_by('-time').first())
 
-        # get plot sensor types
+        # get sensor types
+        value_types = []
         plot_types = []
-        for sensor in Sensor.objects.filter(station__history=True):
-            if sensor.type not in plot_types:
-                plot_types.append(sensor.type)
+        for sensor_type in SensorType.objects.all():
+            if sensor_type.code in settings.WEATHER_SENSORS:
+                value_types.append(sensor_type)
+            if sensor_type.code in settings.WEATHER_PLOTS:
+                plot_types.append(sensor_type)
 
         # get location
         location = EarthLocation(lon=settings.OBSERVER_LOCATION['longitude'] * u.deg,
@@ -40,8 +43,8 @@ class OverView(TemplateView):
 
         # return it
         return {
-            'current': values,
             'site': settings.OBSERVER_NAME,
+            'value_types': value_types,
             'plot_types': plot_types,
             'location': {
                 'longitude': lon,
