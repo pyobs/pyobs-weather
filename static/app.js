@@ -18,7 +18,7 @@ function plot(canvas) {
             // format data
             let data = [];
             station.data.forEach(function (value) {
-                data.push({t: new Date(value.time), y: value.value})
+                data.push({t: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.value})
             });
 
             // create plot dict
@@ -45,10 +45,19 @@ function plot(canvas) {
                 scales: {
                     xAxes: [{
                         type: 'time',
+                        time: {
+                            tooltipFormat: 'YYYY-MM-DD HH:mm.ss',
+                            displayFormats: {
+                                millisecond: 'HH:mm',
+                                second: 'HH:mm',
+                                minute: 'HH:mm',
+                                hour: 'HH:mm'
+                            }
+                        },
                         distribution: 'linear',
                         scaleLabel: {
                             display: true,
-                            labelString: 'Time [UT]'
+                            labelString: 'Time [UT]',
                         }
                     }],
                     yAxes: [{
