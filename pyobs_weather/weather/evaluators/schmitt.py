@@ -11,8 +11,6 @@ class SchmittTrigger:
         value = Value.objects.filter(sensor=sensor).order_by('-time').first()
 
         # are we good?
-        if sensor.id == 4:
-            print(['schmitt', sensor.good, value.value, self._bad, self._good])
         if sensor.good is True or sensor.good is None:
             # if current value of sensor is good, we must be below bad to stay good
             is_good = value.value < self._bad
