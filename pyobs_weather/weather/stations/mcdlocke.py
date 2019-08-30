@@ -128,17 +128,24 @@ class McDonaldLocke:
         rain = s[8] == 'Y'
 
         # got all values, now add them
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='temp'),
-                                    time=time, value=temp)
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='humid'),
-                                    time=time, value=humid)
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='press'),
-                                    time=time, value=press)
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='winddir'),
-                                    time=time, value=wind_dir)
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='windspeed'),
-                                    time=time, value=wind_speed)
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='particles'),
-                                    time=time, value=particles)
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='rain'),
-                                    time=time, value=rain)
+        McDonaldLocke._add_value(sensor=Sensor.objects.get(station=station, type__code='temp'),
+                                 time=time, value=temp)
+        McDonaldLocke._add_value(sensor=Sensor.objects.get(station=station, type__code='humid'),
+                                 time=time, value=humid)
+        McDonaldLocke._add_value(sensor=Sensor.objects.get(station=station, type__code='press'),
+                                 time=time, value=press)
+        McDonaldLocke._add_value(sensor=Sensor.objects.get(station=station, type__code='winddir'),
+                                 time=time, value=wind_dir)
+        McDonaldLocke._add_value(sensor=Sensor.objects.get(station=station, type__code='windspeed'),
+                                 time=time, value=wind_speed)
+        McDonaldLocke._add_value(sensor=Sensor.objects.get(station=station, type__code='particles'),
+                                 time=time, value=particles)
+        McDonaldLocke._add_value(sensor=Sensor.objects.get(station=station, type__code='rain'),
+                                 time=time, value=rain)
+
+    @staticmethod
+    def _add_value(sensor, time, value):
+        try:
+            Value.objects.get(sensor=sensor, time=time)
+        except Value.DoesNotExist:
+            Value.objects.create(sensor=sensor, time=time, value=value)

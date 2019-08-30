@@ -46,7 +46,7 @@ def evaluate():
     from pyobs_weather.weather.models import Station
 
     # get now
-    now = datetime.utcnow()
+    now = datetime.utcnow().astimezone(pytz.UTC)
 
     # loop all stations
     for station in Station.objects.all():
@@ -72,20 +72,26 @@ def evaluate():
                 is_good = None
 
             # status changed?
-            if is_good != sensor.good:
-                # reset good/bad since
-                sensor.bad_since = None
-                sensor.good_since = None
+            if is_good is not None and is_good != sensor.good:
+                # set good/bad since, if necessary
                 if is_good is True:
-                    sensor.good_since = now
-                elif is_good is False:
-                    sensor.bad_since = now
+                    if sensor.good_since is None:
+                        sensor.good_since = now
+                    sensor.bad_since = None
+                else:
+                    if sensor.bad_since is None:
+                        sensor.bad_since = now
+                    sensor.good_since = None
+            else:
+                # reset both
+                sensor.good_since = None
+                sensor.bad_since = None
 
             # if there's a delay, we may want to switch back
             if sensor.good and sensor.bad_since and (now - sensor.bad_since).total_seconds() < sensor.delay_bad:
-                is_good = sensor.good
-            if not sensor.good and sensor.good_since and (now - sensor.good_since).total_seconds() < sensor.delay_bad:
-                is_good = sensor.good
+                is_good = True
+            if not sensor.good and sensor.good_since and (now - sensor.good_since).total_seconds() < sensor.delay_good:
+                is_good = False
 
             # did status still change?
             if is_good is not None and is_good != sensor.good:
