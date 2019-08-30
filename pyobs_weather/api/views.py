@@ -156,3 +156,26 @@ def history(request, sensor_type):
         })
 
     return JsonResponse(stations, safe=False)
+
+
+def sensors(request):
+    # get all sensors
+    data = Sensor.objects.all()
+
+    # add station and type
+    data = data.annotate(station_code=F('station__code'), station_name=F('station__name'))
+    data = data.annotate(type_code=F('type__code'), type_name=F('type__name'), unit=F('type__unit'))
+
+    # order
+    data = data.order_by('station_name', 'type_name')
+
+    # get values
+    values = list(data.values())
+
+    # add latest value
+    for i, sensor in enumerate(data):
+        val = Value.objects.filter(sensor=sensor).order_by('-time').first()
+        values[i]['value'] = None if val is None else val.value
+
+    # return all
+    return JsonResponse(values, safe=False)

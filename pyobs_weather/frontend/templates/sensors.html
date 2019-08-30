@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <div id="app">
+        <h3>Sensor status at [[ time ]]</h3>
+        <table class="table table-striped table-hover">
+            <thead class="thead-dark">
+            <tr>
+                <th>station</th>
+                <th>sensor</th>
+                <th>value</th>
+                <th>good</th>
+                <th>since</th>
+                <th>comment</th>
+            </tr>
+            </thead>
+            <tr v-for="sensor in sensors"
+                v-bind:style="{ color: sensor.good === null ? 'black' : sensor.good ? 'green' : 'red' }">
+                <td>[[ sensor.station_name ]]</td>
+                <td>[[ sensor.type_name ]]</td>
+                <td>
+                    <strong>[[ sensor.value ]]</strong>
+                    <small v-if="sensor.value !== null">[[ sensor.unit ]]</small>
+                </td>
+                <td>[[ sensor.good ]]</td>
+                <td>[[ sensor.since ]]</td>
+                <td>[[ sensor.comment ]]</td>
+            </tr>
+        </table>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "vue.min.js" %}"></script>
+    <script src="{% static "app-sensors.js" %}"></script>
+{% endblock %}

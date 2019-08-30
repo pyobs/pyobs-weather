@@ -71,5 +71,9 @@ class OverView(TemplateView):
         }
 
 
+class SensorsView(TemplateView):
+    template_name = "sensors.html"
+
+
 class Documentation(TemplateView):
     template_name = "documentation.html"

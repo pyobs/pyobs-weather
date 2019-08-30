@@ -8,10 +8,6 @@
     <link rel="stylesheet" href="{% static "bootstrap.min.css" %}">
     <link rel="stylesheet" href="{% static "Chart.min.css" %}">
     <link rel="stylesheet" href="{% static "styles.css" %}">
-    <script src="{% static "jquery.min.js" %}"></script>
-    <script src="{% static "moment.min.js" %}"></script>
-    <script src="{% static "Chart.min.js" %}"></script>
-    <script src="{% static "app.js" %}"></script>
 </head>
 <body>
 
@@ -29,6 +25,14 @@
                 <li class="nav-item {% if request.resolver_match.url_name == "home" %}active{% endif %}">
                     <a class="nav-link" href="{% url 'home' %}">Home
                         {% if active == "home" %}
+                            <span class="sr-only">(current)</span>
+                        {% endif %}
+                    </a>
+                </li>
+
+                <li class="nav-item {% if request.resolver_match.url_name == "sensors" %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'sensors' %}">Sensors
+                        {% if active == "sensors" %}
                             <span class="sr-only">(current)</span>
                         {% endif %}
                     </a>
@@ -52,5 +56,14 @@
     {% block content %}
     {% endblock %}
 </div>
+
+<script src="{% static "jquery.min.js" %}"></script>
+<script src="{% static "moment.min.js" %}"></script>
+<script src="{% static "Chart.min.js" %}"></script>
+<script src="{% static "app.js" %}"></script>
+
+{% block scripts %}
+{% endblock %}
+
 </body>
 </html>

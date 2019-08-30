@@ -10,5 +10,6 @@ urlpatterns = [
     path('stations/<str:station_code>/', views.station_detail, name='station_detail'),
     path('stations/<str:station_code>/<str:sensor_code>/', views.sensor_detail, name='sensor_detail'),
     path('history/', views.history_types, name='history_types'),
-    path('history/<str:sensor_type>/', views.history, name='history')
+    path('history/<str:sensor_type>/', views.history, name='history'),
+    path('sensors/', views.sensors, name='sensor_status'),
 ]
