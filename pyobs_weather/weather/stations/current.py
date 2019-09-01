@@ -43,7 +43,7 @@ class Current:
                         values.append(value.value)
 
             # calculate average
-            avg = np.nanmean(values) if values else None
+            avg = np.mean(values) if values else None
 
             # and store it
             sensor, _ = Sensor.objects.get_or_create(station=station, type=sensor_type)
