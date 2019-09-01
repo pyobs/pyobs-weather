@@ -4,12 +4,13 @@ import pytz
 from astropy.time import Time
 import requests
 
+from .station import WeatherStation
 from pyobs_weather.weather.models import Value, Sensor, SensorType
 
 log = logging.getLogger(__name__)
 
 
-class Monet:
+class Monet(WeatherStation):
     def __init__(self, url='https://monet.as.utexas.edu/', current=False):
         self._url = url
         self._curent = current
@@ -53,16 +54,16 @@ class Monet:
         time = Time(weather['time']).to_datetime(pytz.UTC)
 
         # got all values, now add them
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='temp'),
-                                    time=time, value=weather['temp'])
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='humid'),
-                                    time=time, value=weather['humid'])
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='winddir'),
-                                    time=time, value=weather['winddir'])
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='windspeed'),
-                                    time=time, value=weather['windspeed'])
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='rain'),
-                                    time=time, value=weather['rain'])
+        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='temp'),
+                                  time=time, value=weather['temp'])
+        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='humid'),
+                                  time=time, value=weather['humid'])
+        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='winddir'),
+                                  time=time, value=weather['winddir'])
+        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='windspeed'),
+                                  time=time, value=weather['windspeed'])
+        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='rain'),
+                                  time=time, value=weather['rain'])
 
     def _update_average(self, station):
         # do request
@@ -80,13 +81,13 @@ class Monet:
         time = Time(weather['time']).to_datetime(pytz.UTC)
 
         # got all values, now add them
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='temp'),
-                                    time=time, value=weather['temp']['avg'])
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='humid'),
-                                    time=time, value=weather['humid']['avg'])
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='winddir'),
-                                    time=time, value=weather['winddir']['avg'])
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='windspeed'),
-                                    time=time, value=weather['windspeed']['avg'])
-        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='rain'),
-                                    time=time, value=weather['rain']['max'])
+        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='temp'),
+                                  time=time, value=weather['temp']['avg'])
+        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='humid'),
+                                  time=time, value=weather['humid']['avg'])
+        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='winddir'),
+                                  time=time, value=weather['winddir']['avg'])
+        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='windspeed'),
+                                  time=time, value=weather['windspeed']['avg'])
+        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='rain'),
+                                  time=time, value=weather['rain']['max'])
