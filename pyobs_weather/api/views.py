@@ -10,7 +10,7 @@ from pyobs_weather.weather.models import Station, Sensor, Value, SensorType
 
 def stations_list(request):
     # get list of stations and return them
-    stations = Station.objects.values('name', 'code')
+    stations = Station.objects.filter(active=True).values('name', 'code')
     return JsonResponse(list(stations), safe=False)
 
 
@@ -75,7 +75,7 @@ def current(request):
     # loop all sensors
     sensors = {}
     time = None
-    for sensor in Sensor.objects.all():
+    for sensor in Sensor.objects.filter(station__active=True):
         # create, if necessary
         if sensor.type.code not in sensors:
             sensors[sensor.type.code] = {
@@ -141,7 +141,7 @@ def history(request, sensor_type):
 
     # loop all sensors of that type
     stations = []
-    for sensor in Sensor.objects.filter(type=st, station__history=True):
+    for sensor in Sensor.objects.filter(type=st, station__history=True, station__active=True):
         # get data
         values = Value.objects.filter(sensor=sensor,
                                       time__gte=start.to_datetime(pytz.UTC),
@@ -160,7 +160,7 @@ def history(request, sensor_type):
 
 def sensors(request):
     # get all sensors
-    data = Sensor.objects.all()
+    data = Sensor.objects.filter(station__active=True)
 
     # add station and type
     data = data.annotate(station_code=F('station__code'), station_name=F('station__name'))
