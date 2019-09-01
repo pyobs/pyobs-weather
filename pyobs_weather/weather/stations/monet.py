@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 
 class Monet:
-    def __init__(self, url='https://monet.as.utexas.edu/?type=1min'):
+    def __init__(self, url='https://monet.as.utexas.edu/?type=current'):
         self._url = url
 
     @staticmethod
