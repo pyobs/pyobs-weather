@@ -67,7 +67,7 @@ class Monet(WeatherStation):
 
     def _update_average(self, station):
         # do request
-        r = requests.get(self._url + '?type=1min')
+        r = requests.get(self._url + '?type=5min')
 
         # check code
         if r.status_code != 200:
