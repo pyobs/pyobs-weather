@@ -58,6 +58,7 @@ class MySQL:
         # nothing?
         if row is None:
             logging.error('Result from database is empty.')
+            return
 
         # evaluate row
         time = (Time(row[0]) + TimeDelta(self.time_offset * u.second)).to_datetime(pytz.UTC)
