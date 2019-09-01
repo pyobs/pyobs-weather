@@ -10,8 +10,9 @@ log = logging.getLogger(__name__)
 
 
 class Monet:
-    def __init__(self, url='https://monet.as.utexas.edu/?type=current'):
+    def __init__(self, url='https://monet.as.utexas.edu/', current=False):
         self._url = url
+        self._curent = current
 
     @staticmethod
     def create_sensors(station):
@@ -31,9 +32,14 @@ class Monet:
 
     def update(self, station):
         log.info('Updating MONET station %s...' % station.code)
+        if self._curent:
+            self._update_current(station)
+        else:
+            self._update_average(station)
 
+    def _update_current(self, station):
         # do request
-        r = requests.get(self._url)
+        r = requests.get(self._url + '?type=current')
 
         # check code
         if r.status_code != 200:
@@ -57,3 +63,30 @@ class Monet:
                                     time=time, value=weather['windspeed'])
         Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='rain'),
                                     time=time, value=weather['rain'])
+
+    def _update_average(self, station):
+        # do request
+        r = requests.get(self._url + '?type=1min')
+
+        # check code
+        if r.status_code != 200:
+            logging.error('Could not connect to McDonald weather station.')
+            return
+
+        # get weather
+        weather = r.json()
+
+        # get time
+        time = Time(weather['time']).to_datetime(pytz.UTC)
+
+        # got all values, now add them
+        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='temp'),
+                                    time=time, value=weather['temp']['avg'])
+        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='humid'),
+                                    time=time, value=weather['humid']['avg'])
+        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='winddir'),
+                                    time=time, value=weather['winddir']['avg'])
+        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='windspeed'),
+                                    time=time, value=weather['windspeed']['avg'])
+        Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code='rain'),
+                                    time=time, value=weather['rain']['max'])
