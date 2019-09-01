@@ -10,6 +10,9 @@ log = logging.getLogger(__name__)
 
 
 class Monet:
+    def __init__(self, url='https://monet.as.utexas.edu/?type=1min'):
+        self._url = url
+
     @staticmethod
     def create_sensors(station):
         # get or create types
@@ -26,12 +29,11 @@ class Monet:
         Sensor.objects.get_or_create(station=station, type=type_windspeed)
         Sensor.objects.get_or_create(station=station, type=type_rain)
 
-    @staticmethod
-    def update(station):
+    def update(self, station):
         log.info('Updating MONET station %s...' % station.code)
 
         # do request
-        r = requests.get('https://monet.as.utexas.edu/?type=current')
+        r = requests.get(self._url)
 
         # check code
         if r.status_code != 200:
