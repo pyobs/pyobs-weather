@@ -141,6 +141,9 @@ WEATHER_PLOTS = ['temp', 'humid', 'press', 'windspeed', 'winddir', 'rain', 'skyt
 OBSERVER_NAME = 'MONET/N @ McDonald Observatory'
 OBSERVER_LOCATION = {'longitude': -104.0217, 'latitude': 30.6717, 'elevation': 2075.}
 
+# window title
+WINDOW_TITLE = 'Weather at ' + OBSERVER_NAME
+
 # try to import a local_settings.py
 try:
     from .local_settings import *

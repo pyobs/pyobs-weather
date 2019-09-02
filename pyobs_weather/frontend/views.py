@@ -59,6 +59,7 @@ class OverView(TemplateView):
         # return it
         return {
             'site': settings.OBSERVER_NAME,
+            'title': settings.WINDOW_TITLE,
             'value_types': value_types,
             'plot_types': plot_types,
             'location': {
@@ -74,6 +75,12 @@ class OverView(TemplateView):
 class SensorsView(TemplateView):
     template_name = "sensors.html"
 
+    def get_context_data(self, *args, **kwargs):
+        return {'title': settings.WINDOW_TITLE + ' (sensors)'}
+
 
 class Documentation(TemplateView):
     template_name = "documentation.html"
+
+    def get_context_data(self, *args, **kwargs):
+        return {'title': settings.WINDOW_TITLE + ' (documentation)'}
