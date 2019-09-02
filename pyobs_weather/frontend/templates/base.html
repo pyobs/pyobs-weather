@@ -3,11 +3,11 @@
 <html>
 <head>
     <title>{{ title }}</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static "favicon-32x32.png" %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static "favicon-16x16.png" %}">
-    <link rel="stylesheet" href="{% static "vendor/bootstrap.min.css" %}">
-    <link rel="stylesheet" href="{% static "vendor/Chart.min.css" %}">
-    <link rel="stylesheet" href="{% static "styles.css" %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static "frontend/img/favicon-32x32.png" %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static "frontend/img/favicon-16x16.png" %}">
+    <link rel="stylesheet" href="{% static "frontend/css/vendor/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "frontend/css/vendor/Chart.min.css" %}">
+    <link rel="stylesheet" href="{% static "frontend/css/styles.css" %}">
 </head>
 <body>
 
@@ -57,9 +57,9 @@
     {% endblock %}
 </div>
 
-<script src="{% static "vendor/jquery.min.js" %}"></script>
-<script src="{% static "vendor/moment.min.js" %}"></script>
-<script src="{% static "app.js" %}"></script>
+<script src="{% static "frontend/js/vendor/jquery.min.js" %}"></script>
+<script src="{% static "frontend/js/vendor/moment.min.js" %}"></script>
+<script src="{% static "frontend/js/app.js" %}"></script>
 
 {% block scripts %}
 {% endblock %}
