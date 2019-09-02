@@ -1,0 +1,91 @@
+@font-face {
+    font-family: 'Alegreya';
+    src:
+        local('Alegreya'),
+        local('Alegreya-Regular'),
+        url('/static/webfont/Alegreya-Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Alegreya';
+    src:
+        local('Alegreya-Bold'),
+        url('/static/webfont/Alegreya-Bold.ttf');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src:
+        local('Roboto')
+        local('Roboto-Regular'),
+        url('/static/webfont/Roboto-Bold.ttf');
+    font-weight: bold;
+    font-style: normal;
+}
+
+body {
+    font-family: 'Roboto', serif;
+    font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6, th, nav {
+    font-family: 'Alegreya', serif;
+    font-size: 24px;
+}
+
+table#current {
+    width: 100%;
+    text-align: center;
+}
+
+table#current th {
+    font-weight: normal;
+    font-size: small;
+    padding: 0;
+}
+
+table#current td {
+    font-weight: bold;
+    font-size: xx-large;
+    padding: 0;
+}
+
+#main {
+    margin-top: 70px;
+}
+
+#header {
+    text-align: center;
+    margin-bottom: 2em;
+}
+
+#header p {
+    margin: 0;
+}
+
+div.current {
+    text-align: center;
+}
+
+h4.sensor {
+    font-family: 'Alegreya', serif;
+    font-size: small;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+p.sensorValue {
+    font-size: xx-large;
+    font-weight: bold;
+    line-height: 80%;
+    margin: 0;
+}
+
+p.sensorUnit {
+    font-size: x-small;
+    font-weight: normal;
+}

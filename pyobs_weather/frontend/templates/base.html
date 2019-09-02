@@ -3,10 +3,10 @@
 <html>
 <head>
     <title>{{ title }}</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
-    <link rel="stylesheet" href="{% static "bootstrap.min.css" %}">
-    <link rel="stylesheet" href="{% static "Chart.min.css" %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static "favicon-32x32.png" %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static "favicon-16x16.png" %}">
+    <link rel="stylesheet" href="{% static "vendor/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "vendor/Chart.min.css" %}">
     <link rel="stylesheet" href="{% static "styles.css" %}">
 </head>
 <body>
@@ -57,8 +57,8 @@
     {% endblock %}
 </div>
 
-<script src="{% static "jquery.min.js" %}"></script>
-<script src="{% static "moment.min.js" %}"></script>
+<script src="{% static "vendor/jquery.min.js" %}"></script>
+<script src="{% static "vendor/moment.min.js" %}"></script>
 <script src="{% static "app.js" %}"></script>
 
 {% block scripts %}
