@@ -70,6 +70,13 @@ class Station(models.Model):
             args='["%s"]' % self.code
         )
 
+    def delete(self, *args, **kwargs):
+        # delete period task
+        PeriodicTask.objects.filter(name=self.name).delete()
+
+        # delete myself
+        models.Model.delete(self, *args, **kwargs)
+
 
 class SensorType(models.Model):
     """A sensor type."""
