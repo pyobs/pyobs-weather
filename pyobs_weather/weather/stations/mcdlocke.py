@@ -5,35 +5,23 @@ from astropy.time import Time
 import requests
 
 from .station import WeatherStation
-from pyobs_weather.weather.models import Value, Sensor, SensorType
 
 log = logging.getLogger(__name__)
 
 
 class McDonaldLocke(WeatherStation):
-    @staticmethod
-    def create_sensors(station):
-        # get or create types
-        type_temp, _ = SensorType.objects.get_or_create(code='temp', name='Temperature', unit='°C')
-        type_humid, _ = SensorType.objects.get_or_create(code='humid', name='Relative humidity', unit='%')
-        type_press, _ = SensorType.objects.get_or_create(code='press', name='Pressure', unit='hPa')
-        type_winddir, _ = SensorType.objects.get_or_create(code='winddir', name='Wind dir', unit='°E of N')
-        type_windspeed, _ = SensorType.objects.get_or_create(code='windspeed', name='Wind speed', unit='km/h')
-        type_particles, _ = SensorType.objects.get_or_create(code='particles', name='Particle count', unit='ppcm')
-        type_rain, _ = SensorType.objects.get_or_create(code='rain', name='Raining', unit='0/1')
+    def create_sensors(self):
+        """Create all sensors."""
+        self._add_sensor('temp')
+        self._add_sensor('humid')
+        self._add_sensor('press')
+        self._add_sensor('winddir')
+        self._add_sensor('windspeed')
+        self._add_sensor('particles')
+        self._add_sensor('rain')
 
-        # get or create sensors
-        Sensor.objects.get_or_create(station=station, type=type_temp)
-        Sensor.objects.get_or_create(station=station, type=type_humid)
-        Sensor.objects.get_or_create(station=station, type=type_press)
-        Sensor.objects.get_or_create(station=station, type=type_winddir)
-        Sensor.objects.get_or_create(station=station, type=type_windspeed)
-        Sensor.objects.get_or_create(station=station, type=type_particles)
-        Sensor.objects.get_or_create(station=station, type=type_rain)
-
-    @staticmethod
-    def update(station):
-        log.info('Updating McDonald Locke station %s...' % station.code)
+    def update(self):
+        log.info('Updating McDonald Locke station %s...' % self._station.code)
 
         # do request
         r = requests.get('http://weather.as.utexas.edu/latest_5min.dat')
@@ -129,17 +117,13 @@ class McDonaldLocke(WeatherStation):
         rain = s[8] == 'Y'
 
         # got all values, now add them
-        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='temp'),
-                                  time=time, value=temp)
-        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='humid'),
-                                  time=time, value=humid)
-        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='press'),
-                                  time=time, value=press)
-        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='winddir'),
-                                  time=time, value=wind_dir)
-        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='windspeed'),
-                                  time=time, value=wind_speed)
-        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='particles'),
-                                  time=time, value=particles)
-        WeatherStation._add_value(sensor=Sensor.objects.get(station=station, type__code='rain'),
-                                  time=time, value=rain)
+        self._add_value('temp', time, temp)
+        self._add_value('humid', time, humid)
+        self._add_value('press', time, press)
+        self._add_value('winddir', time, wind_dir)
+        self._add_value('windspeed', time, wind_speed)
+        self._add_value('particles', time, particles)
+        self._add_value('rain', time, rain)
+
+
+__all__ = ['McDonaldLocke']

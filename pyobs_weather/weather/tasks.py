@@ -24,8 +24,8 @@ def update_stations(station_code: str):
 
     # get class and update station
     kls = get_class(station.class_name)
-    obj = kls(**json.loads(station.kwargs))
-    obj.update(station)
+    obj = kls(**json.loads(station.kwargs), station=station)
+    obj.update()
 
 
 def create_evaluator(evaluator):

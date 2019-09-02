@@ -43,9 +43,9 @@ class Station(models.Model):
         models.Model.save(self, *args, **kwargs)
 
         # create sensors for station
-        station_class = get_class(self.class_name)
-        obj = station_class(**json.loads(self.kwargs))
-        obj.create_sensors(self)
+        kls = get_class(self.class_name)
+        obj = kls(**json.loads(self.kwargs), station=self)
+        obj.create_sensors()
 
         # if exists, delete old schedule
         try:

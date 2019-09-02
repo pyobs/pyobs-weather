@@ -4,13 +4,14 @@ import pytz
 from astropy.time import Time, TimeDelta
 import astropy.units as u
 
-from pyobs_weather.weather.models import Value, Sensor, SensorType
+from pyobs_weather.weather.models import Sensor, SensorType
+from .station import WeatherStation
 
 log = logging.getLogger(__name__)
 
 
-class MySQL:
-    def __init__(self, connect, table, fields, time: str = 'time', time_offset: int = 0):
+class MySQL(WeatherStation):
+    def __init__(self, connect, table, fields, time: str = 'time', time_offset: int = 0, *args, **kwargs):
         """Creates a new Database station.
 
         Args:
@@ -21,24 +22,27 @@ class MySQL:
                         e.g. {table.column: {code="temp", name="Temperature", unit="C"}}
             time_offset: Offset in seconds to add to current time to get UTC.
         """
+        WeatherStation.__init__(self, *args, **kwargs)
         self.connect = connect
         self.table = table
         self.time = time
         self.time_offset = time_offset
         self.fields = fields
 
-    def create_sensors(self, station):
+    def create_sensors(self):
         # loop all fields
-        types = {}
         for field, typ in self.fields.items():
-            # get or create sensor type
-            sensor_type, _ = SensorType.objects.get_or_create(code=typ['code'], name=typ['name'], unit=typ['unit'])
+            if 'name' in typ and 'unit' in typ:
+                # get or create sensor type
+                sensor_type, _ = SensorType.objects.get_or_create(code=typ['code'], name=typ['name'], unit=typ['unit'])
+            else:
+                sensor_type = self._add_sensor(typ['code'])
 
             # get or create sensor
-            Sensor.objects.get_or_create(station=station, type=sensor_type)
+            Sensor.objects.get_or_create(station=self._station, type=sensor_type)
 
-    def update(self, station):
-        log.info('Updating Database station %s...' % station.code)
+    def update(self):
+        log.info('Updating Database station %s...' % self._station.code)
 
         # connect to DB
         db = MySQLdb.connect(**self.connect)
@@ -65,5 +69,7 @@ class MySQL:
 
         # other values
         for cfg, value in zip(self.fields.values(), row[1:]):
-            Value.objects.get_or_create(sensor=Sensor.objects.get(station=station, type__code=cfg['code']),
-                                        time=time, value=value)
+            self._add_value(cfg['code'], time, value)
+
+
+__all__ = ['MySQL']
