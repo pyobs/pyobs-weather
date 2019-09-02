@@ -44,7 +44,7 @@ class Average(WeatherStation):
             avg = np.nanmean(values) if values else None
 
             # and store it
-            sensor = self._add_sensor(sensor_type)
+            sensor = self._add_sensor(sensor_type.code)
             Value.objects.get_or_create(sensor=sensor, time=now, value=avg)
 
 
