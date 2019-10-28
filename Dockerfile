@@ -9,4 +9,4 @@ COPY requirements.txt /pyobs-weather/
 RUN pip install -r requirements.txt
 COPY . /pyobs-weather/
 RUN ./manage.py collectstatic --noinput
-CMD gunicorn pyobs_weather.wsgi
+CMD gunicorn --bind 0.0.0.0:8002 --workers=6 --threads=3 --worker-class=gthread pyobs_weather.wsgi
