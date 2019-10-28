@@ -43,9 +43,9 @@ class Station(models.Model):
         models.Model.save(self, *args, **kwargs)
 
         # create sensors for station
-        station_class = get_class(self.class_name)
-        obj = station_class(**json.loads(self.kwargs))
-        obj.create_sensors(self)
+        kls = get_class(self.class_name)
+        obj = kls(**json.loads(self.kwargs), station=self)
+        obj.create_sensors()
 
         # if exists, delete old schedule
         try:
@@ -69,6 +69,13 @@ class Station(models.Model):
             task='pyobs_weather.weather.tasks.update_stations',
             args='["%s"]' % self.code
         )
+
+    def delete(self, *args, **kwargs):
+        # delete period task
+        PeriodicTask.objects.filter(name=self.name).delete()
+
+        # delete myself
+        models.Model.delete(self, *args, **kwargs)
 
 
 class SensorType(models.Model):

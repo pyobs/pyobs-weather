@@ -1,22 +1,20 @@
 import logging
 from datetime import datetime, timedelta
-
 import numpy as np
-import pandas as pd
 import pytz
+
+from .station import WeatherStation
 
 
 log = logging.getLogger(__name__)
 
 
-class Current:
-    @staticmethod
-    def create_sensors(station):
+class Current(WeatherStation):
+    def create_sensors(self):
         pass
 
-    @staticmethod
-    def update(station):
-        from pyobs_weather.weather.models import Station, SensorType, Sensor, Value
+    def update(self):
+        from pyobs_weather.weather.models import SensorType, Sensor, Value
         log.info('Updating current...')
 
         # get now
@@ -46,5 +44,8 @@ class Current:
             avg = np.mean(values) if values else None
 
             # and store it
-            sensor, _ = Sensor.objects.get_or_create(station=station, type=sensor_type)
+            sensor = self._add_sensor(sensor_type.code)
             Value.objects.get_or_create(sensor=sensor, time=now, value=avg)
+
+
+__all__ = ['Current']

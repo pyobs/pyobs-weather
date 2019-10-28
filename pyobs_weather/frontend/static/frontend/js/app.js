@@ -141,6 +141,8 @@ function update_values() {
 }
 
 $(function () {
+    Chart.defaults.global.defaultFontFamily = 'Alegreya';
+
     update_plots();
     update_values();
 });
