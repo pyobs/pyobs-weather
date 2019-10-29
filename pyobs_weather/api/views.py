@@ -1,9 +1,7 @@
-import pytz
-from astropy.time import Time, TimeDelta
-import astropy.units as u
+from datetime import datetime, timedelta
+import dateutil.parser
 from django.db.models import F
 from django.http import JsonResponse, HttpResponseNotFound
-from django.shortcuts import render
 
 from pyobs_weather.weather.models import Station, Sensor, Value, SensorType
 
@@ -133,19 +131,18 @@ def history(request, sensor_type):
 
     # parse
     if start is not None and end is not None:
-        start = Time(start)
-        end = Time(end)
+        start = dateutil.parser.parse(start)
+        end = dateutil.parser.parse(end)
     else:
-        end = Time.now()
-        start = end - TimeDelta(1 * u.day)
+        end = datetime.utcnow()
+        start = end - timedelta(days=1)
 
     # loop all sensors of that type
     stations = []
     for sensor in Sensor.objects.filter(type=st, station__history=True, station__active=True):
         # get data
-        values = Value.objects.filter(sensor=sensor,
-                                      time__gte=start.to_datetime(pytz.UTC),
-                                      time__lte=end.to_datetime(pytz.UTC)).order_by('-time').values('time', 'value')
+        values = Value.objects.filter(sensor=sensor, time__gte=start, time__lte=end)\
+            .order_by('-time').values('time', 'value')
 
         # store it
         stations.append({
