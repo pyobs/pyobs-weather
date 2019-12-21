@@ -42,9 +42,9 @@ class OverView(TemplateView):
                                  height=settings.OBSERVER_LOCATION['elevation'] * u.m)
 
         # lon and lat
-        lon = location.longitude.to_string(sep='°\'"', precision=1)
+        lon = location.lon.to_string(sep='°\'"', precision=1)
         lon = lon[1:] + ' W' if lon[0] == '-' else lon + ' E'
-        lat = location.latitude.to_string(sep='°\'"', precision=1)
+        lat = location.lat.to_string(sep='°\'"', precision=1)
         lat = lat[1:] + ' S' if lat[0] == '-' else lat + ' N'
 
         # get next sunrise and sunset

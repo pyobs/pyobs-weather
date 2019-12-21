@@ -25,7 +25,7 @@
             <div id="header">
                 <h2>{{ site }}</h2>
                 <p>
-                    {{ location.longitude }}, {{ location.latitude }}, {{ location.elevation|floatformat:0 }}m
+                    {{ location.lon }}, {{ location.lat }}, {{ location.elevation|floatformat:0 }}m
                 </p>
                 <p>
                     sunset: {{ sunset|date:'H:i' }} sunrise: {{ sunrise|date:'H:i' }} [UT]
