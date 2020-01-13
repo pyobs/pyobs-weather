@@ -19,7 +19,13 @@ class MySQL(WeatherStation):
             table: Database table.
             time: Name of column containing time.
             fields: Dictionary with field->SensorType data,
-                        e.g. {table.column: {code="temp", name="Temperature", unit="C"}}
+                        e.g. {column: {code="temp", name="Temperature", unit="C"}}
+                    column: table column
+                    code: field code
+                    name: field name
+                    unit: field unit
+                    bool_true: if given, evaluate value to 1 if equal to this, otherwise 0
+                    bool_false: if given, evaluate value to 0 if equal to this, otherwise 1
             time_offset: Offset in seconds to add to current time to get UTC.
         """
         WeatherStation.__init__(self, *args, **kwargs)
@@ -69,6 +75,13 @@ class MySQL(WeatherStation):
 
         # other values
         for cfg, value in zip(self.fields.values(), row[1:]):
+            # boolean?
+            if 'bool_true' in cfg:
+                value = 1 if cfg['bool_true'] == value else 0
+            elif 'bool_false' in cfg:
+                value = 0 if cfg['bool_false'] == value else 1
+
+            # add value
             self._add_value(cfg['code'], time, value)
 
 

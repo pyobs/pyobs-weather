@@ -10,7 +10,7 @@ class Boolean:
         value = Value.objects.filter(sensor=sensor).order_by('-time').first()
 
         # are we good?
-        is_good = value.value is True or value.value == 1
+        is_good = value.value is True or value.value != 0
         if self._invert:
             is_good = not is_good
 
