@@ -85,8 +85,6 @@ class McDonaldLockeArchive(WeatherStation):
                     # store it
                     values[col] = (t, float(s[i]))
 
-        print(values)
-
         # store values
         for field, (t, val) in values.items():
             # get code
