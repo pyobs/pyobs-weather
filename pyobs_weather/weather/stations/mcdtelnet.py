@@ -53,8 +53,8 @@ class McDonaldTelnet(WeatherStation):
         # add values
         self._add_value('temp', time, (values['Ambient'] - 32) / 1.8)
         self._add_value('skytemp', time, (values['Sky-ambient'] - 32) / 1.8)
-        self._add_value('windspeed', time, values['Wind speed'] / 1.609344)
-        self._add_value('rain', time, values['Wind Rain'])
+        self._add_value('windspeed', time, values['Wind Speed'] / 1.609344)
+        self._add_value('rain', time, values['Rain'])
 
 
 __all__ = ['McDonaldTelnet']
