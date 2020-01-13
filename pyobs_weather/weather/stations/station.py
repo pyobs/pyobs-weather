@@ -8,6 +8,7 @@ SENSOR_TYPES = dict(
     windspeec=dict(code='windspeed', name='Wind speed', unit='km/h'),
     particles=dict(code='particles', name='Particle count', unit='ppcm'),
     rain=dict(code='rain', name='Raining', unit=''),
+    skytemp=dict(code='skytemp', name='Rel sky temperature', unit='°C'),
     sunalt=dict(code='sunalt', name='Solar altitude', unit='°', average=False)
 )
 
@@ -27,6 +28,7 @@ class WeatherStation:
         try:
             # get it
             sensor_type = SensorType.objects.get(code=sensor_code)
+
         except SensorType.DoesNotExist:
             # do we have a description?
             if sensor_code not in SENSOR_TYPES:
