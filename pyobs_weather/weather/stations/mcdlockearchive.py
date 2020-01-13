@@ -23,7 +23,6 @@ class McDonaldLockeArchive(WeatherStation):
         WeatherStation.__init__(self, *args, **kwargs)
         self.fields = fields
         self.url = url
-        print(fields)
 
     def create_sensors(self):
         """Create all sensors."""
