@@ -55,10 +55,8 @@ class WeatherStation:
         # get sensor
         sensor = Sensor.objects.get(station=self._station, type__code=sensor_code)
 
-        # add value
-        val, _ = Value.objects.get_or_create(sensor=sensor, time=time)
-        val.value = value
-        val.save()
+        # create value
+        Value.objects.create(sensor=sensor, time=time, value=value)
 
 
 __all__ = ['WeatherStation']
