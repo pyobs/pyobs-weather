@@ -43,8 +43,11 @@ class Observer(WeatherStation):
         sun = get_sun(time)
 
         # create alt/az frame
-        altaz_frame = AltAz(location=location, obstime=time,
-                            pressure=press * u.hPa, temperature=temp * u.deg_C, relative_humidity=humid)
+        altaz_frame = AltAz(location=location,
+                            obstime=time,
+                            pressure=press * u.hPa if press is not None else None,
+                            temperature=temp * u.deg_C if temp is not None else None,
+                            relative_humidity=humid)
 
         # convert to alt/az
         sun_altaz = sun.transform_to(altaz_frame)
