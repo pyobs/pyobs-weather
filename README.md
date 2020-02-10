@@ -1,4 +1,4 @@
-# pyoby-weather
+# pyobs-weather
 
 pyobs-weather is an aggregator for data from several weather stations. Rules can be defined for when weather
 is defines to be "good". It provides both a web frontend and an API for access.
