@@ -9,12 +9,42 @@ log = logging.getLogger(__name__)
 
 
 class Monet(WeatherStation):
+    """The Monet weather station reads current weather information from a ThiesWS weather station."""
+
     def __init__(self, url='https://monet.as.utexas.edu/', current=False, *args, **kwargs):
+        """Initializes a new Monet weather station.
+
+        The URLs should be:
+
+        - https://monet.saao.ac.za/ for Monet/S
+
+        - https://monet.as.utexas.edu/ for Monet/N
+
+        Args:
+            url: URL of Monet weather station.
+            current: If True, latest values are fetched, otherwise a 5-minute average.
+        """
+
         WeatherStation.__init__(self, *args, **kwargs)
         self._url = url
-        self._curent = current
+        self._current = current
 
     def create_sensors(self):
+        """Entry point for creating sensors for this station.
+
+        These sensors are created:
+
+        - temp
+
+        - humid
+
+        - winddir
+
+        - windspeed
+
+        - press
+
+        - rain"""
         self._add_sensor('temp')
         self._add_sensor('humid')
         self._add_sensor('winddir')
@@ -23,13 +53,18 @@ class Monet(WeatherStation):
         self._add_sensor('rain')
 
     def update(self):
+        """Entry point for updating sensor values for this station.
+
+        This method reads the current weather information from Monet weather homepage."""
         log.info('Updating MONET station %s...' % self._station.code)
-        if self._curent:
+        if self._current:
             self._update_current()
         else:
             self._update_average()
 
     def _update_current(self):
+        """Fetch and update latest values."""
+
         # do request
         r = requests.get(self._url + '?type=current')
 
@@ -53,6 +88,8 @@ class Monet(WeatherStation):
         self._add_value('rain', time, weather['rain'])
 
     def _update_average(self):
+        """Fetch and update average values."""
+
         # do request
         r = requests.get(self._url + '?type=5min')
 

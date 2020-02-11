@@ -11,8 +11,32 @@ log = logging.getLogger(__name__)
 
 
 class MySQL(WeatherStation):
+    """The MySQL weather station reads current weather information from a MySQL database."""
+
     def __init__(self, connect, table, fields, time: str = 'time', time_offset: int = 0, *args, **kwargs):
         """Creates a new Database station.
+
+        A typical JSON configuration for this weather station might look like this:
+
+        |  {
+        |      "connect": {
+        |          "host": "database.com",
+        |          "user": "weather",
+        |          "password": "weather",
+        |          "db": "weather"
+        |      },
+        |      "table": "weather_table",
+        |      "time": "sensor_datetime",
+        |      "time_offset": -7200,
+        |      "fields": {
+        |          "temp": {"code": "temp", "name": "Temperature", "unit": "°C"},
+        |          "rel_hum": {"code": "humid", "name": "Relative humidity", "unit": "%"},
+        |          "temp_dew": {"code": "dewpoint", "name": "Dew point", "unit": "°C"},
+        |          "windsp": {"code": "windspeed", "name": "Wind speed", "unit": "km/h"},
+        |          "winddir": {"code": "winddir", "name": "Wind direction", "unit": "°E of N"},
+        |          "pressure": {"code": "press", "name": "Pressure", "unit": "hPa"}
+        |      }
+        |  }
 
         Args:
             connect: Dictionary with fields required by MySQLd.connect
@@ -26,8 +50,7 @@ class MySQL(WeatherStation):
                     unit: field unit
                     bool_true: if given, evaluate value to 1 if equal to this, otherwise 0
                     bool_false: if given, evaluate value to 0 if equal to this, otherwise 1
-            time_offset: Offset in seconds to add to current time to get UTC.
-        """
+            time_offset: Offset in seconds to add to current time to get UTC."""
         WeatherStation.__init__(self, *args, **kwargs)
         self.connect = connect
         self.table = table
@@ -36,6 +59,10 @@ class MySQL(WeatherStation):
         self.fields = fields
 
     def create_sensors(self):
+        """Entry point for creating sensors for this station.
+
+        New sensors are created based on the configuration."""
+
         # loop all fields
         for field, typ in self.fields.items():
             if 'name' in typ and 'unit' in typ:
@@ -48,6 +75,9 @@ class MySQL(WeatherStation):
             Sensor.objects.get_or_create(station=self._station, type=sensor_type)
 
     def update(self):
+        """Entry point for updating sensor values for this station.
+
+        This method connects to the database and reads the latest values."""
         log.info('Updating Database station %s...' % self._station.code)
 
         # connect to DB

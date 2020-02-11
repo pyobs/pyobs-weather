@@ -11,10 +11,25 @@ log = logging.getLogger(__name__)
 
 
 class Average(WeatherStation):
+    """The Average weather station requests all values from all other weather stations and calculates 5-minutes
+    averages for all sensor types.
+
+    This station gets configured by the *initweather* script and is running on a crontab every 5 minutes.
+    """
+
     def create_sensors(self):
+        """Entry point for creating sensors for this station.
+
+        No sensors created here, that all happens on-the-fly in update()."""
         pass
 
     def update(self):
+        """Entry point for updating sensor values for this station.
+
+        This method loops all sensor types and fetches all related sensors from all stations and calculates
+        5-minutes averages, which it stores in sensors of the same type.
+        """
+
         from pyobs_weather.weather.models import SensorType, Sensor, Value
         log.info('Updating averages...')
 
