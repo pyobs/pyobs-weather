@@ -5,7 +5,7 @@ function plot(canvas) {
 
     // do AJAX request
     $.ajax({
-        url: '/api/history/' + type + '/',
+        url: rootURL + '/api/history/' + type + '/',
         dataType: 'json',
     }).done(function (results) {
         // format data so that Chart.js can digest it
@@ -86,7 +86,7 @@ function update_plots() {
 function update_values() {
     // do AJAX request
     $.ajax({
-        url: '/api/current/',
+        url: rootURL + '/api/current/',
         dataType: 'json',
     }).done(function (results) {
         // loop all fields on page
