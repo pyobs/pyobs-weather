@@ -24,7 +24,7 @@ if root_url.startswith('/'):
 
 # define URLs
 urlpatterns = [
-    path('' if root_url == '' else (root_url + '/'), include('pyobs_weather.frontend.urls')),
+    path(root_url, include('pyobs_weather.frontend.urls')),
     path(root_url + 'admin/', admin.site.urls),
     path(root_url + 'api/', include('pyobs_weather.api.urls')),
 ]
