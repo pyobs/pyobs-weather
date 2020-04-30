@@ -19,6 +19,8 @@ from django.urls import path, include
 
 # get root url
 root_url = settings.ROOT_URL
+if root_url.startswith('/'):
+    root_url = root_url[1:]
 
 # define URLs
 urlpatterns = [
