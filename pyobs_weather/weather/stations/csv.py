@@ -1,7 +1,5 @@
 import logging
 import os
-
-import MySQLdb
 import pytz
 from astropy.time import Time, TimeDelta
 import astropy.units as u
@@ -15,7 +13,7 @@ log = logging.getLogger(__name__)
 class CSV(WeatherStation):
     """The CSV weather station reads current weather information from a CSV file."""
 
-    def __init__(self, filename: str, columns: dict, time: int = 0, time_offset: int = 0, separator: str = ',',
+    def __init__(self, filename: str, columns: dict, time: int = 0, timezone: str = None, separator: str = ',',
                  *args, **kwargs):
         """Creates a new weather station that reads its data from a CSV file.
 
@@ -44,13 +42,13 @@ class CSV(WeatherStation):
                     unit: field unit
                     bool_true: if given, evaluate value to 1 if equal to this, otherwise 0
                     bool_false: if given, evaluate value to 0 if equal to this, otherwise 1
-            time_offset: Offset in seconds to add to current time to get UTC.
+            timezone: Timezone for datetime in file. If None, try to parse automatically.
             separator: CSV field separator.
         """
         WeatherStation.__init__(self, *args, **kwargs)
         self.filename = filename
         self.time = time
-        self.time_offset = time_offset
+        self.timezone = None if timezone is None else pytz.timezone(timezone)
         self.columns = columns
         self.separator = separator
 
@@ -89,6 +87,11 @@ class CSV(WeatherStation):
 
         # get time
         time = (Time(fields[self.time]) + TimeDelta(self.time_offset * u.second)).to_datetime(pytz.UTC)
+
+        # timezone?
+        if self.timezone is not None:
+            # calculate timezone offset and subtract it
+            time -= self.timezone.utcoffset(time)
 
         # other values
         for c, cfg in self.columns.items():
