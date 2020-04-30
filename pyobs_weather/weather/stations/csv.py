@@ -22,12 +22,15 @@ class CSV(WeatherStation):
         A typical JSON configuration for this weather station might look like this:
 
         |  {
+        |      "filename": "/wetter/wento/wento_log.txt",
         |      "time": 0,
-        |      "fields": {
-        |          1: {"code": "temp", "name": "Temperature", "unit": "°C"},
-        |          2: {"code": "humid", "name": "Relative humidity", "unit": "%"},
-        |          5: {"code": "dewpoint", "name": "Dew point", "unit": "°C"},
-        |          7: {"code": "windspeed", "name": "Wind speed", "unit": "km/h"},
+        |      "columns": {
+        |              "2": {"code": "temp", "name": "Temperature", "unit": "°C"},
+        |              "4": {"code": "humid", "name": "Relative humidity", "unit": "%"},
+        |              "6": {"code": "press", "name": "Pressure", "unit": "hPa"},
+        |              "8": {"code": "winddir", "name": "Wind direction", "unit": "°E of N"},
+        |              "14": {"code": "windspeed", "name": "Wind speed", "unit": "km/h"},
+        |              "20": {"code": "dewpoint", "name": "Dew point", "unit": "°C"}
         |      }
         |  }
 
