@@ -6,3 +6,4 @@ from .mcdlockearchive import McDonaldLockeArchive
 from .mcdtelnet import McDonaldTelnet
 from .monet import Monet
 from .mysql import MySQL
+from .csv import CSV
