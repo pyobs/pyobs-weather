@@ -86,7 +86,7 @@ class CSV(WeatherStation):
         fields = line.split(self.separator)
 
         # get time
-        time = (Time(fields[self.time]) + TimeDelta(self.time_offset * u.second)).to_datetime(pytz.UTC)
+        time = Time(fields[self.time]).to_datetime(pytz.UTC)
 
         # timezone?
         if self.timezone is not None:
