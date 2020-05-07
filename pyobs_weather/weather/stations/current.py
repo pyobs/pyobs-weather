@@ -43,7 +43,7 @@ class Current(WeatherStation):
             values = []
 
             # loop all sensors of that type
-            for sensor in Sensor.objects.filter(type=sensor_type, station__active=True):
+            for sensor in Sensor.objects.filter(type=sensor_type, average=True, station__active=True):
                 # skip average and current
                 if sensor.station.code in ['average', 'current']:
                     continue

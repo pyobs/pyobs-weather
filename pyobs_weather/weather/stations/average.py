@@ -46,7 +46,7 @@ class Average(WeatherStation):
                 continue
 
             # loop all sensors of that type
-            for sensor in Sensor.objects.filter(type=sensor_type, station__active=True):
+            for sensor in Sensor.objects.filter(type=sensor_type, average=True, station__active=True):
                 # get average value for this sensor for last 5:30 minutes
                 value = Value.objects.filter(sensor=sensor, time__gte=since).aggregate(models.Avg('value'))
 

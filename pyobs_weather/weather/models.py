@@ -100,6 +100,7 @@ class Sensor(models.Model):
     delay_bad = models.IntegerField('Delay in seconds before switching to bad weather', default=0)
     bad_since = models.DateTimeField('Time of last bad sensor value', blank=True, null=True)
     good_since = models.DateTimeField('Time of last good sensor value', blank=True, null=True)
+    average = models.BooleanField('Whether or not to use this in average', default=True)
 
     def __str__(self):
         return self.station.name + ': ' + self.type.name
