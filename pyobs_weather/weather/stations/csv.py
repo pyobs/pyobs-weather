@@ -1,8 +1,8 @@
 import logging
 import os
 import pytz
-from astropy.time import Time, TimeDelta
-import astropy.units as u
+from astropy.time import Time
+import dateutil.parser
 
 from pyobs_weather.weather.models import Sensor, SensorType
 from .station import WeatherStation
@@ -85,16 +85,18 @@ class CSV(WeatherStation):
         # split it
         fields = line.split(self.separator)
 
+        # parse time
+        time = dateutil.parser.isoparse(fields[self.time])
+
         # timezone?
         if self.timezone is not None:
             # calculate timezone offset and subtract it
-            time = Time(fields[self.time]).to_datetime()
             time -= self.timezone.utcoffset(time)
             time = time.replace(tzinfo=pytz.utc)
         else:
-            # parse from string and convert to utc
-            time = Time(fields[self.time]).to_datetime(pytz.utc)
-
+            # need to convert to UTC?
+            if time.tzinfo is not None:
+                time = time.astimezone(pytz.utc)
 
         # other values
         for c, cfg in self.columns.items():
