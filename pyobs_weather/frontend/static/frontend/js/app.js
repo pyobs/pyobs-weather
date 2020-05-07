@@ -166,7 +166,7 @@ function draw_timeline() {
         let total = sunrise.unix() - sunset.unix();
 
         // and in pixels
-        let px_sunset = 0
+        let px_sunset = 0;
         let px_sunset_twilight = (sunset_twilight.unix() - sunset.unix()) / total * canvas.width;
         let px_sunrise_twilight = (sunrise_twilight.unix() - sunset.unix()) / total * canvas.width;
         let px_sunrise = canvas.width;
