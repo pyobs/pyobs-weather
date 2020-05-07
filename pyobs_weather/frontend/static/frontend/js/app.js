@@ -139,7 +139,7 @@ function update_values() {
     setTimeout(update_values, 10000);
 }
 
-function update_timeline() {
+function draw_timeline() {
     // get container and canvas
     let container = $('#timeline');
     let canvas = $('#timeline_plot')[0];
@@ -155,9 +155,7 @@ function update_timeline() {
         url: rootURL + 'api/timeline/',
         dataType: 'json',
     }).done(function (results) {
-       console.log(results);
-       console.log(results['events'][0]);
-       // get times
+        // get times
         let now = moment(results['time'])
         let sunset = moment(results['events'][0]);
         let sunset_twilight = moment(results['events'][1]);
@@ -208,20 +206,18 @@ function update_timeline() {
         // text positions
         $('#twilight').css("paddingLeft", px_sunset_twilight - $('#sunset_twilight').width() / 2);
         $('#twilight').css("paddingRight", px_sunrise - px_sunrise_twilight + - $('#sunrise_twilight').width() / 2);
-
-        console.log(total);
     });
-    //ctx.beginPath();
-    //ctx.rect(0, 0, canvas.width / 2, 20);
-    //ctx.fillStyle = "red";
-    //ctx.fill();
+}
+
+function update_timeline() {
+    draw_timeline();
+    setTimeout(update_timeline, 60000);
 }
 
 $(function () {
     Chart.defaults.global.defaultFontFamily = 'Alegreya';
 
-    $(window).on('resize', update_timeline);
-    setTimeout(update_timeline, 100);
+    $(window).on('resize', draw_timeline);
     update_timeline();
     update_plots();
     update_values();
