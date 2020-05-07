@@ -194,7 +194,7 @@ def timeline(request):
     observer = Observer(location=location)
 
     # night or day?
-    is_day = observer.sun_altaz(now).az.degree > 0.
+    is_day = observer.sun_altaz(now).alt.degree > 0.
 
     # get sunset to start with
     sunset = observer.sun_set_time(now, which='next' if is_day else 'previous')
