@@ -87,3 +87,13 @@ p.sensorUnit {
     font-size: x-small;
     font-weight: normal;
 }
+
+#timeline {
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+#timeline_plot {
+    border: 1px solid black;
+    display: block;
+}

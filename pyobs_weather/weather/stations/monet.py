@@ -84,7 +84,7 @@ class Monet(WeatherStation):
         self._add_value('humid', time, weather['humid'])
         self._add_value('winddir', time, weather['winddir'])
         self._add_value('windspeed', time, weather['windspeed'])
-        self._add_value('press', time, weather['press'])
+        #self._add_value('press', time, weather['press'])
         self._add_value('rain', time, weather['rain'])
 
     def _update_average(self):
@@ -109,7 +109,7 @@ class Monet(WeatherStation):
         self._add_value('humid', time, weather['humid']['avg'])
         self._add_value('winddir', time, weather['winddir']['avg'])
         self._add_value('windspeed', time, weather['windspeed']['avg'])
-        self._add_value('press', time, weather['press']['avg'])
+        #self._add_value('press', time, weather['press']['avg'])
         self._add_value('rain', time, weather['rain']['max'])
 
 

@@ -1,5 +1,10 @@
 from datetime import datetime, timedelta
 import dateutil.parser
+from astroplan import Observer
+from astropy.coordinates import EarthLocation
+from astropy.time import Time
+import astropy.units as u
+from django.conf import settings
 from django.db.models import F
 from django.http import JsonResponse, HttpResponseNotFound
 
@@ -176,3 +181,39 @@ def sensors(request):
 
     # return all
     return JsonResponse(values, safe=False)
+
+
+def timeline(request):
+    # get location
+    location = EarthLocation(lon=settings.OBSERVER_LOCATION['longitude'] * u.deg,
+                             lat=settings.OBSERVER_LOCATION['latitude'] * u.deg,
+                             height=settings.OBSERVER_LOCATION['elevation'] * u.m)
+
+    # get observer and now
+    now = Time.now()
+    observer = Observer(location=location)
+
+    # night or day?
+    is_day = observer.sun_altaz(now).az.degree > 0.
+
+    # get sunset to start with
+    sunset = observer.sun_set_time(now, which='next' if is_day else 'previous')
+
+    # list of events
+    events = []
+    events.append(sunset.isot)
+
+    # twilight at sunset
+    sunset_twilight = observer.sun_set_time(sunset, which='next', horizon=-18. * u.deg)
+    events.append(sunset_twilight.isot)
+
+    # twilight at sunrise
+    sunrise_twilight = observer.sun_rise_time(sunset_twilight, which='next', horizon=-18. * u.deg)
+    events.append(sunrise_twilight.isot)
+
+    # sunrise
+    sunrise = observer.sun_rise_time(sunset_twilight, which='next')
+    events.append(sunrise.isot)
+
+    # return all
+    return JsonResponse({'time': now.isot, 'events': events})

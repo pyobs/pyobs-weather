@@ -97,7 +97,7 @@ function update_values() {
 
             // got a value?
             if (results.hasOwnProperty('sensors') && results.sensors.hasOwnProperty(type) &&
-                    results.sensors[type].value !== null) {
+                results.sensors[type].value !== null) {
                 value_field.html(results.sensors[type].value.toFixed(1));
             } else {
                 value_field.html('N/A');
@@ -127,8 +127,7 @@ function update_values() {
             if (results.good === null) {
                 p.html('N/A');
                 p.css('color', 'black');
-            }
-            else {
+            } else {
                 p.html(results.good ? 'GOOD' : 'BAD');
                 p.css('color', results.good ? 'green' : 'red');
             }
@@ -140,9 +139,90 @@ function update_values() {
     setTimeout(update_values, 10000);
 }
 
+function update_timeline() {
+    // get container and canvas
+    let container = $('#timeline');
+    let canvas = $('#timeline_plot')[0];
+
+    // set size of canvas
+    canvas.width = container.innerWidth();
+
+    // get context
+    let ctx = canvas.getContext("2d");
+
+    // do AJAX request
+    $.ajax({
+        url: rootURL + 'api/timeline/',
+        dataType: 'json',
+    }).done(function (results) {
+       console.log(results);
+       console.log(results['events'][0]);
+       // get times
+        let now = moment(results['time'])
+        let sunset = moment(results['events'][0]);
+        let sunset_twilight = moment(results['events'][1]);
+        let sunrise_twilight = moment(results['events'][2]);
+        let sunrise = moment(results['events'][3]);
+
+        // total length
+        let total = sunrise.unix() - sunset.unix();
+
+        // and in pixels
+        let px_sunset = 0
+        let px_sunset_twilight = (sunset_twilight.unix() - sunset.unix()) / total * canvas.width;
+        let px_sunrise_twilight = (sunrise_twilight.unix() - sunset.unix()) / total * canvas.width;
+        let px_sunrise = canvas.width;
+        let px_now = (now.unix() - sunset.unix()) / total * canvas.width;
+
+        // draw evening twilight
+        let grd1 = ctx.createLinearGradient(0, 0, px_sunset_twilight, 0);
+        grd1.addColorStop(0, "yellow");
+        grd1.addColorStop(1, "black");
+        ctx.fillStyle = grd1;
+        ctx.fillRect(px_sunset, 0, px_sunset_twilight - px_sunset, 20);
+
+        // draw morning twilight
+        let grd2 = ctx.createLinearGradient(px_sunrise_twilight, 0, px_sunrise, 0);
+        grd2.addColorStop(0, "black");
+        grd2.addColorStop(1, "yellow");
+        ctx.fillStyle = grd2;
+        ctx.fillRect(px_sunrise_twilight, 0, px_sunrise - px_sunrise_twilight, 20);
+
+        // night
+        ctx.fillStyle = 'black';
+        ctx.fillRect(px_sunset_twilight, 0, px_sunrise_twilight - px_sunset_twilight, 20);
+
+        // markers
+        ctx.fillStyle = 'white'
+        ctx.fillRect(px_sunset_twilight, 0, 2, 20);
+        ctx.fillRect(px_sunrise_twilight, 0, 2, 20);
+        ctx.fillStyle = 'red'
+        ctx.fillRect(px_now, 0, 2, 20);
+
+        // text
+        $('#sunset').text('Sunset: ' + sunset.format('HH:mm') + ' UT')
+        $('#sunrise').text('Sunrise: ' + sunrise.format('HH:mm') + ' UT')
+        $('#sunset_twilight').text('Dusk: ' + sunset_twilight.format('HH:mm') + ' UT')
+        $('#sunrise_twilight').text('Dawn: ' + sunrise_twilight.format('HH:mm') + ' UT')
+
+        // text positions
+        $('#twilight').css("paddingLeft", px_sunset_twilight - $('#sunset_twilight').width() / 2);
+        $('#twilight').css("paddingRight", px_sunrise - px_sunrise_twilight + - $('#sunrise_twilight').width() / 2);
+
+        console.log(total);
+    });
+    //ctx.beginPath();
+    //ctx.rect(0, 0, canvas.width / 2, 20);
+    //ctx.fillStyle = "red";
+    //ctx.fill();
+}
+
 $(function () {
     Chart.defaults.global.defaultFontFamily = 'Alegreya';
 
+    $(window).on('resize', update_timeline);
+    setTimeout(update_timeline, 100);
+    update_timeline();
     update_plots();
     update_values();
 });
