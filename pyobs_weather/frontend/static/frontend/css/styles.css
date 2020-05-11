@@ -3,7 +3,7 @@
     src:
         local('Alegreya'),
         local('Alegreya-Regular'),
-        url('/static/frontend/fonts/Alegreya-Regular.ttf');
+        url('../frontend/fonts/Alegreya-Regular.ttf');
     font-weight: normal;
     font-style: normal;
 }
@@ -12,7 +12,7 @@
     font-family: 'Alegreya';
     src:
         local('Alegreya-Bold'),
-        url('/static/frontend/fonts/Alegreya-Bold.ttf');
+        url('../frontend/fonts/Alegreya-Bold.ttf');
     font-weight: bold;
     font-style: normal;
 }
@@ -22,7 +22,7 @@
     src:
         local('Roboto')
         local('Roboto-Regular'),
-        url('/static/admin/fonts/Roboto-Bold.ttf');
+        url('../admin/fonts/Roboto-Bold.ttf');
     font-weight: bold;
     font-style: normal;
 }
