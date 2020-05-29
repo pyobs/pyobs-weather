@@ -204,11 +204,11 @@ def timeline(request):
     events.append(sunset.isot)
 
     # twilight at sunset
-    sunset_twilight = observer.sun_set_time(sunset, which='next', horizon=-18. * u.deg)
+    sunset_twilight = observer.sun_set_time(sunset, which='next', horizon=-12. * u.deg)
     events.append(sunset_twilight.isot)
 
     # twilight at sunrise
-    sunrise_twilight = observer.sun_rise_time(sunset_twilight, which='next', horizon=-18. * u.deg)
+    sunrise_twilight = observer.sun_rise_time(sunset_twilight, which='next', horizon=-12. * u.deg)
     events.append(sunrise_twilight.isot)
 
     # sunrise
