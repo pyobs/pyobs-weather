@@ -91,7 +91,7 @@ class SensorType(models.Model):
 
 class Sensor(models.Model):
     """A sensor."""
-    station = models.ForeignKey(Station, on_delete=models.CASCADE)
+    station = models.ForeignKey(Station, on_delete=models.CASCADE, db_index=True)
     type = models.ForeignKey(SensorType, on_delete=models.CASCADE)
     evaluators = models.ManyToManyField(Evaluator, blank=True)
     good = models.BooleanField('Whether its current value was evaluated as good', blank=True, null=True)
@@ -110,8 +110,8 @@ class Sensor(models.Model):
 
 class Value(models.Model):
     """A single value from a sensor."""
-    sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE)
-    time = models.DateTimeField('Date and time when value was measured')
+    sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE, db_index=True)
+    time = models.DateTimeField('Date and time when value was measured', db_index=True)
     value = models.FloatField('Measured value', null=True, blank=True)
 
     def save(self, *args, **kwargs):
