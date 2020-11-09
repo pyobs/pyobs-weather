@@ -50,25 +50,18 @@ class OverView(TemplateView):
         lat = location.lat.to_string(sep='°\'"', precision=1)
         lat = lat[1:] + ' S' if lat[0] == '-' else lat + ' N'
 
-        # get next sunrise and sunset
-        now = Time.now()
-        observer = Observer(location=location)
-        sunrise = observer.sun_rise_time(now).to_datetime(pytz.UTC)
-        sunset = observer.sun_set_time(now).to_datetime(pytz.UTC)
-
         # return it
         return {
             'site': settings.OBSERVER_NAME,
             'title': settings.WINDOW_TITLE,
+            'root_url': settings.ROOT_URL,
             'value_types': value_types,
             'plot_types': plot_types,
             'location': {
                 'longitude': lon,
                 'latitude': lat,
                 'elevation': location.height.value
-            },
-            'sunrise': sunrise,
-            'sunset': sunset
+            }
         }
 
 
@@ -76,11 +69,11 @@ class SensorsView(TemplateView):
     template_name = "sensors.html"
 
     def get_context_data(self, *args, **kwargs):
-        return {'title': settings.WINDOW_TITLE + ' (sensors)'}
+        return {'title': settings.WINDOW_TITLE + ' (sensors)', 'root_url': settings.ROOT_URL}
 
 
 class Documentation(TemplateView):
     template_name = "documentation.html"
 
     def get_context_data(self, *args, **kwargs):
-        return {'title': settings.WINDOW_TITLE + ' (documentation)'}
+        return {'title': settings.WINDOW_TITLE + ' (documentation)', 'root_url': settings.ROOT_URL}

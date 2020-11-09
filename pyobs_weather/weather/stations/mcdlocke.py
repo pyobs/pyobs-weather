@@ -10,8 +10,29 @@ log = logging.getLogger(__name__)
 
 
 class McDonaldLocke(WeatherStation):
+    """The McDonaldLocke weather station reads current weather information from the Mt. Lock weather page at
+    http://weather.as.utexas.edu/latest_5min.dat.
+
+    It does not require any configuration.
+    """
+
     def create_sensors(self):
-        """Create all sensors."""
+        """Entry point for creating sensors for this station.
+
+        Sensors created by this station are:
+
+        - temp
+
+        - humid
+
+        - winddir
+
+        - windspeed
+
+        - particles
+
+        - rain
+        """
         self._add_sensor('temp')
         self._add_sensor('humid')
         self._add_sensor('press')
@@ -21,6 +42,9 @@ class McDonaldLocke(WeatherStation):
         self._add_sensor('rain')
 
     def update(self):
+        """Entry point for updating sensor values for this station.
+
+        This method reads the Mt. Locke weather page and extracts the latest values."""
         log.info('Updating McDonald Locke station %s...' % self._station.code)
 
         # do request

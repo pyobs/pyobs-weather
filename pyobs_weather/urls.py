@@ -13,11 +13,18 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 
+# get root url
+root_url = settings.ROOT_URL
+if root_url.startswith('/'):
+    root_url = root_url[1:]
+
+# define URLs
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('pyobs_weather.frontend.urls')),
-    path('api/', include('pyobs_weather.api.urls')),
+    path(root_url, include('pyobs_weather.frontend.urls')),
+    path(root_url + 'admin/', admin.site.urls),
+    path(root_url + 'api/', include('pyobs_weather.api.urls')),
 ]

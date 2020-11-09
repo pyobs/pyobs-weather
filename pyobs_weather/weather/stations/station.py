@@ -5,7 +5,7 @@ SENSOR_TYPES = dict(
     humid=dict(code='humid', name='Relative humidity', unit='%'),
     press=dict(code='press', name='Pressure', unit='hPa'),
     winddir=dict(code='winddir', name='Wind dir', unit='°E of N'),
-    windspeec=dict(code='windspeed', name='Wind speed', unit='km/h'),
+    windspeed=dict(code='windspeed', name='Wind speed', unit='km/h'),
     particles=dict(code='particles', name='Particle count', unit='ppcm'),
     rain=dict(code='rain', name='Raining', unit=''),
     skytemp=dict(code='skytemp', name='Rel sky temperature', unit='°C'),

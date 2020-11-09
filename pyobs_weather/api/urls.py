@@ -12,4 +12,5 @@ urlpatterns = [
     path('history/', views.history_types, name='history_types'),
     path('history/<str:sensor_type>/', views.history, name='history'),
     path('sensors/', views.sensors, name='sensor_status'),
+    path('timeline/', views.timeline, name='timeline'),
 ]

@@ -59,4 +59,4 @@ class Command(BaseCommand):
                                         kwargs='{"invert": true}')
         Evaluator.objects.get_or_create(name='valid', class_name='pyobs_weather.weather.evaluators.Valid', kwargs='{}')
         Evaluator.objects.get_or_create(name='night', class_name='pyobs_weather.weather.evaluators.Switch',
-                                        kwargs='{"value": 0}')
+                                        kwargs='{"threshold": 0}')

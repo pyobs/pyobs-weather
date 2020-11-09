@@ -11,7 +11,7 @@ $(function () {
             update() {
                 let self = this;
                 $.ajax({
-                    url: '/api/sensors/',
+                    url: rootURL + 'api/sensors/',
                     dataType: 'json',
                 }).done(function (results) {
                     // store current time

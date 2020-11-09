@@ -11,9 +11,12 @@ log = logging.getLogger(__name__)
 
 
 class McDonaldLockeArchive(WeatherStation):
+    """The McDonaldLockeArchive weather station reads current weather information from the Mt. Lock weather archive
+    at http://weather.as.utexas.edu/cgi-bin/weather/weather-data.pl."""
+
     def __init__(self, fields: dict, url: str = 'http://weather.as.utexas.edu/cgi-bin/weather/weather-data.pl',
                  *args, **kwargs):
-        """Creates a new McDonald Archive station.
+        """Creates a new McDonaldLockeArchive weather station.
 
         Args:
             fields: Dictionary with field->SensorType data,
@@ -25,7 +28,9 @@ class McDonaldLockeArchive(WeatherStation):
         self.url = url
 
     def create_sensors(self):
-        """Create all sensors."""
+        """Entry point for creating sensors for this station.
+
+        New sensors are created based on the configuration."""
 
         # loop all fields
         for field, typ in self.fields.items():
@@ -40,6 +45,9 @@ class McDonaldLockeArchive(WeatherStation):
                 self._add_sensor(typ['code'])
 
     def update(self):
+        """Entry point for updating sensor values for this station.
+
+        This method reads the Mt. Locke weather archive and extracts the latest values."""
         log.info('Updating McDonald Locke Archive %s...' % self._station.code)
 
         # create payload for request

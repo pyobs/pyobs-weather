@@ -81,6 +81,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
         'USER': 'postgres',
+        'PASSWORD': 'postgres',
         'HOST': 'db',
         'PORT': 5432,
     }
@@ -122,9 +123,9 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-
-STATIC_URL = '/static/'
-STATIC_ROOT = 'static/'
+ROOT_URL = '/'
+STATIC_URL = ROOT_URL + 'static/'
+STATIC_ROOT = '/static/'
 
 # REDIS related settings
 REDIS_HOST = 'redis'
