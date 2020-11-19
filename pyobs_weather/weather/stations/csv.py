@@ -99,12 +99,13 @@ class CSV(WeatherStation):
                 time = time.astimezone(pytz.utc)
 
         # other values
-        for c, cfg in self.columns.items():
-            # column
-            col = int(c)
+        for col, cfg in self.columns.items():
+            # get column and value
+            value = float(fields[int(col)])
 
-            # get value
-            value = float(fields[col])
+            # apply factor?
+            if 'factor' in cfg:
+                value *= float(cfg['factor'])
 
             # boolean?
             if 'bool_true' in cfg:
