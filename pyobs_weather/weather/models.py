@@ -122,3 +122,6 @@ class Value(models.Model):
         # if station doesn't want to keep history, delete old
         if not self.sensor.station.history:
             Value.objects.filter(time__lt=self.time, sensor=self.sensor).delete()
+
+    class Meta:
+        unique_together = ('sensor', 'time')
