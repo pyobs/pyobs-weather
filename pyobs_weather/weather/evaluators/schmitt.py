@@ -30,6 +30,10 @@ class SchmittTrigger:
         # get last value
         value = Value.objects.filter(sensor=sensor).order_by('-time').first()
 
+        # non-existing values are always bad
+        if value is None:
+            return False
+
         # are we good?
         if sensor.good is True or sensor.good is None:
             # if current value of sensor is good, we must be below bad to stay good

@@ -29,6 +29,10 @@ class Switch:
         # get last value
         value = Value.objects.filter(sensor=sensor).order_by('-time').first()
 
+        # non-existing values are always bad
+        if value is None:
+            return False
+
         # are we good?
         is_good = value.value < self._threshold
 

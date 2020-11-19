@@ -25,6 +25,10 @@ class Boolean:
         # get last value
         value = Value.objects.filter(sensor=sensor).order_by('-time').first()
 
+        # non-existing values are always bad
+        if value is None:
+            return False
+
         # are we good?
         is_good = value.value is True or value.value != 0
         if self._invert:
