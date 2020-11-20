@@ -35,7 +35,7 @@ class SchmittTrigger:
             return False
 
         # are we good?
-        if sensor._good is True or sensor._good is None:
+        if sensor.good is True or sensor.good is None:
             # if current value of sensor is good, we must be below bad to stay good
             is_good = value.value < self._bad
         else:
