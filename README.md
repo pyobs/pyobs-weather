@@ -23,7 +23,7 @@ A typical docker-compose.yml looks like this:
 
     services:
       db:
-        image: postgres:11
+        image: postgres
         volumes:
           - pgdata:/var/lib/postgresql/data
         restart: always
@@ -36,7 +36,7 @@ A typical docker-compose.yml looks like this:
         depends_on:
           - db
         restart: always
-        command: bash -c "python manage.py collectstatic --no-input && python manage.py makemigrations && python manage.py migrate && gunicorn --workers=3 pyobs_weather.wsgi -b 0.0.0.0:8000"
+        command: bash -c "python manage.py collectstatic --no-input && python manage.py migrate && gunicorn --workers=3 pyobs_weather.wsgi -b 0.0.0.0:8000"
     
       redis:
         image: redis
@@ -116,3 +116,18 @@ With all three files in one directory, you can easily do
     
  The web frontend should now be accessible via web browser at http://localhost:8002/ and the admin panel
  at http://localhost:8002/admin.
+ 
+ 
+ ## Backup and restore config
+ 
+Easiest way to backup the whole weather database is using the `dumpdata` command:
+ 
+    ./manage.py dumpdata --indent 2 weather > weather.json
+
+Probably you want to exclude the actual sensor readings and only backup the configuration:
+
+    ./manage.py dumpdata --indent 2 weather --exclude weather.value > weather.json
+
+In a fresh setup, you can restore the data via the 'loaddata' command:
+
+    ./manage.py loaddata weather.json
