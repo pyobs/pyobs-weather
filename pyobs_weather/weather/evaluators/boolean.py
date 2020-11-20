@@ -36,3 +36,12 @@ class Boolean:
 
         # return it
         return is_good
+
+    def areas(self) -> list:
+        """Returns list of areas for plot."""
+
+        return [{
+            'type': 'danger',
+            'min': 0.5 if self._invert else 0.,
+            'max': 1.0 if self._invert else 0.5
+        }]

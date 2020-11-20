@@ -42,3 +42,11 @@ class Switch:
 
         # return it
         return is_good
+
+    def areas(self) -> list:
+        """Returns list of areas for plot."""
+
+        return [{
+            'type': 'danger',
+            'min' if self._invert else 'max': self._threshold
+        }]

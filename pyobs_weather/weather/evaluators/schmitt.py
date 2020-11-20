@@ -35,7 +35,7 @@ class SchmittTrigger:
             return False
 
         # are we good?
-        if sensor.good is True or sensor.good is None:
+        if sensor._good is True or sensor._good is None:
             # if current value of sensor is good, we must be below bad to stay good
             is_good = value.value < self._bad
         else:
@@ -44,3 +44,20 @@ class SchmittTrigger:
 
         # return it
         return is_good
+
+    def areas(self) -> list:
+        """Returns list of areas for plot."""
+
+        return [
+            # bad
+            {
+                'type': 'danger',
+                'min' if self._bad > self._good else 'max': self._bad
+            },
+            # in between
+            {
+                'type': 'warning',
+                'min': self._bad if self._bad < self._good else self._good,
+                'max': self._bad if self._bad > self._good else self._good,
+            }
+        ]
