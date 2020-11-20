@@ -8,7 +8,9 @@ from django.conf import settings
 from django.db.models import F
 from django.http import JsonResponse, HttpResponseNotFound
 
+from pyobs_weather.weather import evaluators
 from pyobs_weather.weather.models import Station, Sensor, Value, SensorType
+from pyobs_weather.weather.tasks import create_evaluator
 
 
 def stations_list(request):
@@ -144,20 +146,33 @@ def history(request, sensor_type):
 
     # loop all sensors of that type
     stations = []
+    areas = []
     for sensor in Sensor.objects.filter(type=st, station__history=True, station__active=True):
         # get data
         values = Value.objects.filter(sensor=sensor, time__gte=start, time__lte=end)\
             .order_by('-time').values('time', 'value')
+
+        # got average sensor?
+        if sensor.station.code == 'average':
+            # loop all evaluators for this sensor to define coloured areas in plot
+            for evaluator in sensor.evaluators.all():
+                # get evaluator
+                eva = create_evaluator(evaluator)
+
+                # add areas
+                if hasattr(eva, 'areas'):
+                    areas.extend(eva.areas())
 
         # store it
         stations.append({
             'code': sensor.station.code,
             'name': sensor.station.name,
             'color': sensor.station.color,
-            'data': list(values)
+            'data': list(values),
+            'areas': areas
         })
 
-    return JsonResponse(stations, safe=False)
+    return JsonResponse({'stations': stations, 'areas': areas}, safe=False)
 
 
 def sensors(request):

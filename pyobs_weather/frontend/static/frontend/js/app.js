@@ -10,7 +10,7 @@ function plot(canvas) {
     }).done(function (results) {
         // format data so that Chart.js can digest it
         let plotData = [];
-        results.forEach(function (station) {
+        results.stations.forEach(function (station) {
             // don't plot average values
             if (station.code === 'average')
                 return;
@@ -33,6 +33,39 @@ function plot(canvas) {
                 fill: false,
                 lineTension: 0.2
             });
+        });
+
+        // annotations
+        let annotations = [];
+        results.areas.forEach(function (area) {
+            // init annotation
+            let ann = {
+                type: 'box',
+                display: true,
+                yScaleID: 'y-axis-0',
+                drawTime: 'beforeDatasetsDraw'
+            };
+
+            // define colour
+            switch (area.type) {
+                case 'danger':
+                    ann.backgroundColor = 'rgba(255, 0, 0, 0.1)'
+                    break;
+                case 'warning':
+                    ann.backgroundColor = 'rgba(255, 255, 0, 0.1)'
+                    break;
+            }
+
+            // get min/max values
+            if (typeof area.min !== 'undefined') {
+                ann.yMin = area.min;
+            }
+            if (typeof area.max !== 'undefined') {
+                ann.yMax = area.max;
+            }
+
+            // add annotation
+            annotations.push(ann);
         });
 
         // create plot
@@ -66,6 +99,9 @@ function plot(canvas) {
                             labelString: label
                         }
                     }]
+                },
+                annotation: {
+                    annotations: annotations
                 }
             }
         });
@@ -205,7 +241,7 @@ function draw_timeline() {
 
         // text positions
         $('#twilight').css("paddingLeft", px_sunset_twilight - $('#sunset_twilight').width() / 2);
-        $('#twilight').css("paddingRight", px_sunrise - px_sunrise_twilight + - $('#sunrise_twilight').width() / 2);
+        $('#twilight').css("paddingRight", px_sunrise - px_sunrise_twilight + -$('#sunrise_twilight').width() / 2);
     });
 }
 
