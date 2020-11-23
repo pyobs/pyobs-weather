@@ -48,8 +48,8 @@ def evaluate():
     # get now
     now = datetime.utcnow().astimezone(pytz.UTC)
 
-    # loop all stations
-    for station in Station.objects.all():
+    # loop all stations (except for average, which we don't evaluate)
+    for station in Station.objects.exclude(code='average').all():
         # loop all sensors at station
         for sensor in station.sensor_set.all():
             # init good
