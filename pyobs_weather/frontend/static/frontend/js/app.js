@@ -85,7 +85,9 @@ function plot(canvas) {
                                 second: 'HH:mm',
                                 minute: 'HH:mm',
                                 hour: 'HH:mm'
-                            }
+                            },
+                            min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                            max: moment.utc().format('YYYY-MM-DD HH:mm:ss')
                         },
                         distribution: 'linear',
                         scaleLabel: {
