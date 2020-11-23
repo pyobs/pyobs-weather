@@ -125,3 +125,9 @@ class Value(models.Model):
 
     class Meta:
         unique_together = ('sensor', 'time')
+
+
+class GoodWeather(models.Model):
+    """Times of changes from good to bad weather and vice versa."""
+    time = models.DateTimeField('Date and time of status change', db_index=True, auto_now_add=True)
+    good = models.BooleanField('Weather now good?')

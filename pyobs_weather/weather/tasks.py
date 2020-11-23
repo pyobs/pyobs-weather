@@ -6,6 +6,7 @@ from datetime import datetime
 import pytz
 
 from pyobs_weather.celery import app
+from pyobs_weather.weather.models import GoodWeather
 from pyobs_weather.weather.utils import get_class
 
 log = logging.getLogger(__name__)
@@ -47,6 +48,9 @@ def evaluate():
 
     # get now
     now = datetime.utcnow().astimezone(pytz.UTC)
+
+    # let's see, whether we find any sensor that's not evaluated to good
+    all_good = True
 
     # loop all stations (except for average, which we don't evaluate)
     for station in Station.objects.exclude(code='average').all():
@@ -101,3 +105,13 @@ def evaluate():
             # store it
             sensor.good = is_good
             sensor.save()
+
+            # found one that's not good?
+            if is_good is False:
+                all_good = False
+
+    # get current GoodWeather status
+    current_good = GoodWeather.objects.order_by('-time').first()
+    if current_good is None or current_good.good != all_good:
+        # status has changed, store it
+        GoodWeather.objects.create(good=all_good)
