@@ -76,7 +76,9 @@ function plot(canvas) {
             },
             options: {
                 scales: {
+                    bounds: 'ticks',
                     xAxes: [{
+                        source: 'auto',
                         type: 'time',
                         time: {
                             tooltipFormat: 'YYYY-MM-DD HH:mm.ss',
@@ -297,8 +299,11 @@ function plot_good_history() {
             type: 'line',
             options: {
                 scales: {
+                    bounds: 'ticks',
                     xAxes: [{
                         type: 'time',
+                        source: 'auto',
+                        distribution: 'linear',
                         time: {
                             tooltipFormat: 'YYYY-MM-DD HH:mm.ss',
                             displayFormats: {
@@ -310,7 +315,6 @@ function plot_good_history() {
                             min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
                             max: moment.utc().format('YYYY-MM-DD HH:mm:ss')
                         },
-                        distribution: 'linear',
                         scaleLabel: {
                             display: true,
                             labelString: 'Time [UT]',
