@@ -141,3 +141,4 @@ In a fresh setup, you can restore the data via the 'loaddata' command:
 #### version 1.1
 - Added footer to page 
 - Exclude average station from status evaluation
+- Logging current good/bad weather status
