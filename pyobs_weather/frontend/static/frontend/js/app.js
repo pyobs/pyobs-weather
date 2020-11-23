@@ -116,7 +116,7 @@ function update_plots() {
     });
 
     // schedule next run
-    setTimeout(update_values, 60000);
+    setTimeout(update_values, 30000);
 }
 
 function update_values() {
@@ -247,7 +247,96 @@ function draw_timeline() {
 
 function update_timeline() {
     draw_timeline();
-    setTimeout(update_timeline, 60000);
+    setTimeout(update_timeline, 30000);
+}
+
+function create_good_annotation(good) {
+    return {
+        type: 'box',
+        display: true,
+        xScaleID: 'x-axis-0',
+        yScaleID: 'y-axis-0',
+        drawTime: 'beforeDatasetsDraw',
+        borderWidth: 0,
+        backgroundColor: good ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'
+    }
+}
+
+function plot_good_history() {
+    // do AJAX request
+    $.ajax({
+        url: rootURL + 'api/history/goodweather/',
+        dataType: 'json',
+    }).done(function (results) {
+        // annotations
+        let annotations = [];
+        for (let i = 0; i < results.changes.length; i++) {
+            // get change
+            let change = results.changes[i];
+
+            // first one needs an additional annotation
+            if (i === 0) {
+                let ann = create_good_annotation(!change.good);
+                ann.xMax = moment.utc(change.time).format('YYYY-MM-DD HH:mm:ss');
+                annotations.push(ann);
+            }
+
+            // min/max depends on first/last
+            let ann = create_good_annotation(change.good);
+            ann.xMin = moment.utc(change.time).format('YYYY-MM-DD HH:mm:ss');
+            if (results.changes.length > i + 1) {
+                ann.xMax = moment.utc(results.changes[i + 1].time).format('YYYY-MM-DD HH:mm:ss');
+            }
+            annotations.push(ann);
+        }
+
+        // create plot
+        new Chart($('#goodhistory')[0].getContext('2d'), {
+            type: 'line',
+            options: {
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            tooltipFormat: 'YYYY-MM-DD HH:mm.ss',
+                            displayFormats: {
+                                millisecond: 'HH:mm',
+                                second: 'HH:mm',
+                                minute: 'HH:mm',
+                                hour: 'HH:mm'
+                            },
+                            min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                            max: moment.utc().format('YYYY-MM-DD HH:mm:ss')
+                        },
+                        distribution: 'linear',
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time [UT]',
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Good'
+                        },
+                        ticks: {
+                            min: 0,
+                            max: 1
+                        }
+                    }]
+                },
+                annotation: {
+                    annotations: annotations
+                }
+            }
+        });
+
+    });
+}
+
+function update_good_history() {
+    plot_good_history();
+    setTimeout(update_good_history, 30000);
 }
 
 $(function () {
@@ -256,5 +345,6 @@ $(function () {
     $(window).on('resize', draw_timeline);
     update_timeline();
     update_plots();
+    update_good_history();
     update_values();
 });

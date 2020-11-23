@@ -41,6 +41,7 @@
             </div>
 
             <h3>Plots for last 24h</h3>
+            <canvas id="goodhistory" width="600" height="100"></canvas>
             {% for type in plot_types %}
                 <canvas data-sensor-type="{{ type.code }}" data-sensor-label="{{ type.name }}"
                         class="plot" width="600" height="150"></canvas>

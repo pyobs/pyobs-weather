@@ -9,7 +9,7 @@ from django.db.models import F
 from django.http import JsonResponse, HttpResponseNotFound
 
 from pyobs_weather.weather import evaluators
-from pyobs_weather.weather.models import Station, Sensor, Value, SensorType
+from pyobs_weather.weather.models import Station, Sensor, Value, SensorType, GoodWeather
 from pyobs_weather.weather.tasks import create_evaluator
 
 
@@ -232,3 +232,12 @@ def timeline(request):
 
     # return all
     return JsonResponse({'time': now.isot, 'events': events})
+
+
+def good_weather(request):
+    # get changes in status from last 24 hours
+    changes = [{'time': g.time, 'good': g.good}
+               for g in GoodWeather.objects.filter(time__gt=datetime.utcnow() - timedelta(days=1)).all()]
+
+    # return all
+    return JsonResponse({'changes': changes})
