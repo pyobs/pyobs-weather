@@ -131,3 +131,12 @@ Probably you want to exclude the actual sensor readings and only backup the conf
 In a fresh setup, you can restore the data via the 'loaddata' command:
 
     ./manage.py loaddata weather.json
+    
+    
+## Changelog
+
+#### version 1.0 (2020-11-23)
+- Initial release
+
+#### version 1.1
+- Added footer to page 
