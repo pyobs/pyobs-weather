@@ -103,6 +103,11 @@ function plot(canvas) {
                         scaleLabel: {
                             display: true,
                             labelString: label
+                        },
+                        ticks: {
+                            callback: function (value) {
+                                return value.toFixed(1);
+                            }
                         }
                     }]
                 },
