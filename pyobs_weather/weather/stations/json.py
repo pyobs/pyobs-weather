@@ -74,7 +74,7 @@ class JSON(WeatherStation):
         log.info('Updating Database station %s...' % self._station.code)
 
         # read data
-        res = requests.get(self.url, proxies={'http': 'socks5://localhost:1080/'})
+        res = requests.get(self.url)
         if res.status_code != 200:
             log.warning('Could not fetch JSON.')
             return
