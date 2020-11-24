@@ -143,3 +143,6 @@ In a fresh setup, you can restore the data via the 'loaddata' command:
 - Exclude average station from status evaluation
 - Logging current good/bad weather status
 - Added plot for solar elevation and good weather for last 24h
+
+#### version 1.1.1 (2020-11-24)
+- Fixed bug with update of plots.
