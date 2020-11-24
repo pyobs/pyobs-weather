@@ -52,8 +52,14 @@ table#current td {
     padding: 0;
 }
 
+#wrap {
+    min-height: 100%;
+}
+
 #main {
+    overflow: auto;
     margin-top: 70px;
+    padding-bottom: 50px; /* this needs to be bigger than footer height*/
 }
 
 #header {
@@ -96,4 +102,15 @@ p.sensorUnit {
 #timeline_plot {
     border: 1px solid black;
     display: block;
+}
+
+footer {
+    background-color: black;
+    color: grey;
+    text-align: center;
+    position: relative;
+    margin-top: -40px; /* negative value of footer height */
+    height: 40px;
+    clear: both;
+    padding-top: 0.5em
 }

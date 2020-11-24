@@ -35,7 +35,11 @@ class Observer(WeatherStation):
         """
 
         # get sensor
-        sensor = Sensor.objects.get(station__code='current', type__code=code)
+        try:
+            sensor = Sensor.objects.get(station__code='current', type__code=code)
+        except Sensor.DoesNotExist:
+            # sensor doesn't exist
+            return
 
         # get its latest value
         val = Value.objects.filter(sensor=sensor).latest('time')

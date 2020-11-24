@@ -1,5 +1,5 @@
 <!doctype html>
-{% load static %}
+{% load static version %}
 <html>
 <head>
     <title>{{ title }}</title>
@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{% static "frontend/css/vendor/bootstrap.min.css" %}">
     <link rel="stylesheet" href="{% static "frontend/css/vendor/Chart.min.css" %}">
     <link rel="stylesheet" href="{% static "frontend/css/styles.css" %}">
-    <script>let rootURL='{{ root_url|safe }}';</script>
+    <script>let rootURL = '{{ root_url|safe }}';</script>
 </head>
 <body>
 
@@ -52,11 +52,18 @@
     </div>
 </nav>
 
-<div id="main" class="container">
-    <div id="alert-error"></div>
-    {% block content %}
-    {% endblock %}
+<div id="wrap">
+    <div id="main" class="container">
+        <div id="alert-error"></div>
+        {% block content %}
+        {% endblock %}
+    </div>
 </div>
+
+<footer>
+    pyobs-weather v{% version %} (<a href="https://github.com/pyobs/pyobs-weather">GitHub</a>)
+    by <a href="mailto:thusser@uni-goettingen.de">Tim-Oliver Husser</a>
+</footer>
 
 <script src="{% static "frontend/js/vendor/jquery.min.js" %}"></script>
 <script src="{% static "frontend/js/vendor/moment.min.js" %}"></script>
