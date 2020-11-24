@@ -146,3 +146,6 @@ In a fresh setup, you can restore the data via the 'loaddata' command:
 
 #### version 1.1.1 (2020-11-24)
 - Fixed bug with update of plots.
+
+### version xxx
+- Disabled animations for plots

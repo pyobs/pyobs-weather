@@ -75,6 +75,9 @@ function plot(canvas) {
                 datasets: plotData
             },
             options: {
+                animation: {
+                    duration: 0
+                },
                 scales: {
                     bounds: 'ticks',
                     xAxes: [{
