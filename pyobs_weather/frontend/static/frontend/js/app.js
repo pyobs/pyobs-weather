@@ -126,8 +126,8 @@ function update_plots() {
         plot(this);
     });
 
-    // schedule next run
-    setTimeout(update_values, 60000);
+    // schedule next run-
+    setTimeout(update_plots, 60000);
 }
 
 function update_values() {
