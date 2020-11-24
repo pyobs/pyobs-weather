@@ -2,11 +2,12 @@ from datetime import datetime, timedelta
 import dateutil.parser
 from astroplan import Observer
 from astropy.coordinates import EarthLocation
-from astropy.time import Time
+from astropy.time import Time, TimeDelta
 import astropy.units as u
 from django.conf import settings
 from django.db.models import F
 from django.http import JsonResponse, HttpResponseNotFound
+import numpy as np
 
 from pyobs_weather.weather import evaluators
 from pyobs_weather.weather.models import Station, Sensor, Value, SensorType, GoodWeather
@@ -239,5 +240,18 @@ def good_weather(request):
     changes = [{'time': g.time, 'good': g.good}
                for g in GoodWeather.objects.filter(time__gt=datetime.utcnow() - timedelta(days=1)).all()]
 
+    # get location
+    location = EarthLocation(lon=settings.OBSERVER_LOCATION['longitude'] * u.deg,
+                             lat=settings.OBSERVER_LOCATION['latitude'] * u.deg,
+                             height=settings.OBSERVER_LOCATION['elevation'] * u.m)
+
+    # get observer and now
+    now = Time.now()
+    observer = Observer(location=location)
+
+    # get solar elevation for last 12 hours
+    times = [now - TimeDelta((1. - x) * u.day) for x in np.linspace(0, 1, 100)]
+    sun = [s.alt.degree for s in observer.sun_altaz(times)]
+
     # return all
-    return JsonResponse({'changes': changes})
+    return JsonResponse({'changes': changes, 'sun': {'time': [t.isot for t in times], 'alt': sun}})

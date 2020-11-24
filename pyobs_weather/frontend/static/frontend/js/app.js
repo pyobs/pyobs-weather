@@ -127,7 +127,7 @@ function update_plots() {
     });
 
     // schedule next run
-    setTimeout(update_values, 30000);
+    setTimeout(update_values, 60000);
 }
 
 function update_values() {
@@ -258,7 +258,7 @@ function draw_timeline() {
 
 function update_timeline() {
     draw_timeline();
-    setTimeout(update_timeline, 30000);
+    setTimeout(update_timeline, 60000);
 }
 
 function create_good_annotation(good) {
@@ -279,6 +279,12 @@ function plot_good_history() {
         url: rootURL + 'api/history/goodweather/',
         dataType: 'json',
     }).done(function (results) {
+        // format data
+        let data = [];
+        results.sun.time.forEach(function (value, index) {
+            data.push({t: new moment.utc(value).format('YYYY-MM-DD HH:mm:ss'), y: results.sun.alt[index]})
+        });
+
         // annotations
         let annotations = [];
         for (let i = 0; i < results.changes.length; i++) {
@@ -301,10 +307,37 @@ function plot_good_history() {
             annotations.push(ann);
         }
 
+        // add annotation for line at 0
+        annotations.push({
+            type: 'line',
+            mode: 'horizontal',
+            scaleID: 'y-axis-0',
+            value: 0,
+            borderColor: 'rgb(0, 0, 0, 0.5)',
+            borderWidth: 1
+        })
+
         // create plot
         new Chart($('#goodhistory')[0].getContext('2d'), {
             type: 'line',
+            data: {
+                datasets: [{
+                    label: undefined,
+                    data: data,
+                    backgroundColor: 'rgb(255, 255, 100, 0.5)',
+                    borderColor: 'rgb(255, 255, 100, 1)',
+                    pointRadius: 0,
+                    fill: false,
+                    lineTension: 0.2
+                }]
+            },
             options: {
+                animation: {
+                    duration: 0
+                },
+                legend: {
+                    display: false
+                },
                 scales: {
                     bounds: 'ticks',
                     xAxes: [{
@@ -332,12 +365,8 @@ function plot_good_history() {
                     yAxes: [{
                         scaleLabel: {
                             display: true,
-                            labelString: 'Good'
+                            labelString: 'Sun/good'
                         },
-                        ticks: {
-                            min: 0,
-                            max: 1
-                        }
                     }]
                 },
                 annotation: {
@@ -351,7 +380,7 @@ function plot_good_history() {
 
 function update_good_history() {
     plot_good_history();
-    setTimeout(update_good_history, 30000);
+    setTimeout(update_good_history, 60000);
 }
 
 $(function () {
