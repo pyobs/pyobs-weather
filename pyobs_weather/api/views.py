@@ -239,6 +239,12 @@ def good_weather(request):
     changes = [{'time': g.time, 'good': g.good}
                for g in GoodWeather.objects.filter(time__gt=datetime.utcnow() - timedelta(days=1)).all()]
 
+    # if None, return last one
+    if len(changes) == 0:
+        last = GoodWeather.objects.last()
+        if last is not None:
+            changes = [{'time': last.time, 'good': last.good}]
+
     # get location
     location = EarthLocation(lon=settings.OBSERVER_LOCATION['longitude'] * u.deg,
                              lat=settings.OBSERVER_LOCATION['latitude'] * u.deg,
