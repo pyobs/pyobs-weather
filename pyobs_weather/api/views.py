@@ -169,8 +169,7 @@ def history(request, sensor_type):
             'code': sensor.station.code,
             'name': sensor.station.name,
             'color': sensor.station.color,
-            'data': list(values),
-            'areas': areas
+            'data': list(values)
         })
 
     return JsonResponse({'stations': stations, 'areas': areas}, safe=False)
