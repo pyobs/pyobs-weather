@@ -1,9 +1,17 @@
 from datetime import datetime, timedelta
 import dateutil.parser
+from astroplan import Observer
+from astropy.coordinates import EarthLocation
+from astropy.time import Time, TimeDelta
+import astropy.units as u
+from django.conf import settings
 from django.db.models import F
 from django.http import JsonResponse, HttpResponseNotFound
+import numpy as np
 
-from pyobs_weather.weather.models import Station, Sensor, Value, SensorType
+from pyobs_weather.weather import evaluators
+from pyobs_weather.weather.models import Station, Sensor, Value, SensorType, GoodWeather
+from pyobs_weather.weather.tasks import create_evaluator
 
 
 def stations_list(request):
@@ -139,10 +147,22 @@ def history(request, sensor_type):
 
     # loop all sensors of that type
     stations = []
+    areas = []
     for sensor in Sensor.objects.filter(type=st, station__history=True, station__active=True):
         # get data
         values = Value.objects.filter(sensor=sensor, time__gte=start, time__lte=end)\
             .order_by('-time').values('time', 'value')
+
+        # got average sensor?
+        if sensor.station.code == 'average':
+            # loop all evaluators for this sensor to define coloured areas in plot
+            for evaluator in sensor.evaluators.all():
+                # get evaluator
+                eva = create_evaluator(evaluator)
+
+                # add areas
+                if hasattr(eva, 'areas'):
+                    areas.extend(eva.areas())
 
         # store it
         stations.append({
@@ -152,7 +172,7 @@ def history(request, sensor_type):
             'data': list(values)
         })
 
-    return JsonResponse(stations, safe=False)
+    return JsonResponse({'stations': stations, 'areas': areas}, safe=False)
 
 
 def sensors(request):
@@ -176,3 +196,67 @@ def sensors(request):
 
     # return all
     return JsonResponse(values, safe=False)
+
+
+def timeline(request):
+    # get location
+    location = EarthLocation(lon=settings.OBSERVER_LOCATION['longitude'] * u.deg,
+                             lat=settings.OBSERVER_LOCATION['latitude'] * u.deg,
+                             height=settings.OBSERVER_LOCATION['elevation'] * u.m)
+
+    # get observer and now
+    now = Time.now()
+    observer = Observer(location=location)
+
+    # night or day?
+    is_day = observer.sun_altaz(now).alt.degree > 0.
+
+    # get sunset to start with
+    sunset = observer.sun_set_time(now, which='next' if is_day else 'previous')
+
+    # list of events
+    events = []
+    events.append(sunset.isot)
+
+    # twilight at sunset
+    sunset_twilight = observer.sun_set_time(sunset, which='next', horizon=-12. * u.deg)
+    events.append(sunset_twilight.isot)
+
+    # twilight at sunrise
+    sunrise_twilight = observer.sun_rise_time(sunset_twilight, which='next', horizon=-12. * u.deg)
+    events.append(sunrise_twilight.isot)
+
+    # sunrise
+    sunrise = observer.sun_rise_time(sunset_twilight, which='next')
+    events.append(sunrise.isot)
+
+    # return all
+    return JsonResponse({'time': now.isot, 'events': events})
+
+
+def good_weather(request):
+    # get changes in status from last 24 hours
+    changes = [{'time': g.time, 'good': g.good}
+               for g in GoodWeather.objects.filter(time__gt=datetime.utcnow() - timedelta(days=1)).all()]
+
+    # if None, return last one
+    if len(changes) == 0:
+        last = GoodWeather.objects.last()
+        if last is not None:
+            changes = [{'time': last.time, 'good': last.good}]
+
+    # get location
+    location = EarthLocation(lon=settings.OBSERVER_LOCATION['longitude'] * u.deg,
+                             lat=settings.OBSERVER_LOCATION['latitude'] * u.deg,
+                             height=settings.OBSERVER_LOCATION['elevation'] * u.m)
+
+    # get observer and now
+    now = Time.now()
+    observer = Observer(location=location)
+
+    # get solar elevation for last 12 hours
+    times = [now - TimeDelta((1. - x) * u.day) for x in np.linspace(0, 1, 100)]
+    sun = [s.alt.degree for s in observer.sun_altaz(times)]
+
+    # return all
+    return JsonResponse({'changes': changes, 'sun': {'time': [t.isot for t in times], 'alt': sun}})

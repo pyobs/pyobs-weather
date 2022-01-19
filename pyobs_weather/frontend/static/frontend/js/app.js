@@ -5,12 +5,12 @@ function plot(canvas) {
 
     // do AJAX request
     $.ajax({
-        url: '/api/history/' + type + '/',
+        url: rootURL + 'api/history/' + type + '/',
         dataType: 'json',
     }).done(function (results) {
         // format data so that Chart.js can digest it
         let plotData = [];
-        results.forEach(function (station) {
+        results.stations.forEach(function (station) {
             // don't plot average values
             if (station.code === 'average')
                 return;
@@ -35,6 +35,39 @@ function plot(canvas) {
             });
         });
 
+        // annotations
+        let annotations = [];
+        results.areas.forEach(function (area) {
+            // init annotation
+            let ann = {
+                type: 'box',
+                display: true,
+                yScaleID: 'y-axis-0',
+                drawTime: 'beforeDatasetsDraw'
+            };
+
+            // define colour
+            switch (area.type) {
+                case 'danger':
+                    ann.backgroundColor = 'rgba(255, 0, 0, 0.1)'
+                    break;
+                case 'warning':
+                    ann.backgroundColor = 'rgba(255, 255, 0, 0.1)'
+                    break;
+            }
+
+            // get min/max values
+            if (typeof area.min !== 'undefined') {
+                ann.yMin = area.min;
+            }
+            if (typeof area.max !== 'undefined') {
+                ann.yMax = area.max;
+            }
+
+            // add annotation
+            annotations.push(ann);
+        });
+
         // create plot
         new Chart(canvas.getContext('2d'), {
             type: 'line',
@@ -42,8 +75,13 @@ function plot(canvas) {
                 datasets: plotData
             },
             options: {
+                animation: {
+                    duration: 0
+                },
                 scales: {
+                    bounds: 'ticks',
                     xAxes: [{
+                        source: 'auto',
                         type: 'time',
                         time: {
                             tooltipFormat: 'YYYY-MM-DD HH:mm.ss',
@@ -53,6 +91,10 @@ function plot(canvas) {
                                 minute: 'HH:mm',
                                 hour: 'HH:mm'
                             }
+                        },
+                        ticks: {
+                            min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                            max: moment.utc().format('YYYY-MM-DD HH:mm:ss')
                         },
                         distribution: 'linear',
                         scaleLabel: {
@@ -64,8 +106,16 @@ function plot(canvas) {
                         scaleLabel: {
                             display: true,
                             labelString: label
+                        },
+                        ticks: {
+                            callback: function (value) {
+                                return value.toFixed(1);
+                            }
                         }
                     }]
+                },
+                annotation: {
+                    annotations: annotations
                 }
             }
         });
@@ -79,14 +129,14 @@ function update_plots() {
         plot(this);
     });
 
-    // schedule next run
-    setTimeout(update_values, 60000);
+    // schedule next run-
+    setTimeout(update_plots, 60000);
 }
 
 function update_values() {
     // do AJAX request
     $.ajax({
-        url: '/api/current/',
+        url: rootURL + 'api/current/',
         dataType: 'json',
     }).done(function (results) {
         // loop all fields on page
@@ -97,7 +147,7 @@ function update_values() {
 
             // got a value?
             if (results.hasOwnProperty('sensors') && results.sensors.hasOwnProperty(type) &&
-                    results.sensors[type].value !== null) {
+                results.sensors[type].value !== null) {
                 value_field.html(results.sensors[type].value.toFixed(1));
             } else {
                 value_field.html('N/A');
@@ -127,8 +177,7 @@ function update_values() {
             if (results.good === null) {
                 p.html('N/A');
                 p.css('color', 'black');
-            }
-            else {
+            } else {
                 p.html(results.good ? 'GOOD' : 'BAD');
                 p.css('color', results.good ? 'green' : 'red');
             }
@@ -140,9 +189,209 @@ function update_values() {
     setTimeout(update_values, 10000);
 }
 
+function draw_timeline() {
+    // get container and canvas
+    let container = $('#timeline');
+    let canvas = $('#timeline_plot')[0];
+
+    // set size of canvas
+    canvas.width = container.innerWidth();
+
+    // get context
+    let ctx = canvas.getContext("2d");
+
+    // do AJAX request
+    $.ajax({
+        url: rootURL + 'api/timeline/',
+        dataType: 'json',
+    }).done(function (results) {
+        // get times
+        let now = moment(results['time'])
+        let sunset = moment(results['events'][0]);
+        let sunset_twilight = moment(results['events'][1]);
+        let sunrise_twilight = moment(results['events'][2]);
+        let sunrise = moment(results['events'][3]);
+
+        // total length
+        let total = sunrise.unix() - sunset.unix();
+
+        // and in pixels
+        let px_sunset = 0;
+        let px_sunset_twilight = (sunset_twilight.unix() - sunset.unix()) / total * canvas.width;
+        let px_sunrise_twilight = (sunrise_twilight.unix() - sunset.unix()) / total * canvas.width;
+        let px_sunrise = canvas.width;
+        let px_now = (now.unix() - sunset.unix()) / total * canvas.width;
+
+        // draw evening twilight
+        let grd1 = ctx.createLinearGradient(0, 0, px_sunset_twilight, 0);
+        grd1.addColorStop(0, "yellow");
+        grd1.addColorStop(1, "black");
+        ctx.fillStyle = grd1;
+        ctx.fillRect(px_sunset, 0, px_sunset_twilight - px_sunset, 20);
+
+        // draw morning twilight
+        let grd2 = ctx.createLinearGradient(px_sunrise_twilight, 0, px_sunrise, 0);
+        grd2.addColorStop(0, "black");
+        grd2.addColorStop(1, "yellow");
+        ctx.fillStyle = grd2;
+        ctx.fillRect(px_sunrise_twilight, 0, px_sunrise - px_sunrise_twilight, 20);
+
+        // night
+        ctx.fillStyle = 'black';
+        ctx.fillRect(px_sunset_twilight, 0, px_sunrise_twilight - px_sunset_twilight, 20);
+
+        // markers
+        ctx.fillStyle = 'white'
+        ctx.fillRect(px_sunset_twilight, 0, 2, 20);
+        ctx.fillRect(px_sunrise_twilight, 0, 2, 20);
+        ctx.fillStyle = 'red'
+        ctx.fillRect(px_now, 0, 2, 20);
+
+        // text
+        $('#sunset').text('Sunset: ' + sunset.format('HH:mm') + ' UT')
+        $('#sunrise').text('Sunrise: ' + sunrise.format('HH:mm') + ' UT')
+        $('#sunset_twilight').text('Dusk: ' + sunset_twilight.format('HH:mm') + ' UT')
+        $('#sunrise_twilight').text('Dawn: ' + sunrise_twilight.format('HH:mm') + ' UT')
+
+        // text positions
+        $('#twilight').css("paddingLeft", px_sunset_twilight - $('#sunset_twilight').width() / 2);
+        $('#twilight').css("paddingRight", px_sunrise - px_sunrise_twilight + -$('#sunrise_twilight').width() / 2);
+    });
+}
+
+function update_timeline() {
+    draw_timeline();
+    setTimeout(update_timeline, 60000);
+}
+
+function create_good_annotation(good) {
+    return {
+        type: 'box',
+        display: true,
+        xScaleID: 'x-axis-0',
+        yScaleID: 'y-axis-0',
+        drawTime: 'beforeDatasetsDraw',
+        borderWidth: 0,
+        backgroundColor: good ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'
+    }
+}
+
+function plot_good_history() {
+    // do AJAX request
+    $.ajax({
+        url: rootURL + 'api/history/goodweather/',
+        dataType: 'json',
+    }).done(function (results) {
+        // format data
+        let data = [];
+        results.sun.time.forEach(function (value, index) {
+            data.push({t: new moment.utc(value).format('YYYY-MM-DD HH:mm:ss'), y: results.sun.alt[index]})
+        });
+
+        // annotations
+        let annotations = [];
+        for (let i = 0; i < results.changes.length; i++) {
+            // get change
+            let change = results.changes[i];
+
+            // first one needs an additional annotation
+            if (i === 0) {
+                let ann = create_good_annotation(!change.good);
+                ann.xMax = moment.utc(change.time).format('YYYY-MM-DD HH:mm:ss');
+                annotations.push(ann);
+            }
+
+            // min/max depends on first/last
+            let ann = create_good_annotation(change.good);
+            ann.xMin = moment.utc(change.time).format('YYYY-MM-DD HH:mm:ss');
+            if (results.changes.length > i + 1) {
+                ann.xMax = moment.utc(results.changes[i + 1].time).format('YYYY-MM-DD HH:mm:ss');
+            }
+            annotations.push(ann);
+        }
+
+        // add annotation for line at 0
+        annotations.push({
+            type: 'line',
+            mode: 'horizontal',
+            scaleID: 'y-axis-0',
+            value: 0,
+            borderColor: 'rgb(0, 0, 0, 0.5)',
+            borderWidth: 1
+        })
+
+        // create plot
+        new Chart($('#goodhistory')[0].getContext('2d'), {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: undefined,
+                    data: data,
+                    backgroundColor: 'rgb(255, 255, 100, 0.5)',
+                    borderColor: 'rgb(255, 255, 100, 1)',
+                    pointRadius: 0,
+                    fill: false,
+                    lineTension: 0.2
+                }]
+            },
+            options: {
+                animation: {
+                    duration: 0
+                },
+                legend: {
+                    display: false
+                },
+                scales: {
+                    bounds: 'ticks',
+                    xAxes: [{
+                        type: 'time',
+                        source: 'auto',
+                        distribution: 'linear',
+                        time: {
+                            tooltipFormat: 'YYYY-MM-DD HH:mm.ss',
+                            displayFormats: {
+                                millisecond: 'HH:mm',
+                                second: 'HH:mm',
+                                minute: 'HH:mm',
+                                hour: 'HH:mm'
+                            }
+                        },
+                        ticks: {
+                            min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                            max: moment.utc().format('YYYY-MM-DD HH:mm:ss')
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time [UT]',
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Sun/good'
+                        },
+                    }]
+                },
+                annotation: {
+                    annotations: annotations
+                }
+            }
+        });
+
+    });
+}
+
+function update_good_history() {
+    plot_good_history();
+    setTimeout(update_good_history, 60000);
+}
+
 $(function () {
     Chart.defaults.global.defaultFontFamily = 'Alegreya';
 
+    $(window).on('resize', draw_timeline);
+    update_timeline();
     update_plots();
+    update_good_history();
     update_values();
 });

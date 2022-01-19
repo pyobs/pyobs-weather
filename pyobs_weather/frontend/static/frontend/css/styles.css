@@ -3,7 +3,7 @@
     src:
         local('Alegreya'),
         local('Alegreya-Regular'),
-        url('/static/frontend/fonts/Alegreya-Regular.ttf');
+        url('../frontend/fonts/Alegreya-Regular.ttf');
     font-weight: normal;
     font-style: normal;
 }
@@ -12,7 +12,7 @@
     font-family: 'Alegreya';
     src:
         local('Alegreya-Bold'),
-        url('/static/frontend/fonts/Alegreya-Bold.ttf');
+        url('../frontend/fonts/Alegreya-Bold.ttf');
     font-weight: bold;
     font-style: normal;
 }
@@ -22,7 +22,7 @@
     src:
         local('Roboto')
         local('Roboto-Regular'),
-        url('/static/admin/fonts/Roboto-Bold.ttf');
+        url('../admin/fonts/Roboto-Bold.ttf');
     font-weight: bold;
     font-style: normal;
 }
@@ -52,8 +52,14 @@ table#current td {
     padding: 0;
 }
 
+#wrap {
+    min-height: 100%;
+}
+
 #main {
+    overflow: auto;
     margin-top: 70px;
+    padding-bottom: 50px; /* this needs to be bigger than footer height*/
 }
 
 #header {
@@ -86,4 +92,26 @@ p.sensorValue {
 p.sensorUnit {
     font-size: x-small;
     font-weight: normal;
+}
+
+#timeline {
+    width: 100%;
+    margin-bottom: 2em;
+}
+
+#timeline_plot {
+    border: 1px solid black;
+    display: block;
+}
+
+footer {
+    background-color: black;
+    color: grey;
+    text-align: center;
+    position: relative;
+    margin-top: -40px; /* negative value of footer height */
+    height: 40px;
+    clear: both;
+    padding-top: 0.5em;
+    font-size: smaller;
 }

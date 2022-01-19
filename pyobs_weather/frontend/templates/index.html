@@ -27,12 +27,21 @@
                 <p>
                     {{ location.longitude }}, {{ location.latitude }}, {{ location.elevation|floatformat:0 }}m
                 </p>
-                <p>
-                    sunset: {{ sunset|date:'H:i' }} sunrise: {{ sunrise|date:'H:i' }} [UT]
-                </p>
+            </div>
+
+            <div id="timeline">
+                <span class="float-right" id="sunrise">sunrise</span>
+                <span id="sunset">sunset</span>
+                <canvas id="timeline_plot" width="100" height="20">
+                </canvas>
+                <div id="twilight">
+                    <span class="float-right" id="sunrise_twilight">sunrise twilight</span>
+                    <span id="sunset_twilight">sunset twilight</span>
+                </div>
             </div>
 
             <h3>Plots for last 24h</h3>
+            <canvas id="goodhistory" width="600" height="100"></canvas>
             {% for type in plot_types %}
                 <canvas data-sensor-type="{{ type.code }}" data-sensor-label="{{ type.name }}"
                         class="plot" width="600" height="150"></canvas>
@@ -44,4 +53,5 @@
 
 {% block scripts %}
     <script src="{% static "frontend/js/vendor/Chart.min.js" %}"></script>
+    <script src="{% static "frontend/js/vendor/chartjs-plugin-annotation.min.js" %}"></script>
 {% endblock %}

@@ -1,11 +1,16 @@
-FROM python:3.7-slim
-ENV PYTHONUNBUFFERED 1
+FROM python:3.7-slim AS compile-image
 RUN apt-get update \
   && apt-get install -y build-essential libmariadbclient-dev \
   && rm -rf /var/lib/apt/lists/*
-RUN mkdir /weather
+COPY requirements.txt .
+RUN pip install --user -r requirements.txt
+
+FROM python:3.7-slim
+RUN apt-get update \
+  && apt-get install -y mariadb-client \
+  && rm -rf /var/lib/apt/lists/*
+COPY --from=compile-image /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
 WORKDIR /weather
-COPY requirements.txt /weather/
-RUN pip install -r requirements.txt
 COPY . /weather/
 CMD gunicorn --bind 0.0.0.0:8002 --workers=6 --threads=3 --worker-class=gthread pyobs_weather.wsgi
