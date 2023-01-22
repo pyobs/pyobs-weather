@@ -13,6 +13,7 @@ log = logging.getLogger(__name__)
 
 class Evaluator(models.Model):
     """A sensor evaluator."""
+    id = models.AutoField(primary_key=True)
     name = models.CharField('Name of evaluator', max_length=15, unique=True)
     class_name = models.CharField('Python class to call', max_length=50)
     kwargs = models.CharField('JSON encoded kwargs to pass to constructor', max_length=50, blank=True, null=True)
@@ -24,6 +25,7 @@ class Evaluator(models.Model):
 
 class Station(models.Model):
     """A weather station."""
+    id = models.AutoField(primary_key=True)
     code = models.CharField('Code for weather station', max_length=10, unique=True)
     name = models.CharField('Name of weather station', max_length=50)
     class_name = models.CharField('Name of Python class to handle station', max_length=100)
@@ -80,6 +82,7 @@ class Station(models.Model):
 
 class SensorType(models.Model):
     """A sensor type."""
+    id = models.AutoField(primary_key=True)
     code = models.CharField('Code for sensor type', max_length=10, unique=True)
     name = models.CharField('Name of sensor type', max_length=50)
     unit = models.CharField('Unit for value', max_length=10)
@@ -91,6 +94,7 @@ class SensorType(models.Model):
 
 class Sensor(models.Model):
     """A sensor."""
+    id = models.AutoField(primary_key=True)
     station = models.ForeignKey(Station, on_delete=models.CASCADE, db_index=True)
     type = models.ForeignKey(SensorType, on_delete=models.CASCADE)
     evaluators = models.ManyToManyField(Evaluator, blank=True)
@@ -111,6 +115,7 @@ class Sensor(models.Model):
 
 class Value(models.Model):
     """A single value from a sensor."""
+    id = models.AutoField(primary_key=True)
     sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE, db_index=True)
     time = models.DateTimeField('Date and time when value was measured', db_index=True)
     value = models.FloatField('Measured value', null=True, blank=True)
@@ -129,5 +134,6 @@ class Value(models.Model):
 
 class GoodWeather(models.Model):
     """Times of changes from good to bad weather and vice versa."""
+    id = models.AutoField(primary_key=True)
     time = models.DateTimeField('Date and time of status change', db_index=True, auto_now_add=True)
     good = models.BooleanField('Weather now good?')
