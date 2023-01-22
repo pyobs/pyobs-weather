@@ -75,8 +75,13 @@ function plot(canvas) {
                 datasets: plotData
             },
             options: {
+                animation: {
+                    duration: 0
+                },
                 scales: {
+                    bounds: 'ticks',
                     xAxes: [{
+                        source: 'auto',
                         type: 'time',
                         time: {
                             tooltipFormat: 'YYYY-MM-DD HH:mm.ss',
@@ -86,6 +91,10 @@ function plot(canvas) {
                                 minute: 'HH:mm',
                                 hour: 'HH:mm'
                             }
+                        },
+                        ticks: {
+                            min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                            max: moment.utc().format('YYYY-MM-DD HH:mm:ss')
                         },
                         distribution: 'linear',
                         scaleLabel: {
@@ -97,6 +106,11 @@ function plot(canvas) {
                         scaleLabel: {
                             display: true,
                             labelString: label
+                        },
+                        ticks: {
+                            callback: function (value) {
+                                return value.toFixed(1);
+                            }
                         }
                     }]
                 },
@@ -115,8 +129,8 @@ function update_plots() {
         plot(this);
     });
 
-    // schedule next run
-    setTimeout(update_values, 60000);
+    // schedule next run-
+    setTimeout(update_plots, 60000);
 }
 
 function update_values() {
@@ -250,11 +264,134 @@ function update_timeline() {
     setTimeout(update_timeline, 60000);
 }
 
+function create_good_annotation(good) {
+    return {
+        type: 'box',
+        display: true,
+        xScaleID: 'x-axis-0',
+        yScaleID: 'y-axis-0',
+        drawTime: 'beforeDatasetsDraw',
+        borderWidth: 0,
+        backgroundColor: good ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'
+    }
+}
+
+function plot_good_history() {
+    // do AJAX request
+    $.ajax({
+        url: rootURL + 'api/history/goodweather/',
+        dataType: 'json',
+    }).done(function (results) {
+        // format data
+        let data = [];
+        results.sun.time.forEach(function (value, index) {
+            data.push({t: new moment.utc(value).format('YYYY-MM-DD HH:mm:ss'), y: results.sun.alt[index]})
+        });
+
+        // annotations
+        let annotations = [];
+        for (let i = 0; i < results.changes.length; i++) {
+            // get change
+            let change = results.changes[i];
+
+            // first one needs an additional annotation
+            if (i === 0) {
+                let ann = create_good_annotation(!change.good);
+                ann.xMax = moment.utc(change.time).format('YYYY-MM-DD HH:mm:ss');
+                annotations.push(ann);
+            }
+
+            // min/max depends on first/last
+            let ann = create_good_annotation(change.good);
+            ann.xMin = moment.utc(change.time).format('YYYY-MM-DD HH:mm:ss');
+            if (results.changes.length > i + 1) {
+                ann.xMax = moment.utc(results.changes[i + 1].time).format('YYYY-MM-DD HH:mm:ss');
+            }
+            annotations.push(ann);
+        }
+
+        // add annotation for line at 0
+        annotations.push({
+            type: 'line',
+            mode: 'horizontal',
+            scaleID: 'y-axis-0',
+            value: 0,
+            borderColor: 'rgb(0, 0, 0, 0.5)',
+            borderWidth: 1
+        })
+
+        // create plot
+        new Chart($('#goodhistory')[0].getContext('2d'), {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: undefined,
+                    data: data,
+                    backgroundColor: 'rgb(255, 255, 100, 0.5)',
+                    borderColor: 'rgb(255, 255, 100, 1)',
+                    pointRadius: 0,
+                    fill: false,
+                    lineTension: 0.2
+                }]
+            },
+            options: {
+                animation: {
+                    duration: 0
+                },
+                legend: {
+                    display: false
+                },
+                scales: {
+                    bounds: 'ticks',
+                    xAxes: [{
+                        type: 'time',
+                        source: 'auto',
+                        distribution: 'linear',
+                        time: {
+                            tooltipFormat: 'YYYY-MM-DD HH:mm.ss',
+                            displayFormats: {
+                                millisecond: 'HH:mm',
+                                second: 'HH:mm',
+                                minute: 'HH:mm',
+                                hour: 'HH:mm'
+                            }
+                        },
+                        ticks: {
+                            min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                            max: moment.utc().format('YYYY-MM-DD HH:mm:ss')
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time [UT]',
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Sun/good'
+                        },
+                    }]
+                },
+                annotation: {
+                    annotations: annotations
+                }
+            }
+        });
+
+    });
+}
+
+function update_good_history() {
+    plot_good_history();
+    setTimeout(update_good_history, 60000);
+}
+
 $(function () {
     Chart.defaults.global.defaultFontFamily = 'Alegreya';
 
     $(window).on('resize', draw_timeline);
     update_timeline();
     update_plots();
+    update_good_history();
     update_values();
 });
