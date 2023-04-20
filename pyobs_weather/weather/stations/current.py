@@ -31,8 +31,8 @@ class Current(WeatherStation):
         averages of the latest values, which it stores in sensors of the same type. Values from other stations are
         only used if they are not older than 10 minutes.
         """
-
-        from pyobs_weather.weather.models import SensorType, Sensor, Value
+        from pyobs_weather.weather.influx import get_value, write_current
+        from pyobs_weather.weather.models import SensorType, Sensor
         log.info('Updating current...')
 
         # get now
@@ -49,21 +49,19 @@ class Current(WeatherStation):
                     continue
 
                 # get latest value of that sensor
-                value = Value.objects.filter(sensor=sensor).order_by('-time').first()
+                value = get_value(sensor.station.code, sensor.type.code)
 
                 # valid?
-                if value is not None and value.value is not None:
-                    # and not too old?
-                    if value.time > now - timedelta(minutes=10):
-                        # add it
-                        values.append(value.value)
+                if value is not None and value[1] is not None:
+                    values.append(value[1])
 
             # calculate average
             avg = np.mean(values) if values else None
 
             # and store it
             sensor = self._add_sensor(sensor_type.code)
-            Value.objects.get_or_create(sensor=sensor, time=now, value=avg)
+            station_code = self._station.code
+            write_current(station_code, sensor_type.code, now, avg)
 
 
 __all__ = ['Current']

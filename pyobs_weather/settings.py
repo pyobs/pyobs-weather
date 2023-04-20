@@ -150,3 +150,16 @@ try:
     from .local_settings import *
 except ImportError:
     pass
+
+
+# InfluxDB
+INFLUXDB_URL = 'http://localhost:8086'
+INFLUXDB_TOKEN = 'Y3xVIjr_9Q6Nu_jX2fdYzRfyIOsizUWtKYA3l3AhnDyOJ509LdCHcZ2FPlBSDrBhIMtMLpolUEbqVL_lruO4qg=='
+INFLUXDB_ORG = 'Test'
+INFLUXDB_BUCKET = 'weather'
+INFLUXDB_BUCKET_5MIN = 'weather_5m_average'
+INFLUXDB_BUCKET_CURRENT = 'weather_current'
+
+# bucket: weather, weather_5min_average, weather_current
+# _measurement: <station>
+# _field: humid,press,rain,temp,winddir,windspeed

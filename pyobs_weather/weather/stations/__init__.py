@@ -5,6 +5,7 @@ from .mcdlocke import McDonaldLocke
 from .mcdlockearchive import McDonaldLockeArchive
 from .mcdtelnet import McDonaldTelnet
 from .monet import Monet
-from .mysql import MySQL
+#from .mysql import MySQL
 from .csv import CSV
 from .json import JSON
+from .dummy import Dummy

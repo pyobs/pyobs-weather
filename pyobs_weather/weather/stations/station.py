@@ -1,4 +1,7 @@
-from pyobs_weather.weather.models import Value, Station, SensorType, Sensor
+from influxdb_client import InfluxDBClient, Point
+
+from pyobs_weather.weather.models import Station, SensorType, Sensor
+from pyobs_weather.weather.influx import write_value
 
 SENSOR_TYPES = dict(
     temp=dict(code='temp', name='Temperature', unit='°C'),
@@ -52,11 +55,7 @@ class WeatherStation:
             value: Measured value
         """
 
-        # get sensor
-        sensor = Sensor.objects.get(station=self._station, type__code=sensor_code)
-
-        # create value
-        Value.objects.get_or_create(sensor=sensor, time=time, defaults={'value': value})
-
+        station_code = self._station.code
+        write_value(station_code, sensor_code, time, value)
 
 __all__ = ['WeatherStation']
