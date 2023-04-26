@@ -10,9 +10,9 @@ from django.http import JsonResponse, HttpResponseNotFound
 import numpy as np
 
 from pyobs_weather.weather import evaluators
-from pyobs_weather.weather.models import Station, Sensor, SensorType, GoodWeather
+from pyobs_weather.weather.models import Station, Sensor, Value, SensorType, GoodWeather
 from pyobs_weather.weather.tasks import create_evaluator
-from pyobs_weather.weather.influx import get_value, get_list_from_influx, get_current
+from pyobs_weather.weather.dbfunctions import get_value, get_list
 
 
 def stations_list(request):
@@ -31,13 +31,14 @@ def station_detail(request, station_code):
     sensors = []
     for sensor in Sensor.objects.filter(station=station):
         # get latest value
-        value = get_value(sensor.station.code, sensor.type.code)
+        value = get_value(sensor)
+
         # append
         sensors.append({
             'name': sensor.type.name,
             'code': sensor.type.code,
-            'value': None if value is None else value[1],
-            'time': None if value is None else value[0].strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            'value': None if value is None else value['value'],
+            'time': None if value is None else value['time']
         })
 
     # return all
@@ -58,15 +59,15 @@ def sensor_detail(request, station_code, sensor_code):
         return HttpResponseNotFound("Sensor not found.")
 
     # get latest value
-    value = get_value(sensor.station.code, sensor.type.code)
+    value = get_value(sensor)
 
     # return it
     return JsonResponse({
         'name': sensor.type.name,
         'code': sensor.type.code,
-        'value': None if value is None else value[1],
+        'value': None if value is None else value['value'],
         'unit': sensor.type.unit,
-        'time': None if value is None else value[0].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        'time': None if value is None else value['time'],
         'good': sensor.good,
         'since': sensor.since
     })
@@ -74,7 +75,7 @@ def sensor_detail(request, station_code, sensor_code):
 
 def current(request):
     # get average station
-    station = Station.objects.get(code='dummy')  # current -> dummy
+    station = Station.objects.get(code='current')
     if station is None:
         return HttpResponseNotFound('Could not access current weather.')
 
@@ -100,11 +101,11 @@ def current(request):
         # is average sensor?
         if sensor.station == station:
             # get latest value
-            value = get_current(sensor.station.code, sensor.type.code)
+            value = get_value(sensor)
 
             # set it
-            sensors[sensor.type.code]['value'] = None if value[1] is None else value[1]
-            time = value[0].strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            sensors[sensor.type.code]['value'] = None if value is None else value['value']
+            time = value['time']
 
     # totally good?
     good = True
@@ -144,21 +145,16 @@ def history(request, sensor_type):
     else:
         end = datetime.utcnow()
         start = end - timedelta(days=1)
-    
+
     # loop all sensors of that type
     stations = []
     areas = []
     for sensor in Sensor.objects.filter(type=st, station__history=True, station__active=True):
         # get data
-        #TODO: Check here and change if necessary
-        values_temp = get_list_from_influx(sensor.station.code, sensor.type.code, int(start.timestamp()), int(end.timestamp()))
-
-        values = []
-        for value in values_temp:
-            values.append({"time": value[0].strftime("%Y-%m-%dT%H:%M:%S.%fZ"), "value": value[1]})
+        values = get_list(sensor=sensor, start=start, end=end)
 
         # got average sensor?
-        if sensor.station.code == 'average':    # average -> dummy
+        if sensor.station.code == 'average':
             # loop all evaluators for this sensor to define coloured areas in plot
             for evaluator in sensor.evaluators.all():
                 # get evaluator
@@ -195,8 +191,8 @@ def sensors(request):
 
     # add latest value
     for i, sensor in enumerate(data):
-        val = get_value(sensor.station.code, sensor.type.code)
-        values[i]['value'] = None if val is None else val[1]
+        val = get_value(sensor)
+        values[i]['value'] = None if val is None else val['value']
 
     # return all
     return JsonResponse(values, safe=False)
