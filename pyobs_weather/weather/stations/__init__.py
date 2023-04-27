@@ -7,3 +7,4 @@ from .mcdtelnet import McDonaldTelnet
 from .monet import Monet
 from .csv import CSV
 from .json import JSON
+from .dummy import Dummy
