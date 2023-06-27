@@ -1,4 +1,5 @@
 from pyobs_weather.weather.models import Value, Station, SensorType, Sensor
+from pyobs_weather.weather.dbfunctions import write_value
 
 SENSOR_TYPES = dict(
     temp=dict(code='temp', name='Temperature', unit='°C'),
@@ -56,7 +57,7 @@ class WeatherStation:
         sensor = Sensor.objects.get(station=self._station, type__code=sensor_code)
 
         # create value
-        Value.objects.get_or_create(sensor=sensor, time=time, defaults={'value': value})
+        write_value(sensor=sensor, time=time, value=value)
 
 
 __all__ = ['WeatherStation']

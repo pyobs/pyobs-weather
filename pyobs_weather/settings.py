@@ -82,7 +82,7 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'db',
+        'HOST': 'localhost',
         'PORT': 5432,
     }
 }
@@ -150,3 +150,13 @@ try:
     from .local_settings import *
 except ImportError:
     pass
+
+#Choose to use InfluxDB or Postgres for Values
+USE_INFLUX = True
+
+INFLUXDB_URL = 'http://localhost:8086'
+INFLUXDB_TOKEN = 'Y3xVIjr_9Q6Nu_jX2fdYzRfyIOsizUWtKYA3l3AhnDyOJ509LdCHcZ2FPlBSDrBhIMtMLpolUEbqVL_lruO4qg=='
+INFLUXDB_ORG = 'Test'
+INFLUXDB_BUCKET = 'weather'
+INFLUXDB_BUCKET_5MIN = 'weather_5m_average'
+INFLUXDB_BUCKET_CURRENT = 'weather_current'

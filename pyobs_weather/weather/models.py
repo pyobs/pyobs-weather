@@ -7,6 +7,7 @@ from django.db import models
 from django_celery_beat.models import CrontabSchedule, IntervalSchedule, PeriodicTask
 
 from pyobs_weather.weather.utils import get_class
+from pyobs_weather.settings import USE_INFLUX
 
 log = logging.getLogger(__name__)
 
@@ -125,7 +126,7 @@ class Value(models.Model):
         models.Model.save(self, *args, **kwargs)
 
         # if station doesn't want to keep history, delete old
-        if not self.sensor.station.history:
+        if not self.sensor.station.history and not USE_INFLUX:
             Value.objects.filter(time__lt=self.time, sensor=self.sensor).delete()
 
     class Meta:

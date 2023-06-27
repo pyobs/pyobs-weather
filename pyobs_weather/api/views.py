@@ -12,6 +12,7 @@ import numpy as np
 from pyobs_weather.weather import evaluators
 from pyobs_weather.weather.models import Station, Sensor, Value, SensorType, GoodWeather
 from pyobs_weather.weather.tasks import create_evaluator
+from pyobs_weather.weather.dbfunctions import get_value, get_list
 
 
 def stations_list(request):
@@ -30,14 +31,14 @@ def station_detail(request, station_code):
     sensors = []
     for sensor in Sensor.objects.filter(station=station):
         # get latest value
-        value = Value.objects.filter(sensor=sensor).order_by('-time').first()
+        value = get_value(sensor)
 
         # append
         sensors.append({
             'name': sensor.type.name,
             'code': sensor.type.code,
-            'value': None if value is None else value.value,
-            'time': None if value is None else value.time
+            'value': None if value is None else value['value'],
+            'time': None if value is None else value['time']
         })
 
     # return all
@@ -58,15 +59,15 @@ def sensor_detail(request, station_code, sensor_code):
         return HttpResponseNotFound("Sensor not found.")
 
     # get latest value
-    value = Value.objects.filter(sensor=sensor).order_by('-time').first()
+    value = get_value(sensor)
 
     # return it
     return JsonResponse({
         'name': sensor.type.name,
         'code': sensor.type.code,
-        'value': None if value is None else value.value,
+        'value': None if value is None else value['value'],
         'unit': sensor.type.unit,
-        'time': None if value is None else value.time,
+        'time': None if value is None else value['time'],
         'good': sensor.good,
         'since': sensor.since
     })
@@ -100,11 +101,11 @@ def current(request):
         # is average sensor?
         if sensor.station == station:
             # get latest value
-            value = Value.objects.filter(sensor=sensor).order_by('-time').first()
+            value = get_value(sensor)
 
             # set it
-            sensors[sensor.type.code]['value'] = None if value is None else value.value
-            time = value.time
+            sensors[sensor.type.code]['value'] = None if value is None else value['value']
+            time = value['time']
 
     # totally good?
     good = True
@@ -150,8 +151,7 @@ def history(request, sensor_type):
     areas = []
     for sensor in Sensor.objects.filter(type=st, station__history=True, station__active=True):
         # get data
-        values = Value.objects.filter(sensor=sensor, time__gte=start, time__lte=end)\
-            .order_by('-time').values('time', 'value')
+        values = get_list(sensor=sensor, start=start, end=end)
 
         # got average sensor?
         if sensor.station.code == 'average':
@@ -169,7 +169,7 @@ def history(request, sensor_type):
             'code': sensor.station.code,
             'name': sensor.station.name,
             'color': sensor.station.color,
-            'data': list(values)
+            'data': values
         })
 
     return JsonResponse({'stations': stations, 'areas': areas}, safe=False)
@@ -191,8 +191,8 @@ def sensors(request):
 
     # add latest value
     for i, sensor in enumerate(data):
-        val = Value.objects.filter(sensor=sensor).order_by('-time').first()
-        values[i]['value'] = None if val is None else val.value
+        val = get_value(sensor)
+        values[i]['value'] = None if val is None else val['value']
 
     # return all
     return JsonResponse(values, safe=False)

@@ -4,7 +4,6 @@ celery
 Django
 django-celery-beat
 gunicorn
-mysqlclient
 numpy
 pandas
 psycopg2-binary
