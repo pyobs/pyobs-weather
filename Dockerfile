@@ -1,11 +1,11 @@
-FROM python:3.7-slim AS compile-image
+FROM python:3.11-slim AS compile-image
 RUN apt-get update \
   && apt-get install -y build-essential libmariadbclient-dev-compat \
   && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 RUN pip install --user -r requirements.txt
 
-FROM python:3.7-slim
+FROM python:3.11-slim
 RUN apt-get update \
   && apt-get install -y mariadb-client \
   && rm -rf /var/lib/apt/lists/*
