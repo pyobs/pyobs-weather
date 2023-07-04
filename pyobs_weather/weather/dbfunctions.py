@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from influxdb_client import InfluxDBClient, Point
 from datetime import datetime
 
@@ -39,7 +41,7 @@ def get_list(sensor, start, end):
 
 def write_value(sensor, time, value):
     if USE_INFLUX:
-        influx_write(sensor, time, value)
+        influx_write_value(sensor, time, value)
     else:
         psql_write(sensor, time, value)
 
@@ -102,7 +104,7 @@ def influx_getlist(sensor, start, end):
     return values
 
 
-def influx_write(sensor, time, value):
+def influx_write_value(sensor, time, value):
     client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
     write_api = client.write_api(write_options=SYNCHRONOUS)
     p = (
@@ -110,6 +112,18 @@ def influx_write(sensor, time, value):
         .field(sensor.type.code, value)
         .time(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
     )
+    write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=p)
+
+
+def influx_write_values(
+    time: datetime, station: Station, values: List[Tuple[str, float]]
+) -> None:
+    client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
+    write_api = client.write_api(write_options=SYNCHRONOUS)
+    p = Point(station.code)
+    for sensor, value in values:
+        p = p.field(sensor, value)
+    p = p.time(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
     write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=p)
 
 
