@@ -1,3 +1,4 @@
+from pyobs_weather.weather.dbfunctions import influx_getv
 from pyobs_weather.weather.models import Value
 
 
@@ -28,19 +29,20 @@ class SchmittTrigger:
         """
 
         # get last value
-        value = Value.objects.filter(sensor=sensor).order_by('-time').first()
+        # value = Value.objects.filter(sensor=sensor).order_by('-time').first()
+        value = influx_getv(sensor)
 
         # non-existing values are always bad
-        if value is None or value.value is None:
+        if value is None or value["value"] is None:
             return False
 
         # are we good?
         if sensor.good is True or sensor.good is None:
             # if current value of sensor is good, we must be below bad to stay good
-            is_good = value.value < self._bad
+            is_good = value["value"] < self._bad
         else:
             # if current value of sensor is not good, we must be below good to become good
-            is_good = value.value < self._good
+            is_good = value["value"] < self._good
 
         # return it
         return is_good
@@ -50,14 +52,11 @@ class SchmittTrigger:
 
         return [
             # bad
-            {
-                'type': 'danger',
-                'min' if self._bad > self._good else 'max': self._bad
-            },
+            {"type": "danger", "min" if self._bad > self._good else "max": self._bad},
             # in between
             {
-                'type': 'warning',
-                'min': self._bad if self._bad < self._good else self._good,
-                'max': self._bad if self._bad > self._good else self._good,
-            }
+                "type": "warning",
+                "min": self._bad if self._bad < self._good else self._good,
+                "max": self._bad if self._bad > self._good else self._good,
+            },
         ]

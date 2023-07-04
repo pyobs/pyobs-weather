@@ -1,3 +1,4 @@
+from pyobs_weather.weather.dbfunctions import influx_getv
 from pyobs_weather.weather.models import Value
 
 
@@ -23,14 +24,15 @@ class Boolean:
         """
 
         # get last value
-        value = Value.objects.filter(sensor=sensor).order_by('-time').first()
+        # value = Value.objects.filter(sensor=sensor).order_by('-time').first()
+        value = influx_getv(sensor)
 
         # non-existing values are always bad
-        if value is None or value.value is None:
+        if value is None or value["value"] is None:
             return False
 
         # are we good?
-        is_good = value.value is True or value.value != 0
+        is_good = value["value"] is True or value["value"] != 0
         if self._invert:
             is_good = not is_good
 
@@ -40,8 +42,10 @@ class Boolean:
     def areas(self) -> list:
         """Returns list of areas for plot."""
 
-        return [{
-            'type': 'danger',
-            'min': 0.5 if self._invert else 0.,
-            'max': 1.0 if self._invert else 0.5
-        }]
+        return [
+            {
+                "type": "danger",
+                "min": 0.5 if self._invert else 0.0,
+                "max": 1.0 if self._invert else 0.5,
+            }
+        ]
