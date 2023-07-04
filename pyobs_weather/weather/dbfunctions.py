@@ -87,6 +87,7 @@ def influx_getlist(sensor, start, end):
         from(bucket:"{INFLUXDB_BUCKET_5MIN}")
             |> range(start: {start.strftime('%Y-%m-%dT%H:%M:%SZ')}, stop: {end.strftime('%Y-%m-%dT%H:%M:%SZ')})\
             |> filter(fn:(r) => r._measurement == "{sensor.station.code}")
+            |> filter(fn:(r) => r.agg_type == "mean")            
             |> filter(fn: (r) => r["_field"] == "{sensor.type.code}")
         """
     result = client.query_api().query(org=INFLUXDB_ORG, query=query)
