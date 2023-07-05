@@ -10,4 +10,5 @@ psycopg2-binary
 redis
 requests
 requests[socks]
-influxdb-client
+influxdb_client
+mysqlclient
