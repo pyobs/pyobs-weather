@@ -9,25 +9,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # create average station
-        crontab, _ = CrontabSchedule.objects.get_or_create(minute='*/5')
+        interval, _ = IntervalSchedule.objects.get_or_create(every=10, period=IntervalSchedule.SECONDS)
         if Station.objects.filter(code='average').count() == 0:
             Station.objects.get_or_create(
                 code='average',
                 name='Average values',
                 class_name='pyobs_weather.weather.stations.Average',
-                crontab=crontab
-            )
-
-        # create current station
-        interval, _ = IntervalSchedule.objects.get_or_create(every=10, period=IntervalSchedule.SECONDS)
-        interval.save()
-        if Station.objects.filter(code='current').count() == 0:
-            Station.objects.get_or_create(
-                code='current',
-                name='Current values',
-                class_name='pyobs_weather.weather.stations.Current',
-                interval=interval,
-                history=False
+                crontab=interval
             )
 
         # create observer station
