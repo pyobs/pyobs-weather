@@ -1,3 +1,26 @@
+function addAlpha(color, opacity) {
+    // coerce values so ti is between 0 and 1.
+    var _opacity = Math.round(Math.min(Math.max(opacity || 1, 0), 1) * 255);
+    return color + _opacity.toString(16).toUpperCase();
+}
+
+function plot_dict(station, values, agg_type) {
+    // create plot dict
+    return {
+        label: agg_type === 'mean' ? station.name : '',
+        data: values,
+        backgroundColor: addAlpha(station.color, 0.1),
+        borderColor: station.color,
+        //pointBorderColor: station.color,
+        //pointBackgroundColor: station.color,
+        //pointRadius: agg_type === "mean" ? 2 : 0,
+        pointRadius: 0,
+        borderWidth: agg_type === "mean" ? 3 : -1,
+        fill: agg_type === 'max' ? '-1' : 0,
+        lineTension: 0.2
+    }
+}
+
 function plot(canvas) {
     // get type and label
     let type = $(canvas).attr('data-sensor-type');
@@ -16,23 +39,18 @@ function plot(canvas) {
                 return;
 
             // format data
-            let data = [];
+            let v = [], vmin = [], vmax = [];
             station.data.forEach(function (value) {
-                data.push({t: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.value})
+                v.push({t: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.value})
+                vmin.push({t: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.min})
+                vmax.push({t: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.max})
             });
 
-            // create plot dict
-            plotData.push({
-                label: station.name,
-                data: data,
-                backgroundColor: station.color,
-                borderColor: station.color,
-                pointBorderColor: station.color,
-                pointBackgroundColor: station.color,
-                pointRadius: 1,
-                fill: false,
-                lineTension: 0.2
-            });
+            // add
+            plotData.push(plot_dict(station, v, "mean"));
+            plotData.push(plot_dict(station, vmin, "min"));
+            plotData.push(plot_dict(station, vmax, "max"));
+
         });
 
         // annotations
@@ -75,6 +93,13 @@ function plot(canvas) {
                 datasets: plotData
             },
             options: {
+                legend: {
+                   labels: {
+                      filter: function(label) {
+                         return label.text !== '';
+                      }
+                   }
+                },
                 animation: {
                     duration: 0
                 },

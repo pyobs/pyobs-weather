@@ -83,13 +83,13 @@ def influx_getv(sensor):
     return {"time": value[0][0], "value": value[0][1]} if len(value) > 0 else None
 
 
-def influx_getlist(sensor, start, end):
+def influx_getlist(sensor, start, end, agg_type: str = "mean"):
     client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
     query = f"""
         from(bucket:"{INFLUXDB_BUCKET_5MIN}")
             |> range(start: {start.strftime('%Y-%m-%dT%H:%M:%SZ')}, stop: {end.strftime('%Y-%m-%dT%H:%M:%SZ')})\
             |> filter(fn:(r) => r._measurement == "{sensor.station.code}")
-            |> filter(fn:(r) => r.agg_type == "mean")            
+            |> filter(fn:(r) => r.agg_type == "{agg_type}")            
             |> filter(fn: (r) => r["_field"] == "{sensor.type.code}")
         """
     result = client.query_api().query(org=INFLUXDB_ORG, query=query)
