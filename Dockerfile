@@ -1,6 +1,6 @@
-FROM python:3.11-slim AS compile-image
+FROM python:3.11-bookworm AS compile-image
 RUN apt-get update \
-  && apt-get install -y build-essential libmariadbclient-dev-compat \
+  && apt-get install -y build-essential libmariadbclient-dev-compat default-mysql-client \
   && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 RUN pip install --user -r requirements.txt
