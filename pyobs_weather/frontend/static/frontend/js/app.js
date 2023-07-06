@@ -10,14 +10,14 @@ function plot_dict(station, values, agg_type) {
         label: agg_type === 'mean' ? station.name : '',
         data: values,
         backgroundColor: addAlpha(station.color, 0.1),
-        borderColor: station.color,
+        borderColor: addAlpha(station.color, 0.5),
         //pointBorderColor: station.color,
         //pointBackgroundColor: station.color,
-        //pointRadius: agg_type === "mean" ? 2 : 0,
+        pointRadius: agg_type === "mean" ? 2 : 0,
         pointRadius: 0,
         borderWidth: agg_type === "mean" ? 3 : -1,
         fill: agg_type === 'max' ? '-1' : 0,
-        lineTension: 0.2
+        lineTension: 0.2,
     }
 }
 
@@ -41,9 +41,9 @@ function plot(canvas) {
             // format data
             let v = [], vmin = [], vmax = [];
             station.data.forEach(function (value) {
-                v.push({t: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.value})
-                vmin.push({t: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.min})
-                vmax.push({t: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.max})
+                v.push({x: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.value})
+                vmin.push({x: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.min})
+                vmax.push({x: new moment.utc(value.time).format('YYYY-MM-DD HH:mm:ss'), y: value.max})
             });
 
             // add
@@ -52,6 +52,7 @@ function plot(canvas) {
             plotData.push(plot_dict(station, vmax, "max"));
 
         });
+        console.log(plotData);
 
         // annotations
         let annotations = [];
@@ -104,8 +105,8 @@ function plot(canvas) {
                     duration: 0
                 },
                 scales: {
-                    bounds: 'ticks',
-                    xAxes: [{
+                    //bounds: 'ticks',
+                    x: {
                         source: 'auto',
                         type: 'time',
                         time: {
@@ -117,27 +118,25 @@ function plot(canvas) {
                                 hour: 'HH:mm'
                             }
                         },
-                        ticks: {
-                            min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
-                            max: moment.utc().format('YYYY-MM-DD HH:mm:ss')
-                        },
+                        min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                        max: moment.utc().format('YYYY-MM-DD HH:mm:ss'),
                         distribution: 'linear',
-                        scaleLabel: {
+                        title: {
                             display: true,
-                            labelString: 'Time [UT]',
+                            text: 'Time [UT]',
                         }
-                    }],
-                    yAxes: [{
-                        scaleLabel: {
+                    },
+                    y: {
+                        title: {
                             display: true,
-                            labelString: label
+                            text: label
                         },
                         ticks: {
                             callback: function (value) {
                                 return value.toFixed(1);
                             }
                         }
-                    }]
+                    }
                 },
                 annotation: {
                     annotations: annotations
@@ -310,7 +309,7 @@ function plot_good_history() {
         // format data
         let data = [];
         results.sun.time.forEach(function (value, index) {
-            data.push({t: new moment.utc(value).format('YYYY-MM-DD HH:mm:ss'), y: results.sun.alt[index]})
+            data.push({x: new moment.utc(value).format('YYYY-MM-DD HH:mm:ss'), y: results.sun.alt[index]})
         });
 
         // annotations
@@ -356,7 +355,7 @@ function plot_good_history() {
                     borderColor: 'rgb(255, 255, 100, 1)',
                     pointRadius: 0,
                     fill: false,
-                    lineTension: 0.2
+                    lineTension: 0.2,
                 }]
             },
             options: {
@@ -367,8 +366,8 @@ function plot_good_history() {
                     display: false
                 },
                 scales: {
-                    bounds: 'ticks',
-                    xAxes: [{
+                    //bounds: 'ticks',
+                    x: {
                         type: 'time',
                         source: 'auto',
                         distribution: 'linear',
@@ -381,21 +380,19 @@ function plot_good_history() {
                                 hour: 'HH:mm'
                             }
                         },
-                        ticks: {
-                            min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
-                            max: moment.utc().format('YYYY-MM-DD HH:mm:ss')
-                        },
-                        scaleLabel: {
+                        min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                        max: moment.utc().format('YYYY-MM-DD HH:mm:ss'),
+                        title: {
                             display: true,
-                            labelString: 'Time [UT]',
+                            text: 'Time [UT]',
                         }
-                    }],
-                    yAxes: [{
-                        scaleLabel: {
+                    },
+                    y: {
+                        title: {
                             display: true,
-                            labelString: 'Sun/good'
+                            text: 'Sun/good'
                         },
-                    }]
+                    }
                 },
                 annotation: {
                     annotations: annotations
@@ -412,7 +409,7 @@ function update_good_history() {
 }
 
 $(function () {
-    Chart.defaults.global.defaultFontFamily = 'Alegreya';
+    //Chart.defaults.global.defaultFontFamily = 'Alegreya';
 
     $(window).on('resize', draw_timeline);
     update_timeline();
