@@ -13,7 +13,6 @@ function plot_dict(station, values, agg_type) {
         borderColor: addAlpha(station.color, 0.5),
         //pointBorderColor: station.color,
         //pointBackgroundColor: station.color,
-        pointRadius: agg_type === "mean" ? 2 : 0,
         pointRadius: 0,
         borderWidth: agg_type === "mean" ? 3 : -1,
         fill: agg_type === 'max' ? '-1' : 0,
@@ -21,7 +20,70 @@ function plot_dict(station, values, agg_type) {
     }
 }
 
-function plot(canvas) {
+function create_plot(canvas, datasets, annotations) {
+    // get type and label
+    let type = $(canvas).attr('data-sensor-type');
+    let label = $(canvas).attr('data-sensor-label');
+    datasets = datasets ? datasets : [];
+    annotations = annotations ? annotations : {};
+
+    // create plot
+    return new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: { datasets: datasets },
+        options: {
+            plugins: {
+                legend: {
+                    labels: {
+                        filter: function (label) {
+                            return label.text !== '';
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 0
+            },
+            scales: {
+                //bounds: 'ticks',
+                x: {
+                    source: 'auto',
+                    type: 'time',
+                    time: {
+                        tooltipFormat: 'yyyy-MM-dd HH:mm.ss',
+                        displayFormats: {
+                            millisecond: 'HH:mm',
+                            second: 'HH:mm',
+                            minute: 'HH:mm',
+                            hour: 'HH:mm'
+                        }
+                    },
+                    min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                    max: moment.utc().format('YYYY-MM-DD HH:mm:ss'),
+                    distribution: 'linear',
+                    title: {
+                        display: true,
+                        text: 'Time [UT]',
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: label
+                    },
+                    ticks: {
+                        callback: function (value) {
+                            return value.toFixed(1);
+                        }
+                    }
+                }
+            },
+            annotation: annotations
+        }
+    });
+}
+
+function plot(canvas, chart) {
     // get type and label
     let type = $(canvas).attr('data-sensor-type');
     let label = $(canvas).attr('data-sensor-label');
@@ -52,7 +114,6 @@ function plot(canvas) {
             plotData.push(plot_dict(station, vmax, "max"));
 
         });
-        console.log(plotData);
 
         // annotations
         let annotations = [];
@@ -87,74 +148,36 @@ function plot(canvas) {
             annotations.push(ann);
         });
 
-        // create plot
-        new Chart(canvas.getContext('2d'), {
-            type: 'line',
-            data: {
-                datasets: plotData
-            },
-            options: {
-                legend: {
-                   labels: {
-                      filter: function(label) {
-                         return label.text !== '';
-                      }
-                   }
-                },
-                animation: {
-                    duration: 0
-                },
-                scales: {
-                    //bounds: 'ticks',
-                    x: {
-                        source: 'auto',
-                        type: 'time',
-                        time: {
-                            tooltipFormat: 'YYYY-MM-DD HH:mm.ss',
-                            displayFormats: {
-                                millisecond: 'HH:mm',
-                                second: 'HH:mm',
-                                minute: 'HH:mm',
-                                hour: 'HH:mm'
-                            }
-                        },
-                        min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
-                        max: moment.utc().format('YYYY-MM-DD HH:mm:ss'),
-                        distribution: 'linear',
-                        title: {
-                            display: true,
-                            text: 'Time [UT]',
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: label
-                        },
-                        ticks: {
-                            callback: function (value) {
-                                return value.toFixed(1);
-                            }
-                        }
-                    }
-                },
-                annotation: {
-                    annotations: annotations
-                }
-            }
-        });
-
+        // set annotations and update
+        chart.data.datasets = plotData;
+        chart.annotations = annotations;
+        chart.update();
+        //a = create_plot(canvas, plotData, annotations)
+        //console.log(a.scales.x.min);
     });
 }
 
-function update_plots() {
+function create_plots() {
     // do all plots
+    let plots = [];
     $(".plot").each(function (index) {
-        plot(this);
+        let chart = create_plot(this);
+        plots.push({canvas: this, chart: chart});
     });
+    return plots;
+}
+
+function update_plots(plots) {
+    // do all plots
+    plots.forEach(function (value, index) {
+        plot(value.canvas, value.chart);
+    });
+    //$(".plot").each(function (index) {
+    //    plot(this);
+    //});
 
     // schedule next run-
-    setTimeout(update_plots, 60000);
+    setTimeout(update_plots.bind(null, plots), 60000);
 }
 
 function update_values() {
@@ -300,7 +323,56 @@ function create_good_annotation(good) {
     }
 }
 
-function plot_good_history() {
+function create_good_history() {
+    // create plot
+    return new Chart($('#goodhistory')[0].getContext('2d'), {
+        type: 'line',
+        data: {
+            datasets: []
+        },
+        options: {
+            animation: {
+                duration: 0
+            },
+            legend: {
+                display: false
+            },
+            scales: {
+                //bounds: 'ticks',
+                x: {
+                    type: 'time',
+                    source: 'auto',
+                    distribution: 'linear',
+                    time: {
+                        tooltipFormat: 'yyyy-MM-dd HH:mm.ss',
+                        displayFormats: {
+                            millisecond: 'HH:mm',
+                            second: 'HH:mm',
+                            minute: 'HH:mm',
+                            hour: 'HH:mm'
+                        }
+                    },
+                    min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
+                    max: moment.utc().format('YYYY-MM-DD HH:mm:ss'),
+                    title: {
+                        display: true,
+                        text: 'Time [UT]',
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Sun/good'
+                    },
+                }
+            },
+            annotation: {
+                annotations: {}
+            }
+        }
+    });
+}
+function plot_good_history(chart) {
     // do AJAX request
     $.ajax({
         url: rootURL + 'api/history/goodweather/',
@@ -344,68 +416,23 @@ function plot_good_history() {
             borderWidth: 1
         })
 
-        // create plot
-        new Chart($('#goodhistory')[0].getContext('2d'), {
-            type: 'line',
-            data: {
-                datasets: [{
-                    label: undefined,
-                    data: data,
-                    backgroundColor: 'rgb(255, 255, 100, 0.5)',
-                    borderColor: 'rgb(255, 255, 100, 1)',
-                    pointRadius: 0,
-                    fill: false,
-                    lineTension: 0.2,
-                }]
-            },
-            options: {
-                animation: {
-                    duration: 0
-                },
-                legend: {
-                    display: false
-                },
-                scales: {
-                    //bounds: 'ticks',
-                    x: {
-                        type: 'time',
-                        source: 'auto',
-                        distribution: 'linear',
-                        time: {
-                            tooltipFormat: 'YYYY-MM-DD HH:mm.ss',
-                            displayFormats: {
-                                millisecond: 'HH:mm',
-                                second: 'HH:mm',
-                                minute: 'HH:mm',
-                                hour: 'HH:mm'
-                            }
-                        },
-                        min: moment.utc().subtract(1, 'days').format('YYYY-MM-DD HH:mm:ss'),
-                        max: moment.utc().format('YYYY-MM-DD HH:mm:ss'),
-                        title: {
-                            display: true,
-                            text: 'Time [UT]',
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Sun/good'
-                        },
-                    }
-                },
-                annotation: {
-                    annotations: annotations
-                }
-            }
-        });
-
+        chart.data.datasets = [{
+                label: undefined,
+                data: data,
+                backgroundColor: 'rgb(255, 255, 100, 0.5)',
+                borderColor: 'rgb(255, 255, 100, 1)',
+                pointRadius: 0,
+                fill: false,
+                lineTension: 0.2,
+            }]
+        chart.annotations = annotations;
+        chart.update();
     });
 }
 
-function update_good_history() {
-    plot_good_history();
-    setTimeout(update_good_history, 60000);
+function update_good_history(chart) {
+    plot_good_history(chart);
+    setTimeout(update_good_history.bind(0, chart), 60000);
 }
 
 $(function () {
@@ -413,7 +440,9 @@ $(function () {
 
     $(window).on('resize', draw_timeline);
     update_timeline();
-    update_plots();
-    update_good_history();
+    let plots = create_plots();
+    update_plots(plots);
+    let good = create_good_history();
+    update_good_history(good);
     update_values();
 });
