@@ -44,7 +44,9 @@ def station_detail(request, station_code):
         )
 
     # return all
-    return JsonResponse({"name": station.name, "code": station.code, "sensors": list(sensors)})
+    return JsonResponse(
+        {"name": station.name, "code": station.code, "sensors": list(sensors)}
+    )
 
 
 def sensor_detail(request, station_code, sensor_code):
@@ -93,7 +95,9 @@ def current(request):
             if sensors[sensor.type.code]["good"] is None:
                 sensors[sensor.type.code]["good"] = sensor.good
             else:
-                sensors[sensor.type.code]["good"] = sensor.good and sensors[sensor.type.code]["good"]
+                sensors[sensor.type.code]["good"] = (
+                    sensor.good and sensors[sensor.type.code]["good"]
+                )
 
         # is average sensor?
         if sensor.station == station:
@@ -101,7 +105,9 @@ def current(request):
             value = get_value(sensor)
 
             # set it
-            sensors[sensor.type.code]["value"] = None if value is None else value["value"]
+            sensors[sensor.type.code]["value"] = (
+                None if value is None else value["value"]
+            )
             if value is not None and "time" in value:
                 time = value["time"]
 
@@ -143,7 +149,9 @@ def history(request, sensor_type):
     # loop all sensors of that type
     stations = []
     areas = []
-    for sensor in Sensor.objects.filter(type=st, station__history=True, station__active=True):
+    for sensor in Sensor.objects.filter(
+        type=st, station__history=True, station__active=True
+    ):
         # get data
         values = influx_getlist(sensor=sensor, start=start, end=end, agg_type="mean")
         values_min = influx_getlist(sensor=sensor, start=start, end=end, agg_type="min")
@@ -151,7 +159,12 @@ def history(request, sensor_type):
 
         # combine
         data = [
-            {"time": v["time"], "value": v["value"], "min": vmin["value"], "max": vmax["value"]}
+            {
+                "time": v["time"],
+                "value": v["value"],
+                "min": vmin["value"],
+                "max": vmax["value"],
+            }
             for v, vmin, vmax in zip(values, values_min, values_max)
         ]
 
@@ -184,8 +197,12 @@ def sensors(request):
     data = Sensor.objects.filter(station__active=True)
 
     # add station and type
-    data = data.annotate(station_code=F("station__code"), station_name=F("station__name"))
-    data = data.annotate(type_code=F("type__code"), type_name=F("type__name"), unit=F("type__unit"))
+    data = data.annotate(
+        station_code=F("station__code"), station_name=F("station__name")
+    )
+    data = data.annotate(
+        type_code=F("type__code"), type_name=F("type__name"), unit=F("type__unit")
+    )
 
     # order
     data = data.order_by("station_name", "type_name")
@@ -229,7 +246,9 @@ def timeline(request):
     events.append(sunset_twilight.isot)
 
     # twilight at sunrise
-    sunrise_twilight = observer.sun_rise_time(sunset_twilight, which="next", horizon=-12.0 * u.deg)
+    sunrise_twilight = observer.sun_rise_time(
+        sunset_twilight, which="next", horizon=-12.0 * u.deg
+    )
     events.append(sunrise_twilight.isot)
 
     # sunrise
@@ -244,7 +263,9 @@ def good_weather(request):
     # get changes in status from last 24 hours
     changes = [
         {"time": g.time, "good": g.good}
-        for g in GoodWeather.objects.filter(time__gt=datetime.utcnow() - timedelta(days=1)).all()
+        for g in GoodWeather.objects.filter(
+            time__gt=datetime.utcnow() - timedelta(days=1)
+        ).all()
     ]
 
     # if None, return last one
@@ -269,4 +290,6 @@ def good_weather(request):
     sun = [s.alt.degree for s in observer.sun_altaz(times)]
 
     # return all
-    return JsonResponse({"changes": changes, "sun": {"time": [t.isot for t in times], "alt": sun}})
+    return JsonResponse(
+        {"changes": changes, "sun": {"time": [t.isot for t in times], "alt": sun}}
+    )

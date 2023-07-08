@@ -39,6 +39,9 @@ function create_plot(canvas, datasets, annotations) {
                             return label.text !== '';
                         }
                     }
+                },
+                annotation: {
+                    annotations: annotations
                 }
             },
             animation: {
@@ -77,8 +80,7 @@ function create_plot(canvas, datasets, annotations) {
                         }
                     }
                 }
-            },
-            annotation: annotations
+            }
         }
     });
 }
@@ -122,7 +124,7 @@ function plot(canvas, chart) {
             let ann = {
                 type: 'box',
                 display: true,
-                yScaleID: 'y-axis-0',
+                yScaleID: 'y',
                 drawTime: 'beforeDatasetsDraw'
             };
 
@@ -150,10 +152,8 @@ function plot(canvas, chart) {
 
         // set annotations and update
         chart.data.datasets = plotData;
-        chart.annotations = annotations;
+        chart.options.plugins.annotation.annotations = annotations;
         chart.update();
-        //a = create_plot(canvas, plotData, annotations)
-        //console.log(a.scales.x.min);
     });
 }
 
@@ -315,8 +315,8 @@ function create_good_annotation(good) {
     return {
         type: 'box',
         display: true,
-        xScaleID: 'x-axis-0',
-        yScaleID: 'y-axis-0',
+        xScaleID: 'x',
+        yScaleID: 'y',
         drawTime: 'beforeDatasetsDraw',
         borderWidth: 0,
         backgroundColor: good ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'
@@ -334,8 +334,13 @@ function create_good_history() {
             animation: {
                 duration: 0
             },
-            legend: {
-                display: false
+            plugins: {
+                legend: {
+                    display: false
+                },
+                annotation: {
+                    annotations: {}
+                }
             },
             scales: {
                 //bounds: 'ticks',
@@ -366,9 +371,6 @@ function create_good_history() {
                     },
                 }
             },
-            annotation: {
-                annotations: {}
-            }
         }
     });
 }
@@ -410,7 +412,7 @@ function plot_good_history(chart) {
         annotations.push({
             type: 'line',
             mode: 'horizontal',
-            scaleID: 'y-axis-0',
+            scaleID: 'y',
             value: 0,
             borderColor: 'rgb(0, 0, 0, 0.5)',
             borderWidth: 1
@@ -425,7 +427,7 @@ function plot_good_history(chart) {
                 fill: false,
                 lineTension: 0.2,
             }]
-        chart.annotations = annotations;
+        chart.options.plugins.annotation.annotations = annotations;
         chart.update();
     });
 }
