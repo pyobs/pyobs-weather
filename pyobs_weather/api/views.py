@@ -9,10 +9,10 @@ from django.db.models import F
 from django.http import JsonResponse, HttpResponseNotFound
 import numpy as np
 
-from pyobs_weather.weather import evaluators
-from pyobs_weather.weather.models import Station, Sensor, Value, SensorType, GoodWeather
+from pyobs_weather.settings import INFLUXDB_MEASUREMENT_AVERAGE
+from pyobs_weather.weather.models import Station, Sensor, SensorType, GoodWeather
 from pyobs_weather.weather.tasks import create_evaluator
-from pyobs_weather.weather.dbfunctions import get_value, get_list, influx_getlist
+from pyobs_weather.weather.influx import read_sensor_values, read_sensor_value
 
 
 def stations_list(request):
@@ -31,7 +31,7 @@ def station_detail(request, station_code):
     sensors = []
     for sensor in Sensor.objects.filter(station=station):
         # get latest value
-        value = get_value(sensor)
+        value = read_sensor_value(sensor)
 
         # append
         sensors.append(
@@ -44,9 +44,7 @@ def station_detail(request, station_code):
         )
 
     # return all
-    return JsonResponse(
-        {"name": station.name, "code": station.code, "sensors": list(sensors)}
-    )
+    return JsonResponse({"name": station.name, "code": station.code, "sensors": list(sensors)})
 
 
 def sensor_detail(request, station_code, sensor_code):
@@ -59,7 +57,7 @@ def sensor_detail(request, station_code, sensor_code):
         return HttpResponseNotFound("Sensor not found.")
 
     # get latest value
-    value = get_value(sensor)
+    value = read_sensor_value(sensor)
 
     # return it
     return JsonResponse(
@@ -77,7 +75,7 @@ def sensor_detail(request, station_code, sensor_code):
 
 def current(request):
     # get average station
-    station = Station.objects.get(code="average")
+    station = Station.objects.get(code=INFLUXDB_MEASUREMENT_AVERAGE)
     if station is None:
         return HttpResponseNotFound("Could not access current weather.")
 
@@ -95,19 +93,15 @@ def current(request):
             if sensors[sensor.type.code]["good"] is None:
                 sensors[sensor.type.code]["good"] = sensor.good
             else:
-                sensors[sensor.type.code]["good"] = (
-                    sensor.good and sensors[sensor.type.code]["good"]
-                )
+                sensors[sensor.type.code]["good"] = sensor.good and sensors[sensor.type.code]["good"]
 
         # is average sensor?
         if sensor.station == station:
             # get latest value
-            value = get_value(sensor)
+            value = read_sensor_value(sensor)
 
             # set it
-            sensors[sensor.type.code]["value"] = (
-                None if value is None else value["value"]
-            )
+            sensors[sensor.type.code]["value"] = None if value is None else value["value"]
             if value is not None and "time" in value:
                 time = value["time"]
 
@@ -149,13 +143,11 @@ def history(request, sensor_type):
     # loop all sensors of that type
     stations = []
     areas = []
-    for sensor in Sensor.objects.filter(
-        type=st, station__history=True, station__active=True
-    ):
+    for sensor in Sensor.objects.filter(type=st, station__history=True, station__active=True):
         # get data
-        values = influx_getlist(sensor=sensor, start=start, end=end, agg_type="mean")
-        values_min = influx_getlist(sensor=sensor, start=start, end=end, agg_type="min")
-        values_max = influx_getlist(sensor=sensor, start=start, end=end, agg_type="max")
+        values = read_sensor_values(sensor=sensor, start=start, end=end, agg_type="mean")
+        values_min = read_sensor_values(sensor=sensor, start=start, end=end, agg_type="min")
+        values_max = read_sensor_values(sensor=sensor, start=start, end=end, agg_type="max")
 
         # combine
         data = [
@@ -169,7 +161,7 @@ def history(request, sensor_type):
         ]
 
         # got average sensor?
-        if sensor.station.code == "average":
+        if sensor.station.code == INFLUXDB_MEASUREMENT_AVERAGE:
             # loop all evaluators for this sensor to define coloured areas in plot
             for evaluator in sensor.evaluators.all():
                 # get evaluator
@@ -197,12 +189,8 @@ def sensors(request):
     data = Sensor.objects.filter(station__active=True)
 
     # add station and type
-    data = data.annotate(
-        station_code=F("station__code"), station_name=F("station__name")
-    )
-    data = data.annotate(
-        type_code=F("type__code"), type_name=F("type__name"), unit=F("type__unit")
-    )
+    data = data.annotate(station_code=F("station__code"), station_name=F("station__name"))
+    data = data.annotate(type_code=F("type__code"), type_name=F("type__name"), unit=F("type__unit"))
 
     # order
     data = data.order_by("station_name", "type_name")
@@ -212,7 +200,7 @@ def sensors(request):
 
     # add latest value
     for i, sensor in enumerate(data):
-        val = get_value(sensor)
+        val = read_sensor_value(sensor)
         values[i]["value"] = None if val is None else val["value"]
 
     # return all
@@ -246,9 +234,7 @@ def timeline(request):
     events.append(sunset_twilight.isot)
 
     # twilight at sunrise
-    sunrise_twilight = observer.sun_rise_time(
-        sunset_twilight, which="next", horizon=-12.0 * u.deg
-    )
+    sunrise_twilight = observer.sun_rise_time(sunset_twilight, which="next", horizon=-12.0 * u.deg)
     events.append(sunrise_twilight.isot)
 
     # sunrise
@@ -263,9 +249,7 @@ def good_weather(request):
     # get changes in status from last 24 hours
     changes = [
         {"time": g.time, "good": g.good}
-        for g in GoodWeather.objects.filter(
-            time__gt=datetime.utcnow() - timedelta(days=1)
-        ).all()
+        for g in GoodWeather.objects.filter(time__gt=datetime.utcnow() - timedelta(days=1)).all()
     ]
 
     # if None, return last one
@@ -290,6 +274,4 @@ def good_weather(request):
     sun = [s.alt.degree for s in observer.sun_altaz(times)]
 
     # return all
-    return JsonResponse(
-        {"changes": changes, "sun": {"time": [t.isot for t in times], "alt": sun}}
-    )
+    return JsonResponse({"changes": changes, "sun": {"time": [t.isot for t in times], "alt": sun}})

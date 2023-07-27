@@ -1,8 +1,5 @@
 import json
 import logging
-from datetime import datetime
-
-import pytz
 from django.db import models
 from django_celery_beat.models import CrontabSchedule, IntervalSchedule, PeriodicTask
 
@@ -26,11 +23,7 @@ class Evaluator(models.Model):
     )
 
     def __str__(self):
-        params = (
-            ["%s=%s" % (k, str(v)) for k, v in json.loads(self.kwargs).items()]
-            if self.kwargs
-            else ""
-        )
+        params = ["%s=%s" % (k, str(v)) for k, v in json.loads(self.kwargs).items()] if self.kwargs else ""
         return self.name + ": " + self.class_name + "(" + ", ".join(params) + ")"
 
 
@@ -40,18 +33,10 @@ class Station(models.Model):
     id = models.AutoField(primary_key=True)
     code = models.CharField("Code for weather station", max_length=10, unique=True)
     name = models.CharField("Name of weather station", max_length=50)
-    class_name = models.CharField(
-        "Name of Python class to handle station", max_length=100
-    )
-    kwargs = models.TextField(
-        "JSON encoded kwargs used when instantiating Python class", default="{}"
-    )
-    crontab = models.ForeignKey(
-        CrontabSchedule, on_delete=models.CASCADE, blank=True, null=True
-    )
-    interval = models.ForeignKey(
-        IntervalSchedule, on_delete=models.CASCADE, blank=True, null=True
-    )
+    class_name = models.CharField("Name of Python class to handle station", max_length=100)
+    kwargs = models.TextField("JSON encoded kwargs used when instantiating Python class", default="{}")
+    crontab = models.ForeignKey(CrontabSchedule, on_delete=models.CASCADE, blank=True, null=True)
+    interval = models.ForeignKey(IntervalSchedule, on_delete=models.CASCADE, blank=True, null=True)
     weight = models.FloatField("Weight for station in global average", default=1)
     history = models.BooleanField("Whether to keep more than one point", default=True)
     active = models.BooleanField("Whether station is currently active", default=True)
@@ -121,24 +106,12 @@ class Sensor(models.Model):
     station = models.ForeignKey(Station, on_delete=models.CASCADE, db_index=True)
     type = models.ForeignKey(SensorType, on_delete=models.CASCADE)
     evaluators = models.ManyToManyField(Evaluator, blank=True)
-    good = models.BooleanField(
-        "Whether its current value was evaluated as good", blank=True, null=True
-    )
-    since = models.DateTimeField(
-        "Time the good parameter last changed", blank=True, null=True
-    )
-    delay_good = models.IntegerField(
-        "Delay in seconds before switching to good weather", default=0
-    )
-    delay_bad = models.IntegerField(
-        "Delay in seconds before switching to bad weather", default=0
-    )
-    bad_since = models.DateTimeField(
-        "Time of last bad sensor value", blank=True, null=True
-    )
-    good_since = models.DateTimeField(
-        "Time of last good sensor value", blank=True, null=True
-    )
+    good = models.BooleanField("Whether its current value was evaluated as good", blank=True, null=True)
+    since = models.DateTimeField("Time the good parameter last changed", blank=True, null=True)
+    delay_good = models.IntegerField("Delay in seconds before switching to good weather", default=0)
+    delay_bad = models.IntegerField("Delay in seconds before switching to bad weather", default=0)
+    bad_since = models.DateTimeField("Time of last bad sensor value", blank=True, null=True)
+    good_since = models.DateTimeField("Time of last good sensor value", blank=True, null=True)
     average = models.BooleanField("Whether or not to use this in average", default=True)
 
     def __str__(self):
@@ -172,7 +145,5 @@ class GoodWeather(models.Model):
     """Times of changes from good to bad weather and vice versa."""
 
     id = models.AutoField(primary_key=True)
-    time = models.DateTimeField(
-        "Date and time of status change", db_index=True, auto_now_add=True
-    )
+    time = models.DateTimeField("Date and time of status change", db_index=True, auto_now_add=True)
     good = models.BooleanField("Weather now good?")

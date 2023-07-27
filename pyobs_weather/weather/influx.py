@@ -1,4 +1,7 @@
+from typing import List, Tuple, Optional
 from influxdb_client import InfluxDBClient, Point
+from datetime import datetime
+from influxdb_client.client.write_api import SYNCHRONOUS
 
 from pyobs_weather.settings import (
     INFLUXDB_URL,
@@ -7,68 +10,78 @@ from pyobs_weather.settings import (
     INFLUXDB_BUCKET,
     INFLUXDB_BUCKET_5MIN,
 )
+from pyobs_weather.weather.models import Station, Sensor
 
-# TODO: Bucket als function argument bei allen. Influx Werte hierher, statt settings?
 
-
-def get_value(station_code, sensor_code, avg=False):
-    bucket = INFLUXDB_BUCKET_5MIN if avg else INFLUXDB_BUCKET
+def read_sensor_value(sensor):
     client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
     query = f"""
-        from(bucket:"{bucket}")
+        from(bucket:"{INFLUXDB_BUCKET}")
             |> range(start: -10m)\
-            |> filter(fn:(r) => r._measurement == "{station_code}")
-            |> filter(fn: (r) => r["_field"] == "{sensor_code}")
+            |> filter(fn:(r) => r._measurement == "{sensor.station.code}")
+            |> filter(fn: (r) => r["_field"] == "{sensor.type.code}")
             |> last()
         """
     result = client.query_api().query(org=INFLUXDB_ORG, query=query)
-    value = result.to_values(columns=("_time", "_value"))
+    value = result.to_values(columns=["_time", "_value"])
 
-    return (
-        value[0] if len(value) > 0 else None
-    )  # [[]] -> [], where return_value[0] = time and return_value[1] = value
+    return {"time": value[0][0], "value": value[0][1]} if len(value) > 0 else None
 
 
-def get_list_from_influx(
-    station_code, sensor_code, start, end
-):  # TODO geeigneten Namen finden
+def read_sensor_values(sensor, start, end, agg_type: str = "mean"):
     client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
     query = f"""
         from(bucket:"{INFLUXDB_BUCKET_5MIN}")
-            |> range(start: {start}, stop: {end})\
-            |> filter(fn:(r) => r._measurement == "{station_code}")
-            |> filter(fn: (r) => r["_field"] == "{sensor_code}")
+            |> range(start: {start.strftime('%Y-%m-%dT%H:%M:%SZ')}, stop: {end.strftime('%Y-%m-%dT%H:%M:%SZ')})\
+            |> filter(fn:(r) => r._measurement == "{sensor.station.code}")
+            |> filter(fn:(r) => r.agg_type == "{agg_type}")            
+            |> filter(fn: (r) => r["_field"] == "{sensor.type.code}")
         """
     result = client.query_api().query(org=INFLUXDB_ORG, query=query)
-    return result.to_values(columns=("_time", "_value"))
+    temp = result.to_values(columns=["_time", "_value"])
+
+    values = []
+    for value in temp:
+        values.append({"time": value[0].strftime("%Y-%m-%dT%H:%M:%SZ"), "value": value[1]})
+
+    return values
 
 
-def write_value(station_code, sensor_code, time, value, avg=False):
-    bucket = INFLUXDB_BUCKET_5MIN if avg else INFLUXDB_BUCKET
+def write_sensor_value(sensor: Sensor, time: datetime, value: float, station: Optional[str] = None):
+    """Write single value to influx.
 
-    client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
-    write_api = client.write_api()
-    p = Point(station_code).field(sensor_code, value).time(time)
-    write_api.write(bucket=bucket, record=p)
+    Args:
+        sensor: Sensor to write value for.
+        time: Time of sensor reading.
+        value: Value of reading.
+    """
+
+    # if station name is None, set it to sensor station code
+    if station is None:
+        station = sensor.station.code
+
+    # connect to db and write
+    with InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG) as client:
+        write_api = client.write_api(write_options=SYNCHRONOUS)
+        p = Point(station).field(sensor.type.code, value).time(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=p)
 
 
-def write_current(station_code, sensor_code, time, value, avg=False):
-    client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
-    write_api = client.write_api()
-    p = Point(station_code).field(sensor_code, value).time(time)
-    write_api.write(bucket=INFLUXDB_BUCKET_CURRENT, record=p)
+def write_sensor_values(time: datetime, station: Station, values: List[Tuple[str, float]]) -> None:
+    """Write a whole set of measurements to influx.
 
+    Args:
+        time: Time of measurements.
+        station: Station to write for.
+        values: List of [str, float] tuples with sensor readings.
 
-def get_current(station_code, sensor_code):
-    client = InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
-    query = f"""
-        from(bucket:"{INFLUXDB_BUCKET_CURRENT}")
-            |> range(start: -10m)\
-            |> filter(fn:(r) => r._measurement == "{station_code}")
-            |> filter(fn: (r) => r["_field"] == "{sensor_code}")
-            |> last()
-        """
-    result = client.query_api().query(org=INFLUXDB_ORG, query=query)
-    value = result.to_values(columns=("_time", "_value"))
+    Returns:
 
-    return value[0] if len(value) > 0 else None
+    """
+    with InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG) as client:
+        write_api = client.write_api(write_options=SYNCHRONOUS)
+        p = Point(station.code)
+        for sensor, value in values:
+            p = p.field(sensor, value)
+        p = p.time(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=p)

@@ -1,10 +1,7 @@
 from django.core.management.base import BaseCommand
-from django_celery_beat.schedulers import (
-    CrontabSchedule,
-    IntervalSchedule,
-    PeriodicTask,
-)
+from django_celery_beat.schedulers import IntervalSchedule, PeriodicTask
 
+from pyobs_weather.settings import INFLUXDB_MEASUREMENT_AVERAGE
 from pyobs_weather.weather.models import Station, Evaluator
 
 
@@ -13,21 +10,17 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # create average station
-        interval, _ = IntervalSchedule.objects.get_or_create(
-            every=10, period=IntervalSchedule.SECONDS
-        )
-        if Station.objects.filter(code="average").count() == 0:
+        interval, _ = IntervalSchedule.objects.get_or_create(every=10, period=IntervalSchedule.SECONDS)
+        if Station.objects.filter(code=INFLUXDB_MEASUREMENT_AVERAGE).count() == 0:
             Station.objects.get_or_create(
-                code="average",
+                code=INFLUXDB_MEASUREMENT_AVERAGE,
                 name="Average values",
                 class_name="pyobs_weather.weather.stations.Average",
                 interval=interval,
             )
 
         # create observer station
-        interval, _ = IntervalSchedule.objects.get_or_create(
-            every=30, period=IntervalSchedule.SECONDS
-        )
+        interval, _ = IntervalSchedule.objects.get_or_create(every=30, period=IntervalSchedule.SECONDS)
         interval.save()
         if Station.objects.filter(code="observer").count() == 0:
             Station.objects.get_or_create(
@@ -39,9 +32,7 @@ class Command(BaseCommand):
             )
 
         # create interval for evaluation
-        interval, _ = IntervalSchedule.objects.get_or_create(
-            every=10, period=IntervalSchedule.SECONDS
-        )
+        interval, _ = IntervalSchedule.objects.get_or_create(every=10, period=IntervalSchedule.SECONDS)
         PeriodicTask.objects.get_or_create(
             interval=interval,
             name="Evaluate sensor goodness",

@@ -162,7 +162,7 @@ INFLUXDB_TOKEN = "Y3xVIjr_9Q6Nu_jX2fdYzRfyIOsizUWtKYA3l3AhnDyOJ509LdCHcZ2FPlBSDr
 INFLUXDB_ORG = "Test"
 INFLUXDB_BUCKET = "weather"
 INFLUXDB_BUCKET_5MIN = "weather_average"
-INFLUXDB_MEASUREMENT_AVERAGE = "iag50srv"
+INFLUXDB_MEASUREMENT_AVERAGE = "average"
 
 # try to import a local_settings.py
 try:

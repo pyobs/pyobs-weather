@@ -1,5 +1,4 @@
-from pyobs_weather.weather.dbfunctions import influx_getv
-from pyobs_weather.weather.models import Value
+from pyobs_weather.weather.influx import read_sensor_value
 
 
 class Valid:
@@ -20,8 +19,7 @@ class Valid:
         """
 
         # get last value
-        # value = Value.objects.filter(sensor=sensor).order_by('-time').first()
-        value = influx_getv(sensor)
+        value = read_sensor_value(sensor)
 
         # are we good?
         is_good = value is not None and value["value"] is not None

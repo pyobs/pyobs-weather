@@ -1,11 +1,9 @@
-import pytz
-from astroplan import Observer
 from astropy.coordinates import EarthLocation
 import astropy.units as u
-from astropy.time import Time
 from django.conf import settings
 from django.views.generic import TemplateView
 
+from pyobs_weather.settings import INFLUXDB_MEASUREMENT_AVERAGE
 from pyobs_weather.weather.models import Station, SensorType, Sensor, Value
 
 
@@ -14,7 +12,7 @@ class OverView(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         # get average weather station
-        station = Station.objects.get(code='average')
+        station = Station.objects.get(code=INFLUXDB_MEASUREMENT_AVERAGE)
 
         # loop all sensor types
         values = []
@@ -22,7 +20,7 @@ class OverView(TemplateView):
             # loop all sensors for this station and of this type
             for sensor in Sensor.objects.filter(station=station, type=sensor_type):
                 # get latest value
-                values.append(Value.objects.filter(sensor=sensor).order_by('-time').first())
+                values.append(Value.objects.filter(sensor=sensor).order_by("-time").first())
 
         # get sensor types
         value_types = []
@@ -40,28 +38,26 @@ class OverView(TemplateView):
                 pass
 
         # get location
-        location = EarthLocation(lon=settings.OBSERVER_LOCATION['longitude'] * u.deg,
-                                 lat=settings.OBSERVER_LOCATION['latitude'] * u.deg,
-                                 height=settings.OBSERVER_LOCATION['elevation'] * u.m)
+        location = EarthLocation(
+            lon=settings.OBSERVER_LOCATION["longitude"] * u.deg,
+            lat=settings.OBSERVER_LOCATION["latitude"] * u.deg,
+            height=settings.OBSERVER_LOCATION["elevation"] * u.m,
+        )
 
         # lon and lat
-        lon = location.lon.to_string(sep='°\'"', precision=1)
-        lon = lon[1:] + ' W' if lon[0] == '-' else lon + ' E'
-        lat = location.lat.to_string(sep='°\'"', precision=1)
-        lat = lat[1:] + ' S' if lat[0] == '-' else lat + ' N'
+        lon = location.lon.to_string(sep="°'\"", precision=1)
+        lon = lon[1:] + " W" if lon[0] == "-" else lon + " E"
+        lat = location.lat.to_string(sep="°'\"", precision=1)
+        lat = lat[1:] + " S" if lat[0] == "-" else lat + " N"
 
         # return it
         return {
-            'site': settings.OBSERVER_NAME,
-            'title': settings.WINDOW_TITLE,
-            'root_url': settings.ROOT_URL,
-            'value_types': value_types,
-            'plot_types': plot_types,
-            'location': {
-                'longitude': lon,
-                'latitude': lat,
-                'elevation': location.height.value
-            }
+            "site": settings.OBSERVER_NAME,
+            "title": settings.WINDOW_TITLE,
+            "root_url": settings.ROOT_URL,
+            "value_types": value_types,
+            "plot_types": plot_types,
+            "location": {"longitude": lon, "latitude": lat, "elevation": location.height.value},
         }
 
 
@@ -69,11 +65,11 @@ class SensorsView(TemplateView):
     template_name = "sensors.html"
 
     def get_context_data(self, *args, **kwargs):
-        return {'title': settings.WINDOW_TITLE + ' (sensors)', 'root_url': settings.ROOT_URL}
+        return {"title": settings.WINDOW_TITLE + " (sensors)", "root_url": settings.ROOT_URL}
 
 
 class Documentation(TemplateView):
     template_name = "documentation.html"
 
     def get_context_data(self, *args, **kwargs):
-        return {'title': settings.WINDOW_TITLE + ' (documentation)', 'root_url': settings.ROOT_URL}
+        return {"title": settings.WINDOW_TITLE + " (documentation)", "root_url": settings.ROOT_URL}

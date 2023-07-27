@@ -1,5 +1,4 @@
-from pyobs_weather.weather.dbfunctions import influx_getv
-from pyobs_weather.weather.models import Value
+from pyobs_weather.weather.influx import read_sensor_value
 
 
 class Boolean:
@@ -24,8 +23,7 @@ class Boolean:
         """
 
         # get last value
-        # value = Value.objects.filter(sensor=sensor).order_by('-time').first()
-        value = influx_getv(sensor)
+        value = read_sensor_value(sensor)
 
         # non-existing values are always bad
         if value is None or value["value"] is None:

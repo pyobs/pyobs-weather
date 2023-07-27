@@ -1,8 +1,8 @@
 import datetime
 from typing import List, Tuple
 
-from pyobs_weather.weather.models import Value, Station, SensorType, Sensor
-from pyobs_weather.weather.dbfunctions import write_value, influx_write_values
+from pyobs_weather.weather.models import Station, SensorType, Sensor
+from pyobs_weather.weather.influx import write_sensor_values, write_sensor_value
 
 SENSOR_TYPES = dict(
     temp=dict(code="temp", name="Temperature", unit="°C"),
@@ -42,9 +42,7 @@ class WeatherStation:
             sensor_type = SensorType.objects.create(**SENSOR_TYPES[sensor_code])
 
         # now add sensor itself
-        sensor, _ = Sensor.objects.get_or_create(
-            station=self._station, type=sensor_type
-        )
+        sensor, _ = Sensor.objects.get_or_create(station=self._station, type=sensor_type)
 
         # return it
         return sensor
@@ -62,7 +60,7 @@ class WeatherStation:
         sensor = Sensor.objects.get(station=self._station, type__code=sensor_code)
 
         # create value
-        write_value(sensor=sensor, time=time, value=value)
+        write_sensor_value(sensor=sensor, time=time, value=value)
 
     def _add_values(self, time: datetime.datetime, values: List[Tuple[str, float]]):
         """Add values for the given sensors
@@ -73,7 +71,7 @@ class WeatherStation:
         """
 
         # create value
-        influx_write_values(time=time, station=self._station, values=values)
+        write_sensor_values(time=time, station=self._station, values=values)
 
 
 __all__ = ["WeatherStation"]

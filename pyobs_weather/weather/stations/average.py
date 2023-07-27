@@ -4,7 +4,8 @@ import numpy as np
 import pytz
 
 from .station import WeatherStation
-
+from ..influx import write_sensor_value, read_sensor_value
+from ...settings import INFLUXDB_MEASUREMENT_AVERAGE
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +17,8 @@ class Average(WeatherStation):
     This station gets configured by the *initweather* script and is running in an interval every 10 seconds.
 
     All sensors of this station that are vital for operation should have
-    :ref:`Valid <pyobs_weather.weather.evaluators.Valid>` evaluators attached to them."""
+    :ref:`Valid <pyobs_weather.weather.evaluators.Valid>` evaluators attached to them.
+    """
 
     def create_sensors(self):
         """Entry point for creating sensors for this station.
@@ -31,7 +33,6 @@ class Average(WeatherStation):
         averages of the latest values, which it stores in sensors of the same type. Values from other stations are
         only used if they are not older than 10 minutes.
         """
-        from pyobs_weather.weather.dbfunctions import get_value, write_value
         from pyobs_weather.weather.models import SensorType, Sensor, Value
 
         log.info("Updating average...")
@@ -44,15 +45,13 @@ class Average(WeatherStation):
             values = []
 
             # loop all sensors of that type
-            for sensor in Sensor.objects.filter(
-                type=sensor_type, average=True, station__active=True
-            ):
+            for sensor in Sensor.objects.filter(type=sensor_type, average=True, station__active=True):
                 # skip average
-                if sensor.station.code == "average":
+                if sensor.station.code == INFLUXDB_MEASUREMENT_AVERAGE:
                     continue
 
                 # get latest value of that sensor
-                value = get_value(sensor)
+                value = read_sensor_value(sensor)
 
                 # valid?
                 if value is not None and value["value"] is not None:
@@ -62,11 +61,11 @@ class Average(WeatherStation):
                         values.append(value["value"])
 
             # calculate average
-            avg = np.mean(values) if values else None
+            avg = float(np.mean(values)) if values else None
 
             # and store it
             sensor = self._add_sensor(sensor_type.code)
-            write_value(sensor=sensor, time=now, value=avg)
+            write_sensor_value(sensor=sensor, time=now, value=avg, station=INFLUXDB_MEASUREMENT_AVERAGE)
 
 
 __all__ = ["Average"]

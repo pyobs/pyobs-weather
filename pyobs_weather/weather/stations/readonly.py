@@ -1,7 +1,4 @@
 import logging
-import pytz
-from astropy.time import Time
-import requests
 
 from .station import WeatherStation
 
