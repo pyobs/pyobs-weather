@@ -19,7 +19,7 @@ def read_sensor_value(sensor):
             from(bucket:"{INFLUXDB_BUCKET}")
                 |> range(start: -10m)\
                 |> filter(fn:(r) => r._measurement == "{sensor.station.code}")
-                |> filter(fn:(r) => r_field == "{sensor.type.code}")
+                |> filter(fn:(r) => r._field == "{sensor.type.code}")
                 |> last()
             """
         result = client.query_api().query(org=INFLUXDB_ORG, query=query)
@@ -35,7 +35,7 @@ def read_sensor_values(sensor, start, end, agg_type: str = "mean"):
                 |> range(start: {start.strftime('%Y-%m-%dT%H:%M:%SZ')}, stop: {end.strftime('%Y-%m-%dT%H:%M:%SZ')})\
                 |> filter(fn:(r) => r._measurement == "{sensor.station.code}")
                 |> filter(fn:(r) => r.agg_type == "{agg_type}")            
-                |> filter(fn:(r) => r_field == "{sensor.type.code}")
+                |> filter(fn:(r) => r._field == "{sensor.type.code}")
             """
         result = client.query_api().query(org=INFLUXDB_ORG, query=query)
         temp = result.to_values(columns=["_time", "_value"])
