@@ -13,7 +13,7 @@ class Evaluator(models.Model):
     """A sensor evaluator."""
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField("Name of evaluator", max_length=15, unique=True)
+    name = models.CharField("Name of evaluator", max_length=30, unique=True)
     class_name = models.CharField("Python class to call", max_length=50)
     kwargs = models.CharField(
         "JSON encoded kwargs to pass to constructor",
