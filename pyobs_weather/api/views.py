@@ -171,15 +171,16 @@ def history(request, sensor_type):
                 if hasattr(eva, "areas"):
                     areas.extend(eva.areas())
 
-        # store it
-        stations.append(
-            {
-                "code": sensor.station.code,
-                "name": sensor.station.name,
-                "color": sensor.station.color,
-                "data": data,
-            }
-        )
+        # else store it
+        else:
+            stations.append(
+                {
+                    "code": sensor.station.code,
+                    "name": sensor.station.name,
+                    "color": sensor.station.color,
+                    "data": data,
+                }
+            )
 
     return JsonResponse({"stations": stations, "areas": areas}, safe=False)
 
