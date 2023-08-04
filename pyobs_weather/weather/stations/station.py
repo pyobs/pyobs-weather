@@ -13,6 +13,7 @@ SENSOR_TYPES = dict(
     particles=dict(code="particles", name="Particle count", unit="ppcm"),
     rain=dict(code="rain", name="Raining", unit=""),
     skytemp=dict(code="skytemp", name="Rel sky temperature", unit="°C"),
+    skymag=dict(code="skymag", name="Sky brightness", unit="mag/arcsec2"),
     sunalt=dict(code="sunalt", name="Solar altitude", unit="°", average=False),
 )
 
