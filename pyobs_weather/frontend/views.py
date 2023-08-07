@@ -18,7 +18,7 @@ class OverView(TemplateView):
         values = []
         for sensor_type in SensorType.objects.all():
             # loop all sensors for this station and of this type
-            for sensor in Sensor.objects.filter(station=station, type=sensor_type):
+            for sensor in Sensor.objects.filter(station=station, type=sensor_type, station__active=True, active=True):
                 # get latest value
                 values.append(Value.objects.filter(sensor=sensor).order_by("-time").first())
 

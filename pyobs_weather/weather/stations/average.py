@@ -45,7 +45,7 @@ class Average(WeatherStation):
             values = []
 
             # loop all sensors of that type
-            for sensor in Sensor.objects.filter(type=sensor_type, average=True, station__active=True):
+            for sensor in Sensor.objects.filter(type=sensor_type, average=True, station__active=True, active=True):
                 # skip average
                 if sensor.station.code == INFLUXDB_MEASUREMENT_AVERAGE:
                     continue
