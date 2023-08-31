@@ -25,9 +25,9 @@ class Boolean:
         # get last value
         value = read_sensor_value(sensor)
 
-        # non-existing values are always bad
+        # non-existing values are always good
         if value is None or value["value"] is None:
-            return False
+            return True
 
         # are we good?
         is_good = value["value"] is True or value["value"] != 0
