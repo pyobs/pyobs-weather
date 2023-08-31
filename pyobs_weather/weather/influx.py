@@ -17,7 +17,7 @@ def read_sensor_value(sensor):
     with InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG) as client:
         query = f"""
             from(bucket:"{INFLUXDB_BUCKET}")
-                |> range(start: -10m)\
+                |> range(start: -5m)\
                 |> filter(fn:(r) => r._measurement == "{sensor.station.code}")
                 |> filter(fn:(r) => r._field == "{sensor.type.code}")
                 |> last()
