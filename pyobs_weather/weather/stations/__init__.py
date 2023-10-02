@@ -1,5 +1,6 @@
 from .average import Average
 from .observer import Observer
+from .lco import LCO
 from .mcdlocke import McDonaldLocke
 from .mcdlockearchive import McDonaldLockeArchive
 from .mcdtelnet import McDonaldTelnet
