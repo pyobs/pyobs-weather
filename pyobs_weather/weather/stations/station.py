@@ -7,6 +7,7 @@ from pyobs_weather.weather.influx import write_sensor_values, write_sensor_value
 SENSOR_TYPES = dict(
     temp=dict(code="temp", name="Temperature", unit="°C"),
     humid=dict(code="humid", name="Relative humidity", unit="%"),
+    dewpoint=dict(code="dewpoint", name="Dew point", unit="°"),
     press=dict(code="press", name="Pressure", unit="hPa"),
     winddir=dict(code="winddir", name="Wind dir", unit="°E of N"),
     windspeed=dict(code="windspeed", name="Wind speed", unit="km/h"),
