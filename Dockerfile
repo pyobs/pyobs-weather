@@ -1,16 +1,28 @@
-FROM python:3.11-bookworm AS compile-image
-RUN apt-get update \
-  && apt-get install -y build-essential libmariadbclient-dev-compat default-mysql-client \
-  && rm -rf /var/lib/apt/lists/*
-COPY requirements.txt .
-RUN pip install --user -r requirements.txt
+FROM python:3.12-slim-bookworm
 
-FROM python:3.11-slim
+ENV \
+  POETRY_NO_INTERACTION=1 \
+  POETRY_VIRTUALENVS_CREATE=false \
+  POETRY_CACHE_DIR='/var/cache/pypoetry' \
+  POETRY_HOME='/usr/local' \
+  OPENBLAS_NUM_THREADS=1
+
+# install package
 RUN apt-get update \
-  && apt-get install -y mariadb-client \
+  && apt-get install -y curl \
   && rm -rf /var/lib/apt/lists/*
-COPY --from=compile-image /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+
+# poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
+
+# Copy only requirements to cache them in docker layer
 WORKDIR /weather
-COPY . /weather/
+COPY poetry.lock pyproject.toml /weather/
+
+# Project initialization:
+RUN poetry install --no-root --no-interaction --no-ansi
+
+# copy all
+COPY . /weather
+
 CMD gunicorn --bind 0.0.0.0:8002 --workers=6 --threads=3 --worker-class=gthread pyobs_weather.wsgi
