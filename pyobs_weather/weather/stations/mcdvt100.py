@@ -147,7 +147,7 @@ class McDonaldVt100(WeatherStation):
 
         # rain
         val, warn = parse_val(s[10], number=False)
-        rain = val != 'N'
+        rain = 1.0 if val != 'N' else 0.0
         warning |= warn
 
         # got all values, now add them
