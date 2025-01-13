@@ -10,4 +10,4 @@ psycopg2-binary==2.9.8
 redis==5.0.1
 requests[socks]==2.31.0
 influxdb_client==1.38.0
-mysqlclient==2.2.0
+#mysqlclient==2.2.0

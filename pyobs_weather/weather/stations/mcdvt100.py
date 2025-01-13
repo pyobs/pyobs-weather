@@ -2,7 +2,6 @@ import logging
 import re
 from datetime import datetime
 import pytz
-from astropy.time import Time
 import requests
 
 from .station import WeatherStation
@@ -69,7 +68,7 @@ class McDonaldVt100(WeatherStation):
         log.info('Updating McDonald Locke station %s...' % self._station.code)
 
         # do request
-        r = requests.get('http://weather.as.utexas.edu/latest_5min.dat')
+        r = requests.get('http://prometheus.as.utexas.edu/cgi-bin/weather_vt100')
 
         # check code
         if r.status_code != 200:
