@@ -4,6 +4,7 @@ from .lco import LCO
 from .mcdlocke import McDonaldLocke
 from .mcdlockearchive import McDonaldLockeArchive
 from .mcdtelnet import McDonaldTelnet
+from .mcdvt100 import McDonaldVt100
 from .monet import Monet
 from .csv import CSV
 from .json import JSON
