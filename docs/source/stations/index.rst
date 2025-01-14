@@ -5,7 +5,6 @@ List of weather station classes
    :maxdepth: 2
 
    average
-   current
    mcdlocke
    mcdlockearchive
    mcdtelnet

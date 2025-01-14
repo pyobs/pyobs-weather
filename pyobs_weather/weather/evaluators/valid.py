@@ -1,4 +1,4 @@
-from pyobs_weather.weather.models import Value
+from pyobs_weather.weather.influx import read_sensor_value
 
 
 class Valid:
@@ -19,10 +19,10 @@ class Valid:
         """
 
         # get last value
-        value = Value.objects.filter(sensor=sensor).order_by('-time').first()
+        value = read_sensor_value(sensor)
 
         # are we good?
-        is_good = value is not None and value.value is not None
+        is_good = value is not None and value["value"] is not None
 
         # return it
         return is_good

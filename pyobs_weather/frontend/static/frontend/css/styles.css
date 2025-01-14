@@ -3,7 +3,7 @@
     src:
         local('Alegreya'),
         local('Alegreya-Regular'),
-        url('../frontend/fonts/Alegreya-Regular.ttf');
+        url('../fonts/Alegreya-Regular.ttf');
     font-weight: normal;
     font-style: normal;
 }
@@ -12,7 +12,7 @@
     font-family: 'Alegreya';
     src:
         local('Alegreya-Bold'),
-        url('../frontend/fonts/Alegreya-Bold.ttf');
+        url('../fonts/Alegreya-Bold.ttf');
     font-weight: bold;
     font-style: normal;
 }
