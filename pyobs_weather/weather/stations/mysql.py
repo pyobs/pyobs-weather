@@ -13,7 +13,16 @@ log = logging.getLogger(__name__)
 class MySQL(WeatherStation):
     """The MySQL weather station reads current weather information from a MySQL database."""
 
-    def __init__(self, connect, table, fields, time: str = 'time', time_offset: int = 0, *args, **kwargs):
+    def __init__(
+        self,
+        connect,
+        table,
+        fields,
+        time: str = "time",
+        time_offset: int = 0,
+        *args,
+        **kwargs
+    ):
         """Creates a new Database station.
 
         A typical JSON configuration for this weather station might look like this:
@@ -65,11 +74,13 @@ class MySQL(WeatherStation):
 
         # loop all fields
         for field, typ in self.fields.items():
-            if 'name' in typ and 'unit' in typ:
+            if "name" in typ and "unit" in typ:
                 # get or create sensor type
-                sensor_type, _ = SensorType.objects.get_or_create(code=typ['code'], name=typ['name'], unit=typ['unit'])
+                sensor_type, _ = SensorType.objects.get_or_create(
+                    code=typ["code"], name=typ["name"], unit=typ["unit"]
+                )
             else:
-                sensor_type = self._add_sensor(typ['code'])
+                sensor_type = self._add_sensor(typ["code"])
 
             # get or create sensor
             Sensor.objects.get_or_create(station=self._station, type=sensor_type)
@@ -78,7 +89,7 @@ class MySQL(WeatherStation):
         """Entry point for updating sensor values for this station.
 
         This method connects to the database and reads the latest values."""
-        log.info('Updating Database station %s...' % self._station.code)
+        log.info("Updating Database station %s..." % self._station.code)
 
         # connect to DB
         db = MySQLdb.connect(**self.connect)
@@ -87,7 +98,11 @@ class MySQL(WeatherStation):
         columns = [self.time] + list(self.fields.keys())
 
         # build query
-        sql = 'SELECT %s FROM %s ORDER BY %s DESC LIMIT 1' % (','.join(columns), self.table, self.time)
+        sql = "SELECT %s FROM %s ORDER BY %s DESC LIMIT 1" % (
+            ",".join(columns),
+            self.table,
+            self.time,
+        )
 
         # and query
         cur = db.cursor()
@@ -97,22 +112,28 @@ class MySQL(WeatherStation):
 
         # nothing?
         if row is None:
-            logging.error('Result from database is empty.')
+            logging.error("Result from database is empty.")
             return
 
         # evaluate row
-        time = (Time(row[0]) + TimeDelta(self.time_offset * u.second)).to_datetime(pytz.UTC)
+        time = (Time(row[0]) + TimeDelta(self.time_offset * u.second)).to_datetime(
+            pytz.UTC
+        )
 
         # other values
+        values = []
         for cfg, value in zip(self.fields.values(), row[1:]):
             # boolean?
-            if 'bool_true' in cfg:
-                value = 1 if cfg['bool_true'] == value else 0
-            elif 'bool_false' in cfg:
-                value = 0 if cfg['bool_false'] == value else 1
+            if "bool_true" in cfg:
+                value = 1 if cfg["bool_true"] == value else 0
+            elif "bool_false" in cfg:
+                value = 0 if cfg["bool_false"] == value else 1
 
             # add value
-            self._add_value(cfg['code'], time, value)
+            values.append((cfg["code"], value))
+
+        # to DB
+        self._add_values(time, values)
 
 
-__all__ = ['MySQL']
+__all__ = ["MySQL"]
