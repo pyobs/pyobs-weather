@@ -31,9 +31,9 @@ class SchmittTrigger:
         # value = Value.objects.filter(sensor=sensor).order_by('-time').first()
         value = read_sensor_value(sensor)
 
-        # non-existing values are always bad
+        # non-existing values are always good
         if value is None or value["value"] is None:
-            return False
+            return True
 
         # are we good?
         if sensor.good is True or sensor.good is None:

@@ -29,7 +29,7 @@ def station_detail(request, station_code):
 
     # get list of sensors
     sensors = []
-    for sensor in Sensor.objects.filter(station=station):
+    for sensor in Sensor.objects.filter(station=station, active=True):
         # get latest value
         value = read_sensor_value(sensor)
 
@@ -82,7 +82,7 @@ def current(request):
     # loop all sensors
     sensors = {}
     time = None
-    for sensor in Sensor.objects.filter(station__active=True):
+    for sensor in Sensor.objects.filter(active=True, station__active=True):
         # create, if necessary
         if sensor.type.code not in sensors:
             sensors[sensor.type.code] = {"good": None, "value": None}
@@ -117,7 +117,7 @@ def current(request):
 
 def history_types(request):
     # loop sensors
-    qs = Sensor.objects.filter(station__history=True).values("type__code")
+    qs = Sensor.objects.filter(station__history=True, active=True).values("type__code")
     types = list(set(v["type__code"] for v in qs))
     return JsonResponse(types, safe=False)
 
@@ -143,7 +143,7 @@ def history(request, sensor_type):
     # loop all sensors of that type
     stations = []
     areas = []
-    for sensor in Sensor.objects.filter(type=st, station__history=True, station__active=True):
+    for sensor in Sensor.objects.filter(type=st, active=True, station__history=True, station__active=True):
         # get data
         values = read_sensor_values(sensor=sensor, start=start, end=end, agg_type="mean")
         values_min = read_sensor_values(sensor=sensor, start=start, end=end, agg_type="min")
@@ -187,7 +187,7 @@ def history(request, sensor_type):
 
 def sensors(request):
     # get all sensors
-    data = Sensor.objects.filter(station__active=True)
+    data = Sensor.objects.filter(station__active=True, active=True)
 
     # add station and type
     data = data.annotate(station_code=F("station__code"), station_name=F("station__name"))
