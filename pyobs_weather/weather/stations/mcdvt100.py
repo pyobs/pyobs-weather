@@ -90,10 +90,10 @@ class McDonaldVt100(WeatherStation):
         dt = datetime.datetime.strptime(date_line, "%d %b %Y %H:%M:%S").astimezone(pytz.timezone('US/Central'))
 
         # compare with today
-        now = datetime.datetime.now(pytz.timezone('US/Central'))
-        if dt.date() != now.date():
-            log.error('Weather data from server not for today.')
-            return
+        #now = datetime.datetime.now(pytz.timezone('US/Central'))
+        #if dt.date() != now.date():
+        #    log.error('Weather data from server not for today.')
+        #    return
 
         # 3rd, 4th, and 5th lines
         if lines[3].strip() != 'DATE       TIME | TEMP  RH  DEWPT|WIND GUST WDIR|PRESSURE|DUST|RAIN':
