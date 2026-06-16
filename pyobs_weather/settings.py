@@ -122,17 +122,12 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "rpc://")
 
 # Weather sensors
 
-WEATHER_SENSORS = [
-    "temp",
-    "humid",
-    "press",
-    "windspeed",
-    "winddir",
-    "rain",
-    "skytemp",
-    "sunalt",
-]
-WEATHER_PLOTS = ["temp", "humid", "press", "windspeed", "winddir", "rain", "skytemp"]
+WEATHER_SENSORS = os.environ.get(
+    "WEATHER_SENSORS", "temp,humid,press,windspeed,winddir,rain,skytemp,sunalt"
+).split(",")
+WEATHER_PLOTS = os.environ.get(
+    "WEATHER_PLOTS", "temp,humid,press,windspeed,winddir,rain,skytemp"
+).split(",")
 
 
 # Observer
