@@ -49,11 +49,3 @@ services:
 volumes:
   pgdata:
   staticfiles:
-
-networks:
-  default:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-      - subnet: 172.35.0.0/16
