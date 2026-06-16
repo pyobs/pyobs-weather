@@ -2,6 +2,7 @@ import importlib
 import json
 import logging
 from datetime import datetime
+from typing import Any
 
 import pytz
 
@@ -10,6 +11,8 @@ from pyobs_weather.weather.models import GoodWeather
 from pyobs_weather.weather.utils import get_class
 
 log = logging.getLogger(__name__)
+
+_evaluator_cache: dict[tuple[str, str], Any] = {}
 
 
 @app.task
@@ -30,16 +33,14 @@ def update_stations(station_code: str):
 
 
 def create_evaluator(evaluator):
-    # get module and class name
-    module = evaluator.class_name[:evaluator.class_name.rfind('.')]
-    class_name = evaluator.class_name[evaluator.class_name.rfind('.') + 1:]
-
-    # import
-    kls = getattr(importlib.import_module(module), class_name)
-
-    # instantiate and store
-    kwargs = {} if evaluator.kwargs is None else json.loads(evaluator.kwargs)
-    return kls(**kwargs)
+    key = (evaluator.class_name, evaluator.kwargs or "")
+    if key not in _evaluator_cache:
+        module = evaluator.class_name[:evaluator.class_name.rfind('.')]
+        class_name = evaluator.class_name[evaluator.class_name.rfind('.') + 1:]
+        kls = getattr(importlib.import_module(module), class_name)
+        kwargs = {} if evaluator.kwargs is None else json.loads(evaluator.kwargs)
+        _evaluator_cache[key] = kls(**kwargs)
+    return _evaluator_cache[key]
 
 
 @app.task
