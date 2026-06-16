@@ -28,7 +28,7 @@ services:
 
   celery_worker:
     image: ghcr.io/pyobs/pyobs-weather:latest
-    command: python -m celery -A pyobs_weather worker --loglevel=info
+    command: celery -A pyobs_weather worker --loglevel=info
     env_file: .env
     depends_on:
       - db
@@ -37,7 +37,7 @@ services:
 
   celery_beat:
     image: ghcr.io/pyobs/pyobs-weather:latest
-    command: python -m celery -A pyobs_weather beat --scheduler django --loglevel=info
+    command: celery -A pyobs_weather beat --scheduler django --loglevel=info
     env_file: .env
     depends_on:
       - db
