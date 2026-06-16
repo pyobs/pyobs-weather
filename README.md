@@ -27,8 +27,8 @@ See `.env.example` for all available options including the observer location.
 
 **3. Initialise the database** (only needed on first run):
 
-    docker-compose exec weather python manage.py initweather
-    docker-compose exec weather python manage.py createsuperuser
+    docker-compose exec weather uv run ./manage.py initweather
+    docker-compose exec weather uv run ./manage.py createsuperuser
 
 The web frontend is accessible at http://localhost/ and the admin panel at http://localhost/admin.
 
@@ -45,23 +45,23 @@ Copy `.env.example` to `.env`, set `SQL_ENGINE=django.db.backends.sqlite3` and `
 for a local SQLite database, then load the environment and run migrations:
 
     set -a && source .env && set +a
-    uv run python manage.py migrate
-    uv run python manage.py runserver
+    uv run ./manage.py migrate
+    uv run ./manage.py runserver
 
 
 ## Backup and restore
 
 Back up the full weather configuration (excluding raw sensor readings):
 
-    docker-compose exec weather python manage.py dumpdata --indent 2 weather --exclude weather.value > weather.json
+    docker-compose exec weather uv run ./manage.py dumpdata --indent 2 weather --exclude weather.value > weather.json
 
 To include sensor readings as well:
 
-    docker-compose exec weather python manage.py dumpdata --indent 2 weather > weather.json
+    docker-compose exec weather uv run ./manage.py dumpdata --indent 2 weather > weather.json
 
 Restore on a fresh setup:
 
-    docker-compose exec weather python manage.py loaddata weather.json
+    docker-compose exec weather uv run ./manage.py loaddata weather.json
 
 
 ## Changelog
