@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:13
+    shm_size: 128mb
+    env_file: .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+
+  weather:
+    image: ghcr.io/pyobs/pyobs-weather:latest
+    env_file: .env
+    volumes:
+      - ./static:/static
+    depends_on:
+      - db
+    ports:
+      - "8002:8002"
+    restart: always
+    command: >
+      bash -c "python manage.py collectstatic --no-input &&
+               python manage.py migrate &&
+               gunicorn --workers=3 pyobs_weather.wsgi -b 0.0.0.0:8002"
+
+  celery:
+    image: ghcr.io/pyobs/pyobs-weather:latest
+    command: celery -A pyobs_weather worker --beat --scheduler django --loglevel=info
+    env_file: .env
+    depends_on:
+      - db
+      - rabbitmq
+    restart: always
+
+volumes:
+  pgdata:
