@@ -119,7 +119,9 @@ class Sensor(models.Model):
         return self.station.name + ": " + self.type.name
 
     class Meta:
-        unique_together = ("station", "type")
+        constraints = [
+            models.UniqueConstraint(fields=["station", "type"], name="unique_sensor_station_type"),
+        ]
 
 
 class Value(models.Model):
@@ -139,7 +141,9 @@ class Value(models.Model):
             Value.objects.filter(time__lt=self.time, sensor=self.sensor).delete()
 
     class Meta:
-        unique_together = ("sensor", "time")
+        constraints = [
+            models.UniqueConstraint(fields=["sensor", "time"], name="unique_value_sensor_time"),
+        ]
 
 
 class GoodWeather(models.Model):

@@ -1,151 +1,85 @@
 # pyobs-weather
 
 pyobs-weather is an aggregator for data from several weather stations. Rules can be defined for when weather
-is defines to be "good". It provides both a web frontend and an API for access.
+is considered "good". It provides both a web frontend and an API for access.
 
 
 ## Documentation
 
 See the documentation at https://pyobs.github.io/.
 
+
 ## Deployment with Docker
- 
-First, build the image:
 
-    docker build . -t pyobs-weather
+The easiest way to deploy is with the included `docker-compose.yml`, which sets up all required services:
+PostgreSQL, RabbitMQ, Celery, nginx, and the weather app itself.
 
-pyobs-weather requires a database for storing its data, redis for task brokering, celery for providing those tasks, 
-and nginx for serving static files. Easiest way to deply everything is using docker-compose.
+**1. Create a `.env` file** from the provided example and fill in your values:
 
-A typical docker-compose.yml looks like this:    
+    cp .env.example .env
 
-    version: '3'
+At minimum set `SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, and the database/InfluxDB credentials.
+See `.env.example` for all available options including the observer location.
 
-    services:
-      db:
-        image: postgres
-        volumes:
-          - pgdata:/var/lib/postgresql/data
-        restart: always
-    
-      weather:
-        image: pyobs-weather
-        volumes:
-          - ./local_settings.py:/archive/pyobs_archive/local_settings.py
-          - static:/weather/static
-        depends_on:
-          - db
-        restart: always
-        command: bash -c "python manage.py collectstatic --no-input && python manage.py migrate && gunicorn --workers=3 pyobs_weather.wsgi -b 0.0.0.0:8000"
-    
-      redis:
-        image: redis
-        restart: always
-    
-      celery:
-        image: pyobs-weather
-        command: celery -A pyobs_weather worker --beat --scheduler django --loglevel=info
-        depends_on:
-          - db
-          - redis
-        restart: always
-    
-      nginx:
-        image: nginx
-        volumes:
-          - ./nginx.conf:/etc/nginx/conf.d/default.conf
-          - static:/static/static
-        ports:
-          - 8002:80
-        restart: always
-    
-    volumes:
-      pgdata:
-      static:
-      
-In this example, nginx needs a configuration file nginx.conf in the same directory, which might look like this:
-
-    server {
-        listen 80;
-        server_name  127.0.0.1;
-    
-        location / {
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header Host $host;
-            proxy_redirect off;
-            if (!-f $request_filename) {
-                proxy_pass http://weather:8000;
-                break;
-            }
-        }
-    
-        location /static/ {
-            root /static;
-        }
-    }
- 
- And pyobs-weather itself needs a configuration file called local_settings.py. Here is the file for MONET/S as an
- example:
- 
-    # disable debug
-    DEBUG = False
-    
-    # we're reverse proxying, so only localhost is allowed to access
-    ALLOWED_HOSTS = ['localhost']
-    
-    # weather settings
-    OBSERVER_NAME = 'MONET/S @ SAAO'
-    OBSERVER_LOCATION = {'longitude': 20.810808, 'latitude': -32.375823, 'elevation': 1798.}
-    WINDOW_TITLE = 'Weather at ' + OBSERVER_NAME
-
-With all three files in one directory, you can easily do
+**2. Start all services:**
 
     docker-compose up -d
-    
- and the whole system should be up and running within a minute.
- 
- Finally, you need to get into the container and init the database (name of container may vary):
- 
-    docker exec -it weather_weather_1 bash
-    ./manage.py initweather
-    
- While at it, you can also create a super user:
- 
-    ./manage.py createsuperuser 
-    
- The web frontend should now be accessible via web browser at http://localhost:8002/ and the admin panel
- at http://localhost:8002/admin.
- 
- 
- ## Backup and restore config
- 
-Easiest way to backup the whole weather database is using the `dumpdata` command:
- 
-    ./manage.py dumpdata --indent 2 weather > weather.json
 
-Probably you want to exclude the actual sensor readings and only backup the configuration:
+**3. Initialise the database** (only needed on first run):
 
-    ./manage.py dumpdata --indent 2 weather --exclude weather.value > weather.json
+    docker-compose exec weather python manage.py initweather
+    docker-compose exec weather python manage.py createsuperuser
 
-In a fresh setup, you can restore the data via the 'loaddata' command:
+The web frontend is accessible at http://localhost/ and the admin panel at http://localhost/admin.
 
-    ./manage.py loaddata weather.json
-    
-    
+The `nginx.conf` in this repository is used automatically by the nginx container — no manual configuration needed.
+
+
+## Development
+
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
+
+    uv sync --group dev
+
+Copy `.env.example` to `.env`, set `SQL_ENGINE=django.db.backends.sqlite3` and `SQL_DATABASE=db.sqlite3`
+for a local SQLite database, then load the environment and run migrations:
+
+    set -a && source .env && set +a
+    uv run python manage.py migrate
+    uv run python manage.py runserver
+
+
+## Backup and restore
+
+Back up the full weather configuration (excluding raw sensor readings):
+
+    docker-compose exec weather python manage.py dumpdata --indent 2 weather --exclude weather.value > weather.json
+
+To include sensor readings as well:
+
+    docker-compose exec weather python manage.py dumpdata --indent 2 weather > weather.json
+
+Restore on a fresh setup:
+
+    docker-compose exec weather python manage.py loaddata weather.json
+
+
 ## Changelog
+
+#### version 1.2 (2024)
+- Switched from Poetry to uv
+- Upgraded Django 3.2 → 5.2 LTS
+- Replaced Redis with RabbitMQ as message broker
+- Configuration moved from `local_settings.py` to environment variables
 
 #### version 1.0 (2020-11-23)
 - Initial release
 
 #### version 1.1 (2020-11-24)
-- Added footer to page 
+- Added footer to page
 - Exclude average station from status evaluation
 - Logging current good/bad weather status
 - Added plot for solar elevation and good weather for last 24h
 
 #### version 1.1.1 (2020-11-24)
-- Fixed bug with update of plots.
-
-### version xxx
-- Disabled animations for plots
+- Fixed bug with update of plots
