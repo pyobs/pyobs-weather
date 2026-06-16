@@ -26,9 +26,18 @@ services:
                python manage.py migrate &&
                gunicorn --workers=3 pyobs_weather.wsgi -b 0.0.0.0:8002"
 
-  celery:
+  celery_worker:
     image: ghcr.io/pyobs/pyobs-weather:latest
-    command: celery -A pyobs_weather worker --beat --scheduler django --loglevel=info
+    command: celery -A pyobs_weather worker --loglevel=info
+    env_file: .env
+    depends_on:
+      - db
+      - rabbitmq
+    restart: always
+
+  celery_beat:
+    image: ghcr.io/pyobs/pyobs-weather:latest
+    command: celery -A pyobs_weather beat --scheduler django --loglevel=info
     env_file: .env
     depends_on:
       - db
