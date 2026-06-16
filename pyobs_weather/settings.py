@@ -114,15 +114,10 @@ STATIC_URL = ROOT_URL + "static/"
 STATIC_ROOT = os.environ.get("STATIC_ROOT", "/static/")
 
 
-# Redis / Celery
+# Celery / RabbitMQ
 
-_redis_host = os.environ.get("REDIS_HOST", "redis")
-_redis_port = os.environ.get("REDIS_PORT", "6379")
-_redis_url = f"redis://{_redis_host}:{_redis_port}/0"
-
-BROKER_URL = os.environ.get("CELERY_BROKER_URL", _redis_url)
-BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", _redis_url)
+BROKER_URL = os.environ.get("CELERY_BROKER_URL", "amqp://")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "rpc://")
 
 
 # Weather sensors
