@@ -1,8 +1,6 @@
-version: '3'
-
 services:
   db:
-    image: postgres:13
+    image: postgres:17
     shm_size: 128mb
     env_file: .env
     volumes:
@@ -24,7 +22,7 @@ services:
     command: >
       bash -c "python manage.py collectstatic --no-input &&
                python manage.py migrate &&
-               gunicorn --workers=3 pyobs_weather.wsgi -b 0.0.0.0:8002"
+               gunicorn --workers=3 pyobs_weather.wsgi -b 0.0.0.0:8000"
 
   celery:
     image: ghcr.io/pyobs/pyobs-weather:latest
@@ -43,7 +41,7 @@ services:
     depends_on:
       - weather
     ports:
-      - "80:80"
+      - "8002:80"
     restart: always
 
 volumes:
