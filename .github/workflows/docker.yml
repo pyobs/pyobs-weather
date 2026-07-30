@@ -28,8 +28,8 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: | 
-          ghcr.io/pyobs/${{ github.repository }}:${{ github.ref_name }}
-          ghcr.io/pyobs/${{ github.repository }}:latest
+        tags: |
+          ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          ghcr.io/${{ github.repository }}:latest
         build-args: |
           ENVIRONMENT=production
