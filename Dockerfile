@@ -16,4 +16,4 @@ RUN uv sync --frozen --no-dev --no-install-project
 
 COPY . /weather
 
-CMD gunicorn --bind 0.0.0.0:8002 --workers=6 --threads=3 --worker-class=gthread pyobs_weather.wsgi
+CMD uv run gunicorn --bind 0.0.0.0:8002 --workers=6 --threads=3 --worker-class=gthread pyobs_weather.wsgi
