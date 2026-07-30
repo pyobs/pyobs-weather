@@ -13,7 +13,7 @@ def parse_val(val: str, number: bool = True):
     warning = False
 
     # do we have escape sequences?
-    escape = re.compile('(\x1b\[|\x9b)[^@-_]*[@-_]|\x1b[@-_]', re.I)
+    escape = re.compile(r'(\x1b\[|\x9b)[^@-_]*[@-_]|\x1b[@-_]', re.I)
     if escape.search(val):
         # yes, replace them and set warning
         warning = True
