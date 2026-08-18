@@ -1,75 +1,17 @@
-from astropy.coordinates import EarthLocation
-import astropy.units as u
-from django.conf import settings
-from django.views.generic import TemplateView
+from pathlib import Path
 
-from pyobs_weather.settings import INFLUXDB_MEASUREMENT_AVERAGE
-from pyobs_weather.weather.models import Station, SensorType, Sensor, Value
+from django.http import HttpResponse, HttpResponseNotFound
+
+# Built Vue SPA entry point (produced by `npm run build` in frontend-vue/).
+INDEX_PATH = Path(__file__).resolve().parent / "static" / "frontend" / "dist" / "index.html"
 
 
-class OverView(TemplateView):
-    template_name = "index.html"
-
-    def get_context_data(self, *args, **kwargs):
-        # get average weather station
-        station = Station.objects.get(code=INFLUXDB_MEASUREMENT_AVERAGE)
-
-        # loop all sensor types
-        values = []
-        for sensor_type in SensorType.objects.all():
-            # loop all sensors for this station and of this type
-            for sensor in Sensor.objects.filter(station=station, type=sensor_type, station__active=True, active=True):
-                # get latest value
-                values.append(Value.objects.filter(sensor=sensor).order_by("-time").first())
-
-        # get sensor types
-        value_types = []
-        for code in settings.WEATHER_SENSORS:
-            try:
-                a = SensorType.objects.get(code=code)
-                value_types.append(a)
-            except SensorType.DoesNotExist:
-                pass
-        plot_types = []
-        for code in settings.WEATHER_PLOTS:
-            try:
-                plot_types.append(SensorType.objects.get(code=code))
-            except SensorType.DoesNotExist:
-                pass
-
-        # get location
-        location = EarthLocation(
-            lon=settings.OBSERVER_LOCATION["longitude"] * u.deg,
-            lat=settings.OBSERVER_LOCATION["latitude"] * u.deg,
-            height=settings.OBSERVER_LOCATION["elevation"] * u.m,
+def index(request):
+    """Serve the Vue SPA's built index.html for the single-page app routes."""
+    try:
+        return HttpResponse(INDEX_PATH.read_text(), content_type="text/html")
+    except FileNotFoundError:
+        return HttpResponseNotFound(
+            "Frontend not built. Run `npm run build` in the frontend-vue/ directory.",
+            content_type="text/plain",
         )
-
-        # lon and lat
-        lon = location.lon.to_string(sep="°'\"", precision=1)
-        lon = lon[1:] + " W" if lon[0] == "-" else lon + " E"
-        lat = location.lat.to_string(sep="°'\"", precision=1)
-        lat = lat[1:] + " S" if lat[0] == "-" else lat + " N"
-
-        # return it
-        return {
-            "site": settings.OBSERVER_NAME,
-            "title": settings.WINDOW_TITLE,
-            "root_url": settings.ROOT_URL,
-            "value_types": value_types,
-            "plot_types": plot_types,
-            "location": {"longitude": lon, "latitude": lat, "elevation": location.height.value},
-        }
-
-
-class SensorsView(TemplateView):
-    template_name = "sensors.html"
-
-    def get_context_data(self, *args, **kwargs):
-        return {"title": settings.WINDOW_TITLE + " (sensors)", "root_url": settings.ROOT_URL}
-
-
-class Documentation(TemplateView):
-    template_name = "documentation.html"
-
-    def get_context_data(self, *args, **kwargs):
-        return {"title": settings.WINDOW_TITLE + " (documentation)", "root_url": settings.ROOT_URL}
