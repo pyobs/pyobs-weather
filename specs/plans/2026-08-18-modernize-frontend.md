@@ -121,26 +121,19 @@ observer location formatted as strings — and every AJAX call in `app.js`/`app-
 Leaning config endpoint: it's ~20 lines in `api/views.py` and keeps the SPA schema-driven, matching
 how the sibling clients pull config rather than hardcode it.
 
-## Open questions (decide before implementing)
+## Open questions
 
-1. **Repo layout: Vue app in this repo vs a separate `pyobs-weather-client` repo.** The issue leans
-   "separate Vue app the way pyobs-web-client does", but pyobs-web-client is a generic client for
-   any pyobs-core fleet over XMPP — worth its own repo. This UI is specific to pyobs-weather's own
-   Django API and is deployed by the same `docker-compose.yml`/`nginx.conf`. Recommendation: keep
-   the Vue app in this repo (a `frontend-vue/` or similar tree built by Vite into the Django static
-   path), not a new repo — the two-repo deployment dance isn't justified for a single-purpose UI
-   whose API lives here. Counter-argument (favoring a split): a fresh Vite repo is cleaner than a
-   Vite tree inside a Django repo, and it matches the established pyobs-web-client precedent. Not
-   decided either way here.
-2. **Charting library.** The sensor plots need three things a plain `<canvas>` time-series doesn't
-   give for free: horizontal area annotations (evaluator `areas()`), min/max fanning with fill, and
-   a time axis — all of which Chart.js already does (chartjs-plugin-annotation, fill, time scale).
-   pyobs-web-client hand-rolled its `TimeSeriesChart.vue` because its needs were simple single-line
-   series. Recommendation: keep Chart.js under a thin Vue wrapper component rather than
-   reimplementing annotations/min-max banding by hand. Not decided either way here.
-3. **`root_url`/config plumbing** — covered above; it's the small API change this plan would need,
-   so it's a genuine question of whether a backend touch is acceptable (issue #25 says backend
-   "as-is", which the config endpoint slightly violates).
+Decided 2026-08-18:
+
+1. **Repo layout** — decided: in this repo, a top-level `frontend-vue/` tree built by Vite into the
+   Django static path.
+2. **Charting library** — decided: keep Chart.js under a thin Vue wrapper component.
+
+Still open:
+
+3. **`root_url`/config plumbing** — leaning config endpoint (see above); it's the small API change
+   this plan needs, so it's a genuine question of whether a backend touch is acceptable (issue #25
+   says backend "as-is", which the config endpoint slightly violates).
 4. **Sidebar current values on the Sensors page too, or Overview only?** The sidebar is the natural
    home for the current values, but whether it stays visible (with its values + tap-to-expand
    breakdown) on the Sensors page as well, or the Sensors page is a plain full-width table with the

@@ -1,0 +1,143 @@
+/* Theme-aware tokens — mirrors pyobs-archive's/pyobs-web-admin's base.html so the shells look
+   consistent. */
+:root {
+  --pyobs-surface-bg: #ffffff;
+  --pyobs-surface-border: #dee2e6;
+  --pyobs-surface-text: #212529;
+  --pyobs-surface-text-muted: #6c757d;
+  --pyobs-surface-hover-bg: #e9ecef;
+  --pyobs-accent-bg: #0d6efd20;
+  --pyobs-accent-text: #0a58ca;
+}
+[data-bs-theme='dark'] {
+  --pyobs-surface-bg: #1a1d21;
+  --pyobs-surface-border: #2d3035;
+  --pyobs-surface-text: #dee2e6;
+  --pyobs-surface-text-muted: #6c757d;
+  --pyobs-surface-hover-bg: #2d3035;
+  --pyobs-accent-bg: #0d6efd20;
+  --pyobs-accent-text: #6ea8fe;
+}
+
+/* ── Sidebar & mobile navbar ─────────────────────────────────────────────── */
+.app-chrome {
+  background-color: var(--pyobs-surface-bg);
+}
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  border-right: 1px solid var(--pyobs-surface-border);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease;
+}
+.sidebar-link {
+  color: var(--pyobs-surface-text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  transition: background-color 0.15s, color 0.15s;
+}
+.sidebar-link:hover {
+  background-color: var(--pyobs-surface-hover-bg);
+  color: var(--pyobs-surface-text);
+}
+.sidebar-link.active {
+  background-color: var(--pyobs-accent-bg);
+  color: var(--pyobs-accent-text);
+}
+
+/* A flex item's default min-width is auto, so without this .main-content refuses to shrink
+   below its widest child and overflows the viewport instead of scrolling internally. */
+.main-content {
+  min-width: 0;
+}
+
+/* ── Desktop layout ──────────────────────────────────────────────────────── */
+@media (min-width: 992px) {
+  body {
+    overflow: hidden;
+  }
+  .sidebar {
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .main-content {
+    height: 100vh;
+    overflow-y: auto;
+  }
+}
+
+/* ── Mobile layout ───────────────────────────────────────────────────────── */
+@media (max-width: 991.98px) {
+  body {
+    overflow-x: hidden;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 1045;
+    width: 280px;
+    min-width: 280px;
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1044;
+}
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* ── Current values in the sidebar ───────────────────────────────────────── */
+.current-value {
+  border: none;
+  background: transparent;
+  color: var(--pyobs-surface-text);
+  text-align: left;
+  width: 100%;
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+}
+.current-value:hover {
+  background-color: var(--pyobs-surface-hover-bg);
+}
+.current-value .unit {
+  font-size: 0.75rem;
+  color: var(--pyobs-surface-text-muted);
+}
+.sensor-good {
+  color: #198754;
+}
+.sensor-bad {
+  color: #dc3545;
+}
+.sensor-unknown {
+  color: var(--pyobs-surface-text-muted);
+}
+.breakdown-row {
+  font-size: 0.8rem;
+}
+
+/* ── Day/night timeline ──────────────────────────────────────────────────── */
+.timeline-bar {
+  position: relative;
+  height: 20px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.timeline-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+}

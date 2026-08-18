@@ -3,6 +3,7 @@ from django.urls import path
 from pyobs_weather.api import views
 
 urlpatterns = [
+    path("config/", views.config, name="config"),
     path("current/", views.current, name="current"),
     path("stations/", views.stations_list, name="stations_list"),
     path("stations/<str:station_code>/", views.station_detail, name="station_detail"),

@@ -15,6 +15,44 @@ from pyobs_weather.weather.tasks import create_evaluator
 from pyobs_weather.weather.influx import read_sensor_values, read_sensor_value
 
 
+def config(request):
+    # sensor types for current values and plots
+    value_types = []
+    for code in settings.WEATHER_SENSORS:
+        try:
+            value_types.append(SensorType.objects.get(code=code))
+        except SensorType.DoesNotExist:
+            pass
+    plot_types = []
+    for code in settings.WEATHER_PLOTS:
+        try:
+            plot_types.append(SensorType.objects.get(code=code))
+        except SensorType.DoesNotExist:
+            pass
+
+    # observer location
+    location = EarthLocation(
+        lon=settings.OBSERVER_LOCATION["longitude"] * u.deg,
+        lat=settings.OBSERVER_LOCATION["latitude"] * u.deg,
+        height=settings.OBSERVER_LOCATION["elevation"] * u.m,
+    )
+    lon = location.lon.to_string(sep="°'\"", precision=1)
+    lon = lon[1:] + " W" if lon[0] == "-" else lon + " E"
+    lat = location.lat.to_string(sep="°'\"", precision=1)
+    lat = lat[1:] + " S" if lat[0] == "-" else lat + " N"
+
+    return JsonResponse(
+        {
+            "site": settings.OBSERVER_NAME,
+            "title": settings.WINDOW_TITLE,
+            "root_url": settings.ROOT_URL,
+            "value_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in value_types],
+            "plot_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in plot_types],
+            "location": {"longitude": lon, "latitude": lat, "elevation": location.height.value},
+        }
+    )
+
+
 def stations_list(request):
     # get list of stations and return them
     stations = Station.objects.filter(active=True).values("name", "code")
