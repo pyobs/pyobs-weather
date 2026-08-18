@@ -118,6 +118,12 @@ watch(
           <span>Theme</span>
         </button>
       </div>
+
+      <div class="p-2 border-top border-secondary-subtle text-muted" style="font-size: 0.75rem">
+        pyobs-weather v{{ config?.version ?? '?' }}
+        (<a href="https://github.com/pyobs/pyobs-weather" target="_blank" rel="noopener">GitHub</a>,
+        <a href="https://hub.docker.com/repository/docker/thusser/pyobs-weather" target="_blank" rel="noopener">Docker</a>)
+      </div>
     </nav>
 
     <main class="main-content flex-grow-1 p-3 p-lg-4">

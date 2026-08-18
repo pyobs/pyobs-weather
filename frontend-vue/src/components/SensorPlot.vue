@@ -3,11 +3,13 @@ import { onBeforeUnmount, ref, watch } from 'vue'
 import Chart from '../lib/chart'
 import { fetchJson } from '../api/client'
 import { usePolling } from '../composables/usePolling'
+import { useConfig } from '../composables/useConfig'
 import { withAlpha } from '../lib/color'
 import type { HistoryResponse } from '../api/types'
 
 const props = defineProps<{ typeCode: string; label: string; unit: string }>()
 
+const { config } = useConfig()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const { data } = usePolling<HistoryResponse>(() => fetchJson(`history/${props.typeCode}/`), 60000)
 
@@ -17,7 +19,7 @@ function render(resp: HistoryResponse | null) {
   if (!canvasRef.value || !resp) return
 
   const datasets = resp.stations
-    .filter((station) => station.code !== 'average')
+    .filter((station) => station.code !== (config.value?.average_station ?? 'average'))
     .flatMap((station) => {
       const ts = (iso: string) => new Date(iso).getTime()
       const mean = station.data.map((p) => ({ x: ts(p.time), y: p.value }))

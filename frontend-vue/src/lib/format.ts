@@ -2,6 +2,7 @@ import type { SensorRow } from '../api/types'
 
 export function formatValue(value: number | null): string {
   if (value === null) return 'N/A'
+  if (value === 0 || value === 1) return String(value)
   return value.toFixed(1)
 }
 

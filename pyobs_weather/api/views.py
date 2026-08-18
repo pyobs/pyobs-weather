@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from importlib.metadata import version
 import dateutil.parser
 from astroplan import Observer
 from astropy.coordinates import EarthLocation
@@ -15,20 +16,16 @@ from pyobs_weather.weather.tasks import create_evaluator
 from pyobs_weather.weather.influx import read_sensor_values, read_sensor_value
 
 
+def _sensor_types_for_codes(codes):
+    # fetch all matching sensor types in one query, then reorder to match the configured codes
+    by_code = {t.code: t for t in SensorType.objects.filter(code__in=codes)}
+    return [by_code[code] for code in codes if code in by_code]
+
+
 def config(request):
     # sensor types for current values and plots
-    value_types = []
-    for code in settings.WEATHER_SENSORS:
-        try:
-            value_types.append(SensorType.objects.get(code=code))
-        except SensorType.DoesNotExist:
-            pass
-    plot_types = []
-    for code in settings.WEATHER_PLOTS:
-        try:
-            plot_types.append(SensorType.objects.get(code=code))
-        except SensorType.DoesNotExist:
-            pass
+    value_types = _sensor_types_for_codes(settings.WEATHER_SENSORS)
+    plot_types = _sensor_types_for_codes(settings.WEATHER_PLOTS)
 
     # observer location
     location = EarthLocation(
@@ -46,6 +43,8 @@ def config(request):
             "site": settings.OBSERVER_NAME,
             "title": settings.WINDOW_TITLE,
             "root_url": settings.ROOT_URL,
+            "average_station": INFLUXDB_MEASUREMENT_AVERAGE,
+            "version": version("pyobs-weather"),
             "value_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in value_types],
             "plot_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in plot_types],
             "location": {"longitude": lon, "latitude": lat, "elevation": location.height.value},
