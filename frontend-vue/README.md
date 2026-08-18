@@ -27,5 +27,10 @@ up automatically. Asset URLs use base `/static/frontend/dist/`.
 
 ```sh
 npm run test:unit
+npm run test:e2e
 npm run type-check
 ```
+
+The e2e suite (Playwright) runs against the Vite dev server with `/api/` requests mocked, so no
+backend is needed. Install browsers first with `npx playwright install chromium`.
+

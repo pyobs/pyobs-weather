@@ -61,10 +61,10 @@ watch(
   >
     <i class="bi bi-cloud-sun text-primary me-2"></i>
     <span class="text-body fw-semibold me-auto">{{ config?.site ?? 'pyobs Weather' }}</span>
-    <button class="btn btn-outline-secondary btn-sm me-2" @click="toggleTheme" title="Toggle light/dark mode">
+    <button class="btn btn-outline-secondary btn-sm me-2" @click="toggleTheme" title="Toggle light/dark mode" aria-label="Toggle theme">
       <i :class="theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
     </button>
-    <button class="btn btn-outline-secondary btn-sm" @click="toggleSidebar">
+    <button class="btn btn-outline-secondary btn-sm" @click="toggleSidebar" aria-label="Open sidebar">
       <i class="bi bi-list fs-5"></i>
     </button>
   </nav>
@@ -78,7 +78,7 @@ watch(
           <div class="fw-semibold text-body lh-1">pyobs</div>
           <div class="text-muted" style="font-size: 0.7rem">Weather</div>
         </div>
-        <button class="btn btn-sm btn-outline-secondary" @click="toggleSidebar">
+        <button class="btn btn-sm btn-outline-secondary" @click="toggleSidebar" aria-label="Close sidebar">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
