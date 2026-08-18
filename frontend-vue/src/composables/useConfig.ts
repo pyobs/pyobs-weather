@@ -10,6 +10,7 @@ export function useConfig() {
   async function load() {
     if (config.value || loading.value) return
     loading.value = true
+    error.value = null
     try {
       const c = await fetchJson<ConfigResponse>('config/')
       setRootUrl(c.root_url)

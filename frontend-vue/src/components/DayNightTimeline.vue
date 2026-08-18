@@ -51,12 +51,12 @@ const events = computed(() => data.value?.events ?? [])
       <div v-if="pct" class="timeline-marker bg-danger" :style="{ left: pct.now + '%' }"></div>
     </div>
     <div class="d-flex justify-content-between small text-muted mt-1">
-      <span>Sunset {{ fmt(events[0]) }}</span>
-      <span>Dawn {{ fmt(events[2]) }}</span>
+      <span>Sunset {{ fmt(events[0]) }} UT</span>
+      <span>Dawn {{ fmt(events[2]) }} UT</span>
     </div>
     <div class="d-flex justify-content-between small text-muted">
-      <span>Dusk {{ fmt(events[1]) }}</span>
-      <span>Sunrise {{ fmt(events[3]) }}</span>
+      <span>Dusk {{ fmt(events[1]) }} UT</span>
+      <span>Sunrise {{ fmt(events[3]) }} UT</span>
     </div>
   </div>
 </template>

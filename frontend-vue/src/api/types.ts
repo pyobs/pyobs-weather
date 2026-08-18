@@ -8,7 +8,6 @@ export interface ConfigResponse {
   site: string
   title: string
   root_url: string
-  average_station: string
   version: string
   value_types: SensorTypeInfo[]
   plot_types: SensorTypeInfo[]

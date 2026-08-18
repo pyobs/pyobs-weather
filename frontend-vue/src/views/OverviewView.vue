@@ -4,11 +4,15 @@ import DayNightTimeline from '../components/DayNightTimeline.vue'
 import GoodWeatherChart from '../components/GoodWeatherChart.vue'
 import SensorPlot from '../components/SensorPlot.vue'
 
-const { config } = useConfig()
+const { config, error, load } = useConfig()
 </script>
 
 <template>
-  <div v-if="config">
+  <div v-if="error" class="alert alert-danger d-flex justify-content-between align-items-center">
+    <span>Failed to load configuration: {{ error.message }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" @click="load">Retry</button>
+  </div>
+  <div v-else-if="config">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h4 class="mb-0">{{ config.site }}</h4>

@@ -21,7 +21,9 @@ npm run build
 ```
 
 Outputs to `../pyobs_weather/frontend/static/frontend/dist/`, which Django's `collectstatic` picks
-up automatically. Asset URLs use base `/static/frontend/dist/`.
+up automatically. Asset URLs are built with a placeholder base (`/__PYOBS_STATIC_BASE__/frontend/dist/`),
+since `ROOT_URL` is only known at container runtime; `pyobs_weather/frontend/views.py` rewrites it
+to the real `STATIC_URL` when it serves `index.html`.
 
 ## Tests
 

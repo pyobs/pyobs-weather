@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from importlib.metadata import version
 import dateutil.parser
 from astroplan import Observer
 from astropy.coordinates import EarthLocation
@@ -11,6 +10,7 @@ from django.http import JsonResponse, HttpResponseNotFound
 import numpy as np
 
 from pyobs_weather.settings import INFLUXDB_MEASUREMENT_AVERAGE
+from pyobs_weather.version import VERSION
 from pyobs_weather.weather.models import Station, Sensor, SensorType, GoodWeather
 from pyobs_weather.weather.tasks import create_evaluator
 from pyobs_weather.weather.influx import read_sensor_values, read_sensor_value
@@ -43,8 +43,7 @@ def config(request):
             "site": settings.OBSERVER_NAME,
             "title": settings.WINDOW_TITLE,
             "root_url": settings.ROOT_URL,
-            "average_station": INFLUXDB_MEASUREMENT_AVERAGE,
-            "version": version("pyobs-weather"),
+            "version": VERSION,
             "value_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in value_types],
             "plot_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in plot_types],
             "location": {"longitude": lon, "latitude": lat, "elevation": location.height.value},
