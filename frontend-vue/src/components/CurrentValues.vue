@@ -4,6 +4,7 @@ import { fetchJson } from '../api/client'
 import { usePolling } from '../composables/usePolling'
 import { useConfig } from '../composables/useConfig'
 import { formatValue, goodClass, timeUtc, delayComment } from '../lib/format'
+import { sensorIcon } from '../lib/sensorIcon'
 import type { CurrentResponse, SensorRow } from '../api/types'
 
 const { config } = useConfig()
@@ -40,11 +41,14 @@ const overallGood = computed(() => current.value?.good ?? null)
       <button class="current-value" @click="toggle(type.code)" :aria-expanded="expanded.has(type.code)">
         <span class="d-flex align-items-center gap-2">
           <i class="bi bi-chevron-right" :class="{ 'rotate-90': expanded.has(type.code) }" style="font-size: 0.7rem"></i>
+          <i class="bi value-icon" :class="sensorIcon(type.code)"></i>
           <span class="me-auto">{{ type.name }}</span>
-          <span class="fw-semibold" :class="goodClass(current?.sensors[type.code]?.good ?? null)">
-            {{ formatValue(current?.sensors[type.code]?.value ?? null) }}
+          <span class="d-flex flex-column align-items-end lh-1">
+            <span class="fw-semibold" :class="goodClass(current?.sensors[type.code]?.good ?? null)">
+              {{ formatValue(current?.sensors[type.code]?.value ?? null) }}
+            </span>
+            <span class="unit">{{ type.unit }}</span>
           </span>
-          <span class="unit">{{ type.unit }}</span>
         </span>
       </button>
 
@@ -65,5 +69,11 @@ const overallGood = computed(() => current.value?.good ?? null)
 <style scoped>
 .rotate-90 {
   transform: rotate(90deg);
+}
+.value-icon {
+  width: 1em;
+  text-align: center;
+  color: var(--pyobs-surface-text-muted);
+  font-size: 0.85rem;
 }
 </style>

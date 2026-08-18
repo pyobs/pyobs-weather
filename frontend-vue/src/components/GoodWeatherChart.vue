@@ -70,6 +70,7 @@ function render(resp: GoodWeatherResponse | null) {
       data: { datasets },
       options: {
         animation: false,
+        maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
           annotation: { annotations },
@@ -101,7 +102,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div>
+  <div class="chart-wrapper">
     <canvas ref="canvasRef"></canvas>
   </div>
 </template>

@@ -128,6 +128,15 @@
   font-size: 0.8rem;
 }
 
+/* ── Chart.js plots ──────────────────────────────────────────────────────── */
+/* Chart.js's responsive resize needs a bounded-height, positioned parent — without one (and
+   with maintainAspectRatio: false) the canvas has nothing to size itself against and grows
+   without limit inside a scrollable container. */
+.chart-wrapper {
+  position: relative;
+  height: 200px;
+}
+
 /* ── Day/night timeline ──────────────────────────────────────────────────── */
 .timeline-bar {
   position: relative;

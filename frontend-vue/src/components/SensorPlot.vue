@@ -73,6 +73,7 @@ function render(resp: HistoryResponse | null) {
       data: { datasets },
       options: {
         animation: false,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             labels: { filter: (item) => item.text !== '' },
@@ -101,7 +102,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div>
+  <div class="chart-wrapper">
     <canvas ref="canvasRef"></canvas>
   </div>
 </template>
