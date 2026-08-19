@@ -2,6 +2,7 @@
 import { fetchJson } from '../api/client'
 import { usePolling } from '../composables/usePolling'
 import { formatValue, goodClass, datetimeUtc, delayComment } from '../lib/format'
+import { sensorIcon } from '../lib/sensorIcon'
 import type { SensorRow } from '../api/types'
 
 const { data: sensors } = usePolling<SensorRow[]>(() => fetchJson('sensors/'), 10000)
@@ -25,7 +26,12 @@ const { data: sensors } = usePolling<SensorRow[]>(() => fetchJson('sensors/'), 1
         <tbody>
           <tr v-for="sensor in sensors ?? []" :key="sensor.station_code + sensor.type_code" :class="goodClass(sensor.good)">
             <td>{{ sensor.station_name }}</td>
-            <td>{{ sensor.type_name }}</td>
+            <td>
+              <span class="d-inline-flex align-items-center gap-2">
+                <i class="bi value-icon" :class="sensorIcon(sensor.type_code)"></i>
+                {{ sensor.type_name }}
+              </span>
+            </td>
             <td class="text-nowrap">
               <strong>{{ formatValue(sensor.value) }}</strong>
               <small v-if="sensor.value !== null">{{ sensor.unit }}</small>

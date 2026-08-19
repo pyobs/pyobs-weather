@@ -70,10 +70,4 @@ const overallGood = computed(() => current.value?.good ?? null)
 .rotate-90 {
   transform: rotate(90deg);
 }
-.value-icon {
-  width: 1em;
-  text-align: center;
-  color: var(--pyobs-surface-text-muted);
-  font-size: 0.85rem;
-}
 </style>
