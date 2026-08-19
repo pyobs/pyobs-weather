@@ -37,6 +37,7 @@ export interface SensorRow {
   bad_since: string | null
   delay_good: number
   delay_bad: number
+  limits: HistoryArea[]
 }
 
 export interface HistoryPoint {

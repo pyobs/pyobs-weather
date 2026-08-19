@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { fetchJson } from '../api/client'
 import { usePolling } from '../composables/usePolling'
-import { formatValue, goodClass, datetimeUtc, delayComment } from '../lib/format'
+import { formatValue, goodClass, datetimeUtc, delayComment, limitText, limitClass } from '../lib/format'
 import { sensorIcon } from '../lib/sensorIcon'
 import type { SensorRow } from '../api/types'
 
@@ -17,6 +17,7 @@ const { data: sensors } = usePolling<SensorRow[]>(() => fetchJson('sensors/'), 1
           <tr>
             <th>Station</th>
             <th>Sensor</th>
+            <th>Limits</th>
             <th>Value</th>
             <th>Good</th>
             <th>Since</th>
@@ -31,6 +32,14 @@ const { data: sensors } = usePolling<SensorRow[]>(() => fetchJson('sensors/'), 1
                 <i class="bi value-icon" :class="sensorIcon(sensor.type_code)"></i>
                 {{ sensor.type_name }}
               </span>
+            </td>
+            <td class="text-nowrap">
+              <span v-if="sensor.limits.length">
+                <span v-for="(limit, i) in sensor.limits" :key="i" class="me-2" :class="limitClass(limit)">
+                  {{ limitText(limit, sensor.unit) }}
+                </span>
+              </span>
+              <span v-else class="text-muted">–</span>
             </td>
             <td class="text-nowrap">
               <strong>{{ formatValue(sensor.value) }}</strong>

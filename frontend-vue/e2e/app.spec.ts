@@ -35,6 +35,10 @@ const SENSORS = [
     bad_since: null,
     delay_good: 0,
     delay_bad: 0,
+    limits: [
+      { type: 'danger', min: 30 },
+      { type: 'warning', min: 20, max: 30 },
+    ],
   },
   {
     station_code: 'monet',
@@ -49,6 +53,7 @@ const SENSORS = [
     bad_since: null,
     delay_good: 0,
     delay_bad: 0,
+    limits: [],
   },
 ]
 
@@ -119,6 +124,8 @@ test('sensors page shows the live table', async ({ page }) => {
   await expect(page.getByText('Sensor status')).toBeVisible()
   await expect(page.getByRole('cell', { name: 'MONET' })).toBeVisible()
   await expect(page.getByText('13.0')).toBeVisible()
+  await expect(page.getByText('bad ≥ 30 °C')).toBeVisible()
+  await expect(page.getByText('warn 20–30 °C')).toBeVisible()
 })
 
 test('no horizontal overflow on mobile', async ({ page }, testInfo) => {

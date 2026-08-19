@@ -1,9 +1,34 @@
-import type { SensorRow } from '../api/types'
+import type { HistoryArea, SensorRow } from '../api/types'
 
 export function formatValue(value: number | null): string {
   if (value === null) return 'N/A'
   if (value === 0 || value === 1) return String(value)
   return value.toFixed(1)
+}
+
+/** Trim a limit bound to a readable number, e.g. 85 -> "85", 80.5 -> "80.5". */
+function trimNumber(value: number): string {
+  return String(Number(value.toFixed(2)))
+}
+
+/** Render one evaluator limit band as text, e.g. "bad ≥ 85 °C" or "warn 80–85 °C". */
+export function limitText(limit: HistoryArea, unit: string): string {
+  let range: string
+  if (limit.min !== undefined && limit.max !== undefined) {
+    range = `${trimNumber(limit.min)}–${trimNumber(limit.max)}`
+  } else if (limit.min !== undefined) {
+    range = `≥ ${trimNumber(limit.min)}`
+  } else if (limit.max !== undefined) {
+    range = `≤ ${trimNumber(limit.max)}`
+  } else {
+    return ''
+  }
+  const label = limit.type === 'danger' ? 'bad' : 'warn'
+  return `${label} ${range}${unit ? ` ${unit}` : ''}`
+}
+
+export function limitClass(limit: HistoryArea): string {
+  return limit.type === 'danger' ? 'text-danger' : 'text-warning-emphasis'
 }
 
 export function goodClass(good: boolean | null): string {

@@ -22,6 +22,20 @@ def _sensor_types_for_codes(codes):
     return [by_code[code] for code in codes if code in by_code]
 
 
+def _sensor_limits(sensor) -> list:
+    """Return the limit areas defined by a sensor's evaluators.
+
+    Each evaluator may expose an ``areas()`` method (danger/warning bands, e.g. Schmitt
+    trigger thresholds); those are used to shade the plots and can be shown as text.
+    """
+    areas = []
+    for evaluator in sensor.evaluators.all():
+        eva = create_evaluator(evaluator)
+        if hasattr(eva, "areas"):
+            areas.extend(eva.areas())
+    return areas
+
+
 def config(request):
     # sensor types for current values and plots
     value_types = _sensor_types_for_codes(settings.WEATHER_SENSORS)
@@ -199,13 +213,7 @@ def history(request, sensor_type):
         # got average sensor?
         if sensor.station.code == INFLUXDB_MEASUREMENT_AVERAGE:
             # loop all evaluators for this sensor to define coloured areas in plot
-            for evaluator in sensor.evaluators.all():
-                # get evaluator
-                eva = create_evaluator(evaluator)
-
-                # add areas
-                if hasattr(eva, "areas"):
-                    areas.extend(eva.areas())
+            areas.extend(_sensor_limits(sensor))
 
         # else store it
         else:
@@ -235,10 +243,11 @@ def sensors(request):
     # get values
     values = list(data.values())
 
-    # add latest value
+    # add latest value and limits
     for i, sensor in enumerate(data):
         val = read_sensor_value(sensor)
         values[i]["value"] = None if val is None else val["value"]
+        values[i]["limits"] = _sensor_limits(sensor)
 
     # return all
     return JsonResponse(values, safe=False)

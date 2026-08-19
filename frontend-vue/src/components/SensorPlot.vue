@@ -76,6 +76,8 @@ function render(resp: HistoryResponse | null) {
         maintainAspectRatio: false,
         plugins: {
           legend: {
+            position: 'top',
+            align: 'end',
             labels: { filter: (item) => item.text !== '' },
           },
           annotation: { annotations },
