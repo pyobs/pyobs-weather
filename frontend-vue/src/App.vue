@@ -103,7 +103,7 @@ watch(
           </RouterLink>
         </div>
 
-        <div v-if="route.name === 'overview'" class="px-2 py-2 border-top border-secondary-subtle">
+        <div class="px-2 py-2 border-top border-secondary-subtle">
           <CurrentValues />
         </div>
       </div>
