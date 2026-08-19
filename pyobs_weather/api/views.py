@@ -10,9 +10,45 @@ from django.http import JsonResponse, HttpResponseNotFound
 import numpy as np
 
 from pyobs_weather.settings import INFLUXDB_MEASUREMENT_AVERAGE
+from pyobs_weather.version import VERSION
 from pyobs_weather.weather.models import Station, Sensor, SensorType, GoodWeather
 from pyobs_weather.weather.tasks import create_evaluator
 from pyobs_weather.weather.influx import read_sensor_values, read_sensor_value
+
+
+def _sensor_types_for_codes(codes):
+    # fetch all matching sensor types in one query, then reorder to match the configured codes
+    by_code = {t.code: t for t in SensorType.objects.filter(code__in=codes)}
+    return [by_code[code] for code in codes if code in by_code]
+
+
+def config(request):
+    # sensor types for current values and plots
+    value_types = _sensor_types_for_codes(settings.WEATHER_SENSORS)
+    plot_types = _sensor_types_for_codes(settings.WEATHER_PLOTS)
+
+    # observer location
+    location = EarthLocation(
+        lon=settings.OBSERVER_LOCATION["longitude"] * u.deg,
+        lat=settings.OBSERVER_LOCATION["latitude"] * u.deg,
+        height=settings.OBSERVER_LOCATION["elevation"] * u.m,
+    )
+    lon = location.lon.to_string(sep="°'\"", precision=1)
+    lon = lon[1:] + " W" if lon[0] == "-" else lon + " E"
+    lat = location.lat.to_string(sep="°'\"", precision=1)
+    lat = lat[1:] + " S" if lat[0] == "-" else lat + " N"
+
+    return JsonResponse(
+        {
+            "site": settings.OBSERVER_NAME,
+            "title": settings.WINDOW_TITLE,
+            "root_url": settings.ROOT_URL,
+            "version": VERSION,
+            "value_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in value_types],
+            "plot_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in plot_types],
+            "location": {"longitude": lon, "latitude": lat, "elevation": location.height.value},
+        }
+    )
 
 
 def stations_list(request):

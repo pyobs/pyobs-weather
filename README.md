@@ -49,6 +49,20 @@ for a local SQLite database, then load the environment and run migrations:
     uv run ./manage.py runserver
 
 
+The web frontend is a Vue app in `frontend-vue/` (built with Vite). For development run its dev
+server alongside Django:
+
+    cd frontend-vue
+    npm install
+    npm run dev
+
+The dev server proxies `/api`, `/admin`, and `/static` to `http://localhost:8000`. For a production
+build (served by Django via the `dist/` output):
+
+    cd frontend-vue
+    npm run build
+
+
 ## Backup and restore
 
 Back up the full weather configuration (excluding raw sensor readings):

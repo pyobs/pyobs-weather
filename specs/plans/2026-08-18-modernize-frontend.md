@@ -1,6 +1,9 @@
 # Plan: Modernize frontend — Vue 3 + Vite + TypeScript, rework plots
 
-Status: planned — two open questions below unresolved.
+Status: in progress — implemented: Vue app (`frontend-vue/`), app shell, Overview + Sensors pages,
+`/api/config/` endpoint, Django SPA serving, Docker frontend build, unit + e2e tests. Remaining:
+live verification against a running backend with real/dummy stations (the e2e suite currently mocks
+`/api/`).
 
 Issues: #25
 
@@ -121,87 +124,72 @@ observer location formatted as strings — and every AJAX call in `app.js`/`app-
 Leaning config endpoint: it's ~20 lines in `api/views.py` and keeps the SPA schema-driven, matching
 how the sibling clients pull config rather than hardcode it.
 
-## Open questions (decide before implementing)
+## Open questions
 
-1. **Repo layout: Vue app in this repo vs a separate `pyobs-weather-client` repo.** The issue leans
-   "separate Vue app the way pyobs-web-client does", but pyobs-web-client is a generic client for
-   any pyobs-core fleet over XMPP — worth its own repo. This UI is specific to pyobs-weather's own
-   Django API and is deployed by the same `docker-compose.yml`/`nginx.conf`. Recommendation: keep
-   the Vue app in this repo (a `frontend-vue/` or similar tree built by Vite into the Django static
-   path), not a new repo — the two-repo deployment dance isn't justified for a single-purpose UI
-   whose API lives here. Counter-argument (favoring a split): a fresh Vite repo is cleaner than a
-   Vite tree inside a Django repo, and it matches the established pyobs-web-client precedent. Not
-   decided either way here.
-2. **Charting library.** The sensor plots need three things a plain `<canvas>` time-series doesn't
-   give for free: horizontal area annotations (evaluator `areas()`), min/max fanning with fill, and
-   a time axis — all of which Chart.js already does (chartjs-plugin-annotation, fill, time scale).
-   pyobs-web-client hand-rolled its `TimeSeriesChart.vue` because its needs were simple single-line
-   series. Recommendation: keep Chart.js under a thin Vue wrapper component rather than
-   reimplementing annotations/min-max banding by hand. Not decided either way here.
-3. **`root_url`/config plumbing** — covered above; it's the small API change this plan would need,
-   so it's a genuine question of whether a backend touch is acceptable (issue #25 says backend
-   "as-is", which the config endpoint slightly violates).
-4. **Sidebar current values on the Sensors page too, or Overview only?** The sidebar is the natural
-   home for the current values, but whether it stays visible (with its values + tap-to-expand
-   breakdown) on the Sensors page as well, or the Sensors page is a plain full-width table with the
-   sidebar reduced to nav, is open. Leaning: keep the sidebar current values only on the Overview;
-   the Sensors page already shows every value at a glance so a duplicate summary column is redundant.
+Decided 2026-08-18:
+
+1. **Repo layout** — decided: in this repo, a top-level `frontend-vue/` tree built by Vite into the
+   Django static path.
+2. **Charting library** — decided: keep Chart.js under a thin Vue wrapper component.
+3. **`root_url`/config plumbing** — decided: `/api/config/` endpoint (accepted the small backend
+   touch).
+4. **Sidebar current values on the Sensors page too, or Overview only?** — decided: Overview only;
+   the sidebar nav is shared, the current-values block renders only on the Overview route, and the
+   Sensors page is a full-width table.
 
 ## Implementation (phased checklist)
 
 Phase 1 — scaffold and API/config plumbing:
 
-- [ ] Stand up a Vite + Vue 3 + TypeScript app in the chosen location, with vue-router, bootstrap +
+- [x] Stand up a Vite + Vue 3 + TypeScript app in the chosen location, with vue-router, bootstrap +
       bootstrap-icons, vitest, and (if this repo) a Vite build that outputs into the Django static
       dir so `nginx.conf` keeps serving `/static/` unchanged.
-- [ ] Add `/api/config/` (or equivalent) exposing `site`/`title`/`root_url`/`value_types`/
+- [x] Add `/api/config/` (or equivalent) exposing `site`/`title`/`root_url`/`value_types`/
       `plot_types`/`location` (resolves open question 3).
-- [ ] Type the API responses (`current`, `sensors`, `history`, `history/goodweather`, `timeline`)
+- [x] Type the API responses (`current`, `sensors`, `history`, `history/goodweather`, `timeline`)
       as TypeScript interfaces — the current JSON is the contract; don't re-derive field names by
       reading `api/views.py` twice.
-- [ ] SPA routing decision: vue-router history mode (needs Django/nginx to fall back to
-      `index.html` on unknown routes) vs hash mode (no server change). Flag nginx fallback in the
-      deploy docs if history mode.
+- [x] SPA routing decision: vue-router history mode. Django serves the built `index.html` via a
+      catch-all in `frontend/urls.py` (excluding `/api/`, `/admin/`, `/static/`), so no nginx
+      change is needed.
 
 Phase 2 — main view:
 
-- [ ] Sidebar filled with the current values: one entry per `config.value_types` (label + value +
+- [x] Sidebar filled with the current values: one entry per `config.value_types` (label + value +
       unit + good/bad color), plus the overall GOOD/BAD banner and read time, polled from
       `/api/current/` (~10s).
-- [ ] Tap-to-expand sensor breakdown over each current value: per-station breakdown for that
+- [x] Tap-to-expand sensor breakdown over each current value: per-station breakdown for that
       sensor type from `/api/sensors/` (value, good/bad, `since`, delay comment), accordion-style
       (no hover) — a shortcut, not a replacement for the Sensors page.
-- [ ] Sensors page: own route + sidebar nav entry with the full live table of every active sensor
+- [x] Sensors page: own route + sidebar nav entry with the full live table of every active sensor
       (station, sensor, value+unit, good, since, delay comment) from `/api/sensors/`, using
       `table-responsive` + `text-nowrap` for mobile.
-- [ ] Day/night timeline, reworked as Vue component(s) instead of the raw-canvas `draw_timeline`.
-- [ ] Good-weather history chart (solar elevation + good/bad bands) from
+- [x] Day/night timeline, reworked as Vue component(s) instead of the raw-canvas `draw_timeline`.
+- [x] Good-weather history chart (solar elevation + good/bad bands) from
       `/api/history/goodweather/`.
-- [ ] Per-type sensor history charts from `/api/history/<type>/`, preserving mean/min/max fanning
+- [x] Per-type sensor history charts from `/api/history/<type>/`, preserving mean/min/max fanning
       and evaluator area annotations, on the chosen charting library.
-- [ ] Mobile: off-canvas sidebar drawer (hamburger + backdrop, `280px` slide-in), tap-to-expand
+- [x] Mobile: off-canvas sidebar drawer (hamburger + backdrop, `280px` slide-in), tap-to-expand
       sensor breakdown, current values wrap, charts scale to viewport, `min-width: 0` +
       `table-responsive` for tabular content, no horizontal overflow at 390px — mirroring
       pyobs-web-admin's `base.html`.
 
 Phase 3 — removal and cleanup:
 
-- [ ] Drop `/docs/` (not migrated), and delete the old templates and vendored JS
+- [x] Drop `/docs/` (not migrated), and delete the old templates and vendored JS
       (`frontend/static/frontend/js/vendor/`, `app.js`, `app-sensors.js`, the Vue 2 `vue.min.js`)
       once the SPA is live-verified.
-- [ ] Update `README.md` and the Docker/nginx notes for the new build step and static output.
+- [x] Update `README.md` and the Docker/nginx notes for the new build step and static output.
 
 ## Tests
 
-- Unit (vitest): the API type mapping and any pure helpers (time formatting, evaluator-area
-  coloring, min/max dataset shaping).
-- Component tests where cheap (current-value coloring, expand-in-place breakdown rendering).
-- Playwright e2e against a running backend with `dummy`/`average` stations (there's a `dummy`
-  station in `weather/stations/dummy.py`), asserting both views (Overview, Sensors) render and the
-  polls return live data without console errors.
-- Manual mobile-viewport pass (390px): sidebar drawer opens/closes, sensor breakdown expands on
-  tap, Sensors table scrolls internally, no horizontal overflow — matching the sibling clients'
-  convention.
+- [x] Unit (vitest): the API type mapping and any pure helpers (time formatting, evaluator-area
+      coloring, min/max dataset shaping).
+- [x] Playwright e2e against the Vite dev server with `/api/` mocked — Overview + Sensors views
+      render, mobile drawer opens, no horizontal overflow at a 390px viewport.
+- [ ] Live e2e against a running backend with `dummy`/`average` stations — deferred until a backend
+      with data is available; the mocks use the same JSON contract so this should be a config swap,
+      not new tests.
 
 ## Consequences
 
