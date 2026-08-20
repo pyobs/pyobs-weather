@@ -73,10 +73,23 @@ watch(
 
   <div class="d-flex">
     <nav class="sidebar app-chrome" :class="{ open: sidebarOpen }" id="sidebar">
+      <!-- Desktop header -->
+      <div class="p-3 border-bottom border-secondary-subtle d-none d-lg-block">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-cloud-sun fs-5 text-primary"></i>
+          <div>
+            <div class="fw-semibold text-body lh-1">pyobs</div>
+            <div class="text-muted" style="font-size: 0.7rem">Weather v{{ config?.version ?? '?' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile header with close button -->
       <div class="p-3 border-bottom border-secondary-subtle d-flex d-lg-none align-items-center gap-2">
+        <i class="bi bi-cloud-sun fs-5 text-primary"></i>
         <div class="me-auto">
           <div class="fw-semibold text-body lh-1">pyobs</div>
-          <div class="text-muted" style="font-size: 0.7rem">Weather</div>
+          <div class="text-muted" style="font-size: 0.7rem">Weather v{{ config?.version ?? '?' }}</div>
         </div>
         <button class="btn btn-sm btn-outline-secondary" @click="toggleSidebar" aria-label="Close sidebar">
           <i class="bi bi-x-lg"></i>
@@ -117,12 +130,6 @@ watch(
           <i :class="theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
           <span>Theme</span>
         </button>
-      </div>
-
-      <div class="p-2 border-top border-secondary-subtle text-muted" style="font-size: 0.75rem">
-        pyobs-weather v{{ config?.version ?? '?' }}
-        (<a href="https://github.com/pyobs/pyobs-weather" target="_blank" rel="noopener">GitHub</a>,
-        <a href="https://hub.docker.com/repository/docker/thusser/pyobs-weather" target="_blank" rel="noopener">Docker</a>)
       </div>
     </nav>
 
