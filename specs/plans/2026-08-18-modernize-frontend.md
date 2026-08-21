@@ -1,9 +1,8 @@
 # Plan: Modernize frontend — Vue 3 + Vite + TypeScript, rework plots
 
-Status: in progress — implemented: Vue app (`frontend-vue/`), app shell, Overview + Sensors pages,
-`/api/config/` endpoint, Django SPA serving, Docker frontend build, unit + e2e tests. Remaining:
-live verification against a running backend with real/dummy stations (the e2e suite currently mocks
-`/api/`).
+Status: implemented, closed (PR #26, merged 2026-08-19; #25 closed). Live e2e against a running
+backend with `dummy`/`average` stations remains deferred — no backend with data available; the
+mocked e2e suite covers the same JSON contract, so this is a config swap, not new tests.
 
 Issues: #25
 
