@@ -3,80 +3,24 @@
 pyobs-weather is an aggregator for data from several weather stations. Rules can be defined for when weather
 is considered "good". It provides both a web frontend and an API for access.
 
-
 ## Documentation
 
-See the documentation at https://pyobs.github.io/.
-
-
-## Deployment with Docker
-
-The easiest way to deploy is with the included `docker-compose.yml`, which sets up all required services:
-PostgreSQL, RabbitMQ, Celery, nginx, and the weather app itself.
-
-**1. Create a `.env` file** from the provided example and fill in your values:
-
-    cp .env.example .env
-
-At minimum set `SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, and the database/InfluxDB credentials.
-See `.env.example` for all available options including the observer location.
-
-**2. Start all services:**
-
-    docker-compose up -d
-
-**3. Initialise the database** (only needed on first run):
-
-    docker-compose exec weather uv run ./manage.py initweather
-    docker-compose exec weather uv run ./manage.py createsuperuser
-
-The web frontend is accessible at http://localhost/ and the admin panel at http://localhost/admin.
-
-The `nginx.conf` in this repository is used automatically by the nginx container — no manual configuration needed.
-
+Full installation (Docker Compose), configuration (every environment variable), architecture (how
+the Django app, Celery, InfluxDB, and the Vue frontend fit together), and REST API reference: see
+[`docs/source/`](docs/source/) (built with Sphinx — `cd docs && uv run --with sphinx --with sphinx-rtd-theme make html`).
 
 ## Development
 
-This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
+```bash
+git clone https://github.com/pyobs/pyobs-weather.git
+cd pyobs-weather
+uv sync --group dev
+```
 
-    uv sync --group dev
-
-Copy `.env.example` to `.env`, set `SQL_ENGINE=django.db.backends.sqlite3` and `SQL_DATABASE=db.sqlite3`
-for a local SQLite database, then load the environment and run migrations:
-
-    set -a && source .env && set +a
-    uv run ./manage.py migrate
-    uv run ./manage.py runserver
-
-
-The web frontend is a Vue app in `frontend-vue/` (built with Vite). For development run its dev
-server alongside Django:
-
-    cd frontend-vue
-    npm install
-    npm run dev
-
-The dev server proxies `/api`, `/admin`, and `/static` to `http://localhost:8000`. For a production
-build (served by Django via the `dist/` output):
-
-    cd frontend-vue
-    npm run build
-
-
-## Backup and restore
-
-Back up the full weather configuration (excluding raw sensor readings):
-
-    docker-compose exec weather uv run ./manage.py dumpdata --indent 2 weather --exclude weather.value > weather.json
-
-To include sensor readings as well:
-
-    docker-compose exec weather uv run ./manage.py dumpdata --indent 2 weather > weather.json
-
-Restore on a fresh setup:
-
-    docker-compose exec weather uv run ./manage.py loaddata weather.json
-
+See [`docs/source/development.rst`](docs/source/development.rst) for the full local-dev flow
+(SQLite setup, running the Vue frontend's dev server), and
+[`docs/source/installation.rst`](docs/source/installation.rst) for the Docker Compose production
+setup.
 
 ## Changelog
 

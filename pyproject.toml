@@ -22,8 +22,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "black>=21.12b0,<22",
-    "Sphinx>=4.4.0,<5",
-    "sphinx-rtd-theme>=1.0.0,<2",
+    "Sphinx",
+    "sphinx-rtd-theme",
 ]
 
 [build-system]
