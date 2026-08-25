@@ -1,6 +1,6 @@
 [project]
 name = "pyobs-weather"
-version = "2.0.0.dev1"
+version = "2.0.0.dev2"
 description = "robotic telescope software"
 authors = [{name = "Tim-Oliver Husser", email = "thusser@uni-goettingen.de"}]
 license = {text = "MIT"}
@@ -22,8 +22,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "black>=21.12b0,<22",
-    "Sphinx>=4.4.0,<5",
-    "sphinx-rtd-theme>=1.0.0,<2",
+    "Sphinx",
+    "sphinx-rtd-theme",
 ]
 
 [build-system]
