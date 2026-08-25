@@ -1,6 +1,6 @@
 [project]
 name = "pyobs-weather"
-version = "2.0.0.dev0"
+version = "2.0.0.dev1"
 description = "robotic telescope software"
 authors = [{name = "Tim-Oliver Husser", email = "thusser@uni-goettingen.de"}]
 license = {text = "MIT"}
