@@ -10,9 +10,59 @@ from django.http import JsonResponse, HttpResponseNotFound
 import numpy as np
 
 from pyobs_weather.settings import INFLUXDB_MEASUREMENT_AVERAGE
+from pyobs_weather.version import VERSION
 from pyobs_weather.weather.models import Station, Sensor, SensorType, GoodWeather
 from pyobs_weather.weather.tasks import create_evaluator
 from pyobs_weather.weather.influx import read_sensor_values, read_sensor_value
+
+
+def _sensor_types_for_codes(codes):
+    # fetch all matching sensor types in one query, then reorder to match the configured codes
+    by_code = {t.code: t for t in SensorType.objects.filter(code__in=codes)}
+    return [by_code[code] for code in codes if code in by_code]
+
+
+def _sensor_limits(sensor) -> list:
+    """Return the limit areas defined by a sensor's evaluators.
+
+    Each evaluator may expose an ``areas()`` method (danger/warning bands, e.g. Schmitt
+    trigger thresholds); those are used to shade the plots and can be shown as text.
+    """
+    areas = []
+    for evaluator in sensor.evaluators.all():
+        eva = create_evaluator(evaluator)
+        if hasattr(eva, "areas"):
+            areas.extend(eva.areas())
+    return areas
+
+
+def config(request):
+    # sensor types for current values and plots
+    value_types = _sensor_types_for_codes(settings.WEATHER_SENSORS)
+    plot_types = _sensor_types_for_codes(settings.WEATHER_PLOTS)
+
+    # observer location
+    location = EarthLocation(
+        lon=settings.OBSERVER_LOCATION["longitude"] * u.deg,
+        lat=settings.OBSERVER_LOCATION["latitude"] * u.deg,
+        height=settings.OBSERVER_LOCATION["elevation"] * u.m,
+    )
+    lon = location.lon.to_string(sep="°'\"", precision=1)
+    lon = lon[1:] + " W" if lon[0] == "-" else lon + " E"
+    lat = location.lat.to_string(sep="°'\"", precision=1)
+    lat = lat[1:] + " S" if lat[0] == "-" else lat + " N"
+
+    return JsonResponse(
+        {
+            "site": settings.OBSERVER_NAME,
+            "title": settings.WINDOW_TITLE,
+            "root_url": settings.ROOT_URL,
+            "version": VERSION,
+            "value_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in value_types],
+            "plot_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in plot_types],
+            "location": {"longitude": lon, "latitude": lat, "elevation": location.height.value},
+        }
+    )
 
 
 def stations_list(request):
@@ -163,13 +213,7 @@ def history(request, sensor_type):
         # got average sensor?
         if sensor.station.code == INFLUXDB_MEASUREMENT_AVERAGE:
             # loop all evaluators for this sensor to define coloured areas in plot
-            for evaluator in sensor.evaluators.all():
-                # get evaluator
-                eva = create_evaluator(evaluator)
-
-                # add areas
-                if hasattr(eva, "areas"):
-                    areas.extend(eva.areas())
+            areas.extend(_sensor_limits(sensor))
 
         # else store it
         else:
@@ -199,10 +243,11 @@ def sensors(request):
     # get values
     values = list(data.values())
 
-    # add latest value
+    # add latest value and limits
     for i, sensor in enumerate(data):
         val = read_sensor_value(sensor)
         values[i]["value"] = None if val is None else val["value"]
+        values[i]["limits"] = _sensor_limits(sensor)
 
     # return all
     return JsonResponse(values, safe=False)
