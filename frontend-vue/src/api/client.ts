@@ -34,3 +34,22 @@ export async function fetchJson<T>(path: string): Promise<T> {
   }
   return res.json() as Promise<T>
 }
+
+// pyobs_auth's views (login/callback/logout), mounted by Django outside the SPA's own routes -
+// a real page navigation, not a vue-router route or a fetch() call, since the OIDC redirect and
+// Keycloak's RP-Initiated Logout both need the browser itself to follow them.
+export function loginUrl(): string {
+  return `${rootUrl}accounts/keycloak/login/`
+}
+
+export function logoutUrl(): string {
+  return `${rootUrl}accounts/keycloak/logout/`
+}
+
+// pyobs_weather/frontend/views.py's index view is decorated with @ensure_csrf_cookie, so every
+// SPA page load sets this - read here rather than fetched separately, since Django's CSRF
+// middleware validates a submitted token against the cookie, not a server-side session value.
+export function getCsrfToken(): string | null {
+  const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/)
+  return match ? decodeURIComponent(match[1]) : null
+}

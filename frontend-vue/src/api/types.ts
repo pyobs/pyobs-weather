@@ -16,6 +16,12 @@ export interface ConfigResponse {
     latitude: string
     elevation: number
   }
+  keycloak_enabled: boolean
+}
+
+export interface MeResponse {
+  authenticated: boolean
+  username: string | null
 }
 
 export interface CurrentResponse {
