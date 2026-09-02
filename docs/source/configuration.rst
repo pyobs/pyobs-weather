@@ -86,3 +86,33 @@ Site
 
 Beyond the environment, weather stations and their evaluators are configured through the Django
 admin panel, not env vars or a config file — see :doc:`architecture`.
+
+
+Keycloak login
+**************
+
+Login is optional — leave ``KEYCLOAK_SERVER_URL`` unset (the default) to disable it entirely; the
+frontend then hides the login link and every visitor stays anonymous, same as before this feature
+existed.
+
+``KEYCLOAK_SERVER_URL`` (default: unset — disables Keycloak login)
+    Base URL of the Keycloak server.
+
+``KEYCLOAK_REALM`` (default: ``pyobs``), ``KEYCLOAK_CLIENT_ID`` (default: ``weather``),
+``KEYCLOAK_CLIENT_SECRET``
+    Realm and client credentials for this deployment.
+
+``KEYCLOAK_REDIRECT_URI``, ``KEYCLOAK_POST_LOGOUT_REDIRECT_URI``
+    Absolute URLs registered with the Keycloak client, e.g.
+    ``https://weather.example.com/accounts/keycloak/callback/`` and
+    ``https://weather.example.com/``.
+
+``KEYCLOAK_IDP_HINT``, ``KEYCLOAK_IDP_LABEL``
+    Optional one-click upstream-IdP login (skips Keycloak's own login/IdP-selection page).
+
+``KEYCLOAK_REQUIRED_GROUP`` (default: ``/pyobs-weather``)
+    Keycloak group a user must belong to in order to log in — **per-installation, not
+    fleet-wide**: if this site is part of a larger deployment, override it to a site-specific
+    group name so logging in here doesn't also authorize every other site's instance. Set to an
+    empty string to disable the authorization gate (every authenticated Keycloak user would then
+    be authorized).
