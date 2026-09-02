@@ -2,10 +2,13 @@
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useConfig } from './composables/useConfig'
+import { useAuth } from './composables/useAuth'
+import { loginUrl } from './api/client'
 import CurrentValues from './components/CurrentValues.vue'
 
 const route = useRoute()
 const { config, load } = useConfig()
+const { me, load: loadAuth, logout } = useAuth()
 
 const sidebarOpen = ref(false)
 const theme = ref<'light' | 'dark'>('light')
@@ -43,6 +46,7 @@ onMounted(() => {
   theme.value = currentTheme()
   applyTheme()
   load()
+  loadAuth()
 })
 
 watch(
@@ -119,6 +123,22 @@ watch(
         <div class="px-2 py-2 border-top border-secondary-subtle">
           <CurrentValues />
         </div>
+      </div>
+
+      <div v-if="config?.keycloak_enabled" class="p-2 border-top border-secondary-subtle">
+        <button
+          v-if="me?.authenticated"
+          type="button"
+          class="sidebar-link d-flex align-items-center gap-2 px-2 py-2 w-100 border-0 bg-transparent text-start"
+          @click="logout"
+        >
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Log out ({{ me.username }})</span>
+        </button>
+        <a v-else class="sidebar-link d-flex align-items-center gap-2 px-2 py-2" :href="loginUrl()">
+          <i class="bi bi-box-arrow-in-right"></i>
+          <span>Log in</span>
+        </a>
       </div>
 
       <div class="p-2 border-top border-secondary-subtle">

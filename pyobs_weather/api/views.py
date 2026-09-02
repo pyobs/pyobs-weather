@@ -61,8 +61,18 @@ def config(request):
             "value_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in value_types],
             "plot_types": [{"code": t.code, "name": t.name, "unit": t.unit} for t in plot_types],
             "location": {"longitude": lon, "latitude": lat, "elevation": location.height.value},
+            # lets the frontend hide the login link entirely when Keycloak isn't configured
+            # (e.g. local dev)
+            "keycloak_enabled": bool(settings.PYOBS_AUTH.get("SERVER_URL")),
         }
     )
+
+
+def me(request):
+    # current session's auth state, for the frontend to show/hide login-gated UI
+    if request.user.is_authenticated:
+        return JsonResponse({"authenticated": True, "username": request.user.username})
+    return JsonResponse({"authenticated": False, "username": None})
 
 
 def stations_list(request):

@@ -1,14 +1,26 @@
 REST API Reference
 ###################
 
-Mounted under ``/api/``, unauthenticated, all endpoints return JSON.
+Mounted under ``/api/``, all endpoints return JSON. Every endpoint below is readable without
+logging in; none of them currently require authentication (Keycloak login, see
+:doc:`configuration`, only gates access to the login flow itself — nothing yet checks
+``request.user`` on these views).
 
 Config
 ******
 
 ``GET /api/config/`` — site name, window title, root URL, app version, the configured
-``value_types``/``plot_types`` (see :doc:`configuration`), and the observer location. This is what
-the Vue frontend bootstraps itself from.
+``value_types``/``plot_types`` (see :doc:`configuration`), the observer location, and whether
+Keycloak login is configured (``keycloak_enabled``). This is what the Vue frontend bootstraps
+itself from.
+
+Authentication
+**************
+
+``GET /api/me/`` — the current session's login state: ``{"authenticated": bool, "username": str
+or null}``. The actual login/logout flow is a set of plain (non-JSON) views mounted at
+``/accounts/keycloak/`` by `pyobs-auth <https://github.com/pyobs/pyobs-auth>`_ — ``login/`` starts
+the Keycloak redirect, ``callback/`` completes it, and ``logout/`` (POST only) ends the session.
 
 Current weather
 ****************

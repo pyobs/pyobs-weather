@@ -3,6 +3,7 @@ from pathlib import Path
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotFound
 from django.utils.html import escapejs
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 # Built Vue SPA entry point (produced by `npm run build` in frontend-vue/).
 INDEX_PATH = Path(__file__).resolve().parent / "static" / "frontend" / "dist" / "index.html"
@@ -12,6 +13,7 @@ INDEX_PATH = Path(__file__).resolve().parent / "static" / "frontend" / "dist" / 
 STATIC_BASE_PLACEHOLDER = "/__PYOBS_STATIC_BASE__/frontend/dist/"
 
 
+@ensure_csrf_cookie
 def index(request):
     """Serve the Vue SPA's built index.html for the single-page app routes."""
     try:
