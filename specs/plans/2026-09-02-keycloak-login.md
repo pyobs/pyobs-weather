@@ -4,23 +4,32 @@ Issues: #33 (prerequisite for #6). Repo: pyobs-weather only — pyobs-auth 2.1.0
 everything needed (`REQUIRED_GROUPS`, `KeycloakSessionRefreshMiddleware`), no upstream changes
 required.
 
-Status: sections 1-5 implemented 2026-09-02 (not yet committed/deployed). Section 0 (Keycloak
-admin-console config, per site) is still open and blocks actually enabling login anywhere — the
-code is safe to merge ahead of it (`KEYCLOAK_SERVER_URL` unset is a no-op, same as archive/
-portal's rollout).
+Status: sections 1-5 implemented and committed to `develop` 2026-09-02 (`21ba43b`). Section 0
+(Keycloak admin-console config, per site) is still open and blocks actually enabling login
+anywhere — the code is safe to have merged ahead of it (`KEYCLOAK_SERVER_URL` unset is a no-op,
+same as archive/portal's rollout).
 
 Unlike pyobs-archive/pyobs-portal's cutovers (pyobs-core #823), this is greenfield: weather has
 zero auth code today (no login, no `is_staff` checks anywhere), so it builds straight against
 pyobs-auth 2.1.0 rather than retrofitting an activation-gate migration.
 
-## 0. Keycloak admin config (not pyobs code)
+## 0. Keycloak admin config (not pyobs code, one pass per deployment)
 
-- [ ] Create client `weather` in the pyobs realm; register redirect URIs for weather's real
-      deployment host(s)
-- [ ] Create group `/pyobs-weather`, populate with authorized users — **fail-closed**: until this
-      exists and is populated, every login is refused
-- [ ] Verify the shared realm's "Group Membership" protocol mapper (added during #823) already
-      covers this client — don't recreate it
+Weather is deployed per-site, not as a fleet-wide singleton (unlike archive) — so this section
+runs once per installation, each with its own client and group, following the same
+per-installation convention `pyobs-monet`/`pyobs-iagvt`/`pyobs-iag50` already use for
+web-admin/portal (a single `/pyobs-weather` group would authorize a user for every site's weather
+page at once). Confirmed for IAG50cm in `pyobs-iag50`'s `specs/design/keycloak-service-topology.md`:
+client `iag50srv-weather`, group `/pyobs-weather-iag50srv`. Other sites (monet south/north, iagvt)
+follow the same `<site>-weather` / `/pyobs-weather-<site>` pattern once each is scoped.
+
+- [ ] Per site: run `central/auth/create_client.sh <site>-weather <redirect-uri>
+      <post-logout-redirect-uri> /pyobs-weather-<site>` (creates the client, wires the `groups`
+      default scope, and creates the empty group in one step)
+- [ ] Per site: populate the created group with authorized users — **fail-closed**: until this is
+      populated, every login at that site is refused
+- [ ] Per site: verify the shared realm's "Group Membership" protocol mapper (added during #823)
+      already covers the new client — don't recreate it
 
 ## 1. pyobs-auth dependency
 
@@ -46,8 +55,10 @@ pyobs-auth 2.1.0 rather than retrofitting an activation-gate migration.
 
 - [x] `PYOBS_AUTH` dict: `SERVER_URL`/`REALM`/`CLIENT_ID`/`CLIENT_SECRET`/`REDIRECT_URI`/
       `POST_LOGOUT_REDIRECT_URI`/`IDP_HINT`/`IDP_LABEL` from `KEYCLOAK_*` env vars,
-      `USER_RESOLVER`, `REQUIRED_GROUPS` from `KEYCLOAK_REQUIRED_GROUP` (default
-      `/pyobs-weather`, empty disables the gate)
+      `USER_RESOLVER`, `REQUIRED_GROUPS` from `KEYCLOAK_REQUIRED_GROUP` (falls back to
+      `/pyobs-weather` if unset, but that fallback is a placeholder, not a real group anywhere —
+      per-installation per section 0, so every real deployment's `local_settings.py` must override
+      it with that site's actual group, e.g. `/pyobs-weather-iag50srv`)
 - [x] `SESSION_ENGINE`: confirmed no change needed — weather never overrides it, so Django's
       db-backed default already applies
 - [x] Documented new env vars in `.env.example` and `docs/source/configuration.rst`
