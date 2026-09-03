@@ -42,6 +42,7 @@ AUTHENTICATION_BACKENDS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -124,6 +125,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 ROOT_URL = os.environ.get("ROOT_URL", "/")
 STATIC_URL = ROOT_URL + "static/"
 STATIC_ROOT = os.environ.get("STATIC_ROOT", "/static/")
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 
 # Celery / RabbitMQ

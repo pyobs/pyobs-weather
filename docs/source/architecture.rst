@@ -23,7 +23,7 @@ polling schedule. Every station's readings feed into two built-in synthetic stat
 decides whether its current value counts as "good"; a sensor with no evaluator is neutral (not
 counted against "good" at all).
 
-The **frontend** is a Vue SPA (``frontend-vue/``), served as static files by Django/nginx in
-production, that reads everything through the REST API in :doc:`api` — there's no server-rendered
-page for the live weather view. External consumers (telescope-control software deciding whether
-it's safe to observe) use the same REST API.
+The **frontend** is a Vue SPA (``frontend-vue/``), served as static files by Django (via
+Whitenoise) in production, that reads everything through the REST API in :doc:`api` — there's no
+server-rendered page for the live weather view. External consumers (telescope-control software
+deciding whether it's safe to observe) use the same REST API.

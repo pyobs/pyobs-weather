@@ -4,10 +4,12 @@ Issues: #33 (prerequisite for #6). Repo: pyobs-weather only — pyobs-auth 2.1.0
 everything needed (`REQUIRED_GROUPS`, `KeycloakSessionRefreshMiddleware`), no upstream changes
 required.
 
-Status: sections 1-5 implemented and committed to `develop` 2026-09-02 (`21ba43b`). Section 0
-(Keycloak admin-console config, per site) is still open and blocks actually enabling login
-anywhere — the code is safe to have merged ahead of it (`KEYCLOAK_SERVER_URL` unset is a no-op,
-same as archive/portal's rollout).
+Status: sections 1-5 implemented and committed to `develop` 2026-09-02 (`21ba43b`), released as
+v2.0.0 the same day (was stuck at `2.0.0.dev3` since 2026-08-26; the fleet's other 22 packages
+went stable in late August, weather was missed). Section 0 is done and confirmed working
+end-to-end at IAG50cm (`iag50srv`) as of 2026-09-02 — login tested live via
+`https://weather.iag50srv.astro.physik.uni-goettingen.de/`. Other sites (monet south/north,
+iagvt) still need their own pass.
 
 Unlike pyobs-archive/pyobs-portal's cutovers (pyobs-core #823), this is greenfield: weather has
 zero auth code today (no login, no `is_staff` checks anywhere), so it builds straight against
@@ -23,13 +25,18 @@ page at once). Confirmed for IAG50cm in `pyobs-iag50`'s `specs/design/keycloak-s
 client `iag50srv-weather`, group `/pyobs-weather-iag50srv`. Other sites (monet south/north, iagvt)
 follow the same `<site>-weather` / `/pyobs-weather-<site>` pattern once each is scoped.
 
-- [ ] Per site: run `central/auth/create_client.sh <site>-weather <redirect-uri>
-      <post-logout-redirect-uri> /pyobs-weather-<site>` (creates the client, wires the `groups`
-      default scope, and creates the empty group in one step)
-- [ ] Per site: populate the created group with authorized users — **fail-closed**: until this is
-      populated, every login at that site is refused
-- [ ] Per site: verify the shared realm's "Group Membership" protocol mapper (added during #823)
-      already covers the new client — don't recreate it
+- [x] IAG50cm (`iag50srv`): client `iag50srv-weather`, group `/pyobs-weather-iag50srv` (currently
+      just `thusser`) — created via `central/auth/create_client.sh`, `local_settings.py` wired,
+      login tested live 2026-09-02. `create_client.sh` itself needed a fix first: the master-realm
+      admin login it used stopped working once 2FA was enabled on that account (kcadm's CLI has no
+      `--otp` flag), so it now authenticates as a dedicated `engineering` service account
+      (`manage-clients`+`manage-users` on the pyobs realm's own `realm-management` client) instead.
+- [ ] monet south (`monets`): not started
+- [ ] monet north (`monetn`): not started — no `pyobs-portal` here yet either, lower priority
+- [ ] iagvt: not started — also has no Keycloak/pyobs-auth integration of any kind yet, per
+      `pyobs-iagvt`'s own `keycloak-service-topology.md`
+- [ ] Per site once scoped: verify the shared realm's "Group Membership" protocol mapper (added
+      during #823) already covers the new client — don't recreate it
 
 ## 1. pyobs-auth dependency
 
