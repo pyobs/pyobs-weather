@@ -3,18 +3,24 @@ import { onBeforeUnmount, ref, watch } from 'vue'
 import Chart from '../lib/chart'
 import { fetchJson } from '../api/client'
 import { usePolling } from '../composables/usePolling'
-import { withAlpha } from '../lib/color'
+import { useTheme } from '../composables/useTheme'
+import { adaptToSurface, cssVar, withAlpha } from '../lib/color'
+import { chartChromeColors } from '../lib/chartTheme'
 import type { HistoryResponse } from '../api/types'
 
 const props = defineProps<{ typeCode: string; label: string; unit: string }>()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const { data } = usePolling<HistoryResponse>(() => fetchJson(`history/${props.typeCode}/`), 60000)
+const { theme } = useTheme()
 
 let chart: Chart | null = null
 
 function render(resp: HistoryResponse | null) {
   if (!canvasRef.value || !resp) return
+
+  const surfaceBg = cssVar('--pyobs-surface-bg', '#ffffff')
+  const chrome = chartChromeColors()
 
   const datasets = resp.stations
     // backend's history() view already excludes the average station from `stations`
@@ -23,7 +29,7 @@ function render(resp: HistoryResponse | null) {
       const mean = station.data.map((p) => ({ x: ts(p.time), y: p.value }))
       const min = station.data.map((p) => ({ x: ts(p.time), y: p.min }))
       const max = station.data.map((p) => ({ x: ts(p.time), y: p.max }))
-      const color = station.color
+      const color = adaptToSurface(station.color, surfaceBg)
       return [
         {
           label: '',
@@ -78,13 +84,23 @@ function render(resp: HistoryResponse | null) {
           legend: {
             position: 'top',
             align: 'end',
-            labels: { filter: (item) => item.text !== '' },
+            labels: { filter: (item) => item.text !== '', color: chrome.text },
           },
+          tooltip: chrome.tooltip,
           annotation: { annotations },
         },
         scales: {
-          x: { type: 'time', title: { display: true, text: 'Time [UT]' } },
-          y: { title: { display: true, text: props.label } },
+          x: {
+            type: 'time',
+            title: { display: true, text: 'Time [UT]', color: chrome.muted },
+            grid: { color: chrome.grid },
+            ticks: { color: chrome.muted },
+          },
+          y: {
+            title: { display: true, text: props.label, color: chrome.muted },
+            grid: { color: chrome.grid },
+            ticks: { color: chrome.muted },
+          },
         },
       },
     })
@@ -96,6 +112,14 @@ function render(resp: HistoryResponse | null) {
 }
 
 watch(data, (v) => render(v), { immediate: true })
+
+// theme change alone doesn't touch `data`, and scale/plugin colors are baked in at chart
+// creation — simplest correct fix is to recreate the chart rather than patch every option
+watch(theme, () => {
+  chart?.destroy()
+  chart = null
+  render(data.value)
+})
 
 onBeforeUnmount(() => {
   chart?.destroy()

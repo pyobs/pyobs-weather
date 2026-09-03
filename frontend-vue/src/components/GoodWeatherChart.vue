@@ -3,16 +3,20 @@ import { onBeforeUnmount, ref, watch } from 'vue'
 import Chart from '../lib/chart'
 import { fetchJson } from '../api/client'
 import { usePolling } from '../composables/usePolling'
+import { useTheme } from '../composables/useTheme'
+import { chartChromeColors } from '../lib/chartTheme'
 import type { GoodWeatherResponse } from '../api/types'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const { data } = usePolling<GoodWeatherResponse>(() => fetchJson('history/goodweather/'), 60000)
+const { theme } = useTheme()
 
 let chart: Chart | null = null
 
 function render(resp: GoodWeatherResponse | null) {
   if (!canvasRef.value || !resp) return
 
+  const chrome = chartChromeColors()
   const sun = resp.sun.time.map((t, i) => ({ x: new Date(t).getTime(), y: resp.sun.alt[i] }))
 
   const annotations: Record<string, unknown>[] = []
@@ -47,7 +51,7 @@ function render(resp: GoodWeatherResponse | null) {
     type: 'line',
     scaleID: 'y',
     value: 0,
-    borderColor: 'rgba(0, 0, 0, 0.5)',
+    borderColor: chrome.muted,
     borderWidth: 1,
   })
 
@@ -73,6 +77,7 @@ function render(resp: GoodWeatherResponse | null) {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
+          tooltip: chrome.tooltip,
           annotation: { annotations },
         },
         scales: {
@@ -80,9 +85,15 @@ function render(resp: GoodWeatherResponse | null) {
             type: 'time',
             min: now - 24 * 3600 * 1000,
             max: now,
-            title: { display: true, text: 'Time [UT]' },
+            title: { display: true, text: 'Time [UT]', color: chrome.muted },
+            grid: { color: chrome.grid },
+            ticks: { color: chrome.muted },
           },
-          y: { title: { display: true, text: 'Sun/good' } },
+          y: {
+            title: { display: true, text: 'Sun/good', color: chrome.muted },
+            grid: { color: chrome.grid },
+            ticks: { color: chrome.muted },
+          },
         },
       },
     })
@@ -94,6 +105,14 @@ function render(resp: GoodWeatherResponse | null) {
 }
 
 watch(data, (v) => render(v), { immediate: true })
+
+// theme change alone doesn't touch `data`, and scale/plugin colors are baked in at chart
+// creation — simplest correct fix is to recreate the chart rather than patch every option
+watch(theme, () => {
+  chart?.destroy()
+  chart = null
+  render(data.value)
+})
 
 onBeforeUnmount(() => {
   chart?.destroy()
