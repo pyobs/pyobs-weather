@@ -4,7 +4,9 @@ Issues: #6 (originally "see plots for previous nights"; rescoped 2026-09-04 to a
 that login exists). Depends on #33/`2026-09-02-keycloak-login.md` (done, `/api/me/` +
 `request.user.is_authenticated` already available). Repo: pyobs-weather only.
 
-Status: implemented, PR open. Sections 1-3 done 2026-09-04.
+Status: implemented, closed. Merged to `develop` 2026-09-04 (PR #38, `767dec9`). #6 stays open on
+GitHub pending release to `master` (this repo's default branch), same convention as pyobs-core's
+`specs/steering/fleet-open-items.md`.
 
 The original 2020 ask ("plots for previous nights") predates Keycloak login. With login now in
 place (`2026-09-02-keycloak-login.md`), the more useful version of this is a login-gated raw-data

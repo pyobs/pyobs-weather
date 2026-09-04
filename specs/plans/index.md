@@ -11,4 +11,4 @@ Implementation plans, checklist-style. A plan moves/folds into `design/` once it
   download. (#33, prerequisite for #6)
 - [2026-09-04-historic-data-csv-export.md](2026-09-04-historic-data-csv-export.md) — login-gated
   page to pick a station + date range and download a CSV, replacing the original "plots for
-  previous nights" framing. **implemented, PR open**. (#6)
+  previous nights" framing. **implemented, closed** (PR #38, merged to `develop`). (#6)
