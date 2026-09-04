@@ -24,6 +24,12 @@ export interface MeResponse {
   username: string | null
 }
 
+export interface StationInfo {
+  code: string
+  name: string
+  history: boolean
+}
+
 export interface CurrentResponse {
   time: string | null
   good: boolean
