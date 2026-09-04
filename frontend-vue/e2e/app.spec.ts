@@ -84,16 +84,32 @@ const HISTORY = {
   areas: [{ type: 'danger', min: 0.0, max: 1.0 }],
 }
 
-async function mockApi(page: Page) {
+const STATIONS = [
+  { code: 'thiesws', name: 'MONET', history: true },
+  { code: 'observer', name: 'Observer', history: false },
+]
+
+async function mockApi(page: Page, opts: { authenticated?: boolean } = {}) {
   await page.route(
     (url) => new URL(url).pathname.startsWith('/api/'),
     (route) => {
       const path = new URL(route.request().url()).pathname
+      if (path.includes('/history/export/')) {
+        route.fulfill({
+          status: 200,
+          contentType: 'text/csv',
+          headers: { 'Content-Disposition': 'attachment; filename="thiesws_2026-01-01_2026-01-02.csv"' },
+          body: 'timestamp,temp_mean\n2026-01-01T00:00:00Z,12.3\n',
+        })
+        return
+      }
       let body: unknown
       if (path.endsWith('/config/')) body = CONFIG
+      else if (path.endsWith('/me/')) body = { authenticated: !!opts.authenticated, username: opts.authenticated ? 'someone' : null }
       else if (path.endsWith('/current/')) body = CURRENT
       else if (path.endsWith('/sensors/')) body = SENSORS
       else if (path.endsWith('/timeline/')) body = TIMELINE
+      else if (path.endsWith('/stations/')) body = STATIONS
       else if (path.includes('/history/goodweather/')) body = GOOD_WEATHER
       else if (path.includes('/history/')) body = HISTORY
       else {
@@ -135,4 +151,45 @@ test('no horizontal overflow on mobile', async ({ page }, testInfo) => {
     () => document.documentElement.scrollWidth > window.innerWidth,
   )
   expect(overflow).toBe(false)
+})
+
+test('sidebar hides the historic-data link when logged out', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('link', { name: 'Historic data' })).toHaveCount(0)
+})
+
+test('historic-data page prompts login when logged out', async ({ page }) => {
+  // CONFIG mock has no keycloak_enabled -> falsy, i.e. a no-Keycloak dev install; the login
+  // prompt must not show a link that has nowhere real to go
+  await page.goto('/history')
+  await expect(page.getByText('Log in to download historic data.')).toBeVisible()
+  await expect(page.getByLabel('Station')).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Log in' })).toHaveCount(0)
+})
+
+test('historic-data page login prompt links out when Keycloak is configured', async ({ page }) => {
+  await page.route(
+    (url) => new URL(url).pathname.endsWith('/config/'),
+    (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...CONFIG, keycloak_enabled: true }) }),
+  )
+  await page.goto('/history')
+  await expect(page.locator('a.alert-link', { hasText: 'Log in' })).toBeVisible()
+})
+
+test('historic-data page lets a logged-in user download a CSV', async ({ page }, testInfo) => {
+  await mockApi(page, { authenticated: true })
+  await page.goto('/')
+  if (testInfo.project.name === 'mobile') {
+    await page.getByRole('button', { name: 'Open sidebar' }).click()
+  }
+  await expect(page.getByRole('link', { name: 'Historic data' })).toBeVisible()
+  await page.getByRole('link', { name: 'Historic data' }).click()
+
+  await expect(page.getByLabel('Station')).toBeVisible()
+  await expect(page.getByLabel('Station')).toHaveValue('thiesws')
+
+  const downloadPromise = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download CSV' }).click()
+  const download = await downloadPromise
+  expect(download.suggestedFilename()).toBe('thiesws_2026-01-01_2026-01-02.csv')
 })

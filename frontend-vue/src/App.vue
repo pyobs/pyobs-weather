@@ -118,6 +118,15 @@ watch(
             <i class="bi bi-thermometer-half" style="font-size: 0.8rem"></i>
             Sensors
           </RouterLink>
+          <RouterLink
+            v-if="me?.authenticated"
+            to="/history"
+            class="sidebar-link d-flex align-items-center gap-2 px-2 py-2"
+            :class="{ active: route.name === 'history-download' }"
+          >
+            <i class="bi bi-download" style="font-size: 0.8rem"></i>
+            Historic data
+          </RouterLink>
         </div>
 
         <div class="px-2 py-2 border-top border-secondary-subtle">

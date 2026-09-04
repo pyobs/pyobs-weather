@@ -11,6 +11,7 @@ urlpatterns = [
     path("stations/<str:station_code>/<str:sensor_code>/", views.sensor_detail, name="sensor_detail"),
     path("history/", views.history_types, name="history_types"),
     path("history/goodweather/", views.good_weather, name="good_weather"),
+    path("history/export/<str:station_code>/", views.history_export, name="history_export"),
     path("history/<str:sensor_type>/", views.history, name="history"),
     path("sensors/", views.sensors, name="sensor_status"),
     path("timeline/", views.timeline, name="timeline"),

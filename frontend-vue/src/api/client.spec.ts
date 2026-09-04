@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { apiUrl, getCsrfToken, loginUrl, logoutUrl, setRootUrl } from './client'
+import { apiUrl, getCsrfToken, historyExportUrl, loginUrl, logoutUrl, setRootUrl } from './client'
 
 describe('api client', () => {
   beforeEach(() => {
@@ -34,6 +34,24 @@ describe('keycloak login/logout URLs', () => {
   it('builds the logout URL under the root URL', () => {
     setRootUrl('/weather/')
     expect(logoutUrl()).toBe('/weather/accounts/keycloak/logout/')
+  })
+})
+
+describe('historyExportUrl', () => {
+  beforeEach(() => {
+    setRootUrl('/')
+  })
+
+  it('builds the export URL with start/end query params', () => {
+    expect(historyExportUrl('thiesws', '2026-01-01', '2026-01-31')).toBe(
+      '/api/history/export/thiesws/?start=2026-01-01&end=2026-01-31',
+    )
+  })
+
+  it('URL-encodes the station code', () => {
+    expect(historyExportUrl('a/b', '2026-01-01', '2026-01-31')).toBe(
+      '/api/history/export/a%2Fb/?start=2026-01-01&end=2026-01-31',
+    )
   })
 })
 
