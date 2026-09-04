@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import dateutil.parser
 from astroplan import Observer
 from astropy.coordinates import EarthLocation
@@ -243,12 +243,31 @@ def history(request, sensor_type):
 class _EchoBuffer:
     """A file-like object that hands back exactly what's written to it.
 
-    Lets csv.writer drive a StreamingHttpResponse row by row instead of building the whole CSV
-    in memory first -- a full-history single-station export can be a few hundred thousand rows.
+    Lets csv.writer drive a StreamingHttpResponse row by row rather than building the whole CSV
+    text in one string. Note this only avoids that -- the Influx queries below and the resulting
+    per-column dicts are still gathered eagerly before the response starts, so this isn't
+    constant-memory streaming, just constant-memory *text assembly*.
     """
 
     def write(self, value):
         return value
+
+
+def _parse_export_date(value):
+    """Parse a start/end query param, normalizing to a naive UTC datetime.
+
+    Raises ValueError (not dateutil's ParserError) on unparseable input, so callers can turn it
+    into a 400 with a single except clause.
+    """
+    try:
+        dt = dateutil.parser.parse(value)
+    except (ValueError, OverflowError) as e:
+        raise ValueError(str(e)) from e
+    if dt.tzinfo is not None:
+        # read_sensor_values() formats this with a bare 'Z' suffix (weather/influx.py), which
+        # would silently drop any offset and query the wrong instant if left as-is
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
 
 
 def history_export(request, station_code):
@@ -266,20 +285,34 @@ def history_export(request, station_code):
 
     # start and end are both required here -- unlike history(), there's no sensible implicit
     # "last 24h" default for an explicit export
-    start = request.GET.get("start", None)
-    end = request.GET.get("end", None)
-    if start is None or end is None:
+    start_param = request.GET.get("start", None)
+    end_param = request.GET.get("end", None)
+    if start_param is None or end_param is None:
         return HttpResponseBadRequest("Both start and end are required.")
-    start = dateutil.parser.parse(start)
-    end = dateutil.parser.parse(end)
+    try:
+        start = _parse_export_date(start_param)
+        end = _parse_export_date(end_param)
+    except ValueError as e:
+        return HttpResponseBadRequest(f"Could not parse start/end: {e}")
+
+    # InfluxDB's range() stop is exclusive (weather/influx.py's read_sensor_values()), and a bare
+    # 'YYYY-MM-DD' -- what <input type="date"> sends -- parses to midnight; without this, picking
+    # e.g. end=2026-01-02 would silently exclude all of that day's data. Only bare dates get
+    # bumped -- an explicit time in the input means the caller meant exactly that instant.
+    end_query = end + timedelta(days=1) if ":" not in end_param else end
+    if end_query <= start:
+        return HttpResponseBadRequest("end must be after start.")
 
     # one mean/min/max column per active sensor on this station, keyed by timestamp so a gap in
-    # one sensor's data doesn't misalign another's (real stations do go offline)
+    # one sensor's data doesn't misalign another's (real stations do go offline). Assumes each
+    # active sensor on a station has a distinct type -- Sensor has no DB-level uniqueness
+    # constraint on (station, type), so two sensors of the same type would emit duplicate headers;
+    # every handler under weather/stations/ only ever creates one per type.
     columns = []
     all_times = set()
     for sensor in Sensor.objects.filter(station=station, active=True).select_related("type"):
         for agg_type in ("mean", "min", "max"):
-            values = read_sensor_values(sensor=sensor, start=start, end=end, agg_type=agg_type)
+            values = read_sensor_values(sensor=sensor, start=start, end=end_query, agg_type=agg_type)
             by_time = {v["time"]: v["value"] for v in values}
             all_times.update(by_time.keys())
             columns.append((f"{sensor.type.code}_{agg_type}", by_time))
@@ -289,7 +322,7 @@ def history_export(request, station_code):
         writer = csv.writer(_EchoBuffer())
         yield writer.writerow(["timestamp"] + [header for header, _ in columns])
         for t in times:
-            row = [t] + ["" if (v := by_time.get(t)) is None else round(v, 2) for _, by_time in columns]
+            row = [t] + ["" if (v := by_time.get(t)) is None else f"{v:.2f}" for _, by_time in columns]
             yield writer.writerow(row)
 
     response = StreamingHttpResponse(rows(), content_type="text/csv")

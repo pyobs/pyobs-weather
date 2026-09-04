@@ -90,9 +90,9 @@ class HistoryExportViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
     @patch("pyobs_weather.api.views.read_sensor_values")
-    def test_authenticated_user_gets_rounded_csv_with_blanks_for_missing_data(self, mock_read):
-        # only "temp" has any data -- every other active sensor (humid/winddir/windspeed/press/
-        # rain) should still get a column, just with blank cells, not be dropped or error
+    def test_authenticated_user_gets_formatted_csv_with_blanks_for_missing_data(self, mock_read):
+        # only "temp" has any data -- "humid" (the other sensor _TestStationHandler creates)
+        # should still get a column, just with blank cells, not be dropped or error
         def fake_read(sensor, start, end, agg_type="mean"):
             if sensor.type.code != "temp":
                 return []
@@ -113,5 +113,76 @@ class HistoryExportViewTests(TestCase):
 
         self.assertEqual(len(rows), 2)  # header + one timestamp row
         self.assertEqual(data_row[0], "2026-01-01T00:00:00Z")
-        self.assertEqual(data_row[header.index("temp_mean")], "12.35")  # rounded to 2 decimals
+        self.assertEqual(data_row[header.index("temp_mean")], "12.35")  # formatted to 2 decimals
         self.assertEqual(data_row[header.index("humid_mean")], "")  # no data -> blank, not dropped
+
+    @patch("pyobs_weather.api.views.read_sensor_values")
+    def test_empty_range_returns_header_only(self, mock_read):
+        mock_read.return_value = []
+        self._login()
+
+        response = self.client.get(self._url("teststation"), {"start": "2026-01-01", "end": "2026-01-02"})
+
+        self.assertEqual(response.status_code, 200)
+        content = b"".join(response.streaming_content).decode()
+        rows = content.strip().split("\r\n")
+        self.assertEqual(len(rows), 1)  # header row only, no crash
+        self.assertEqual(rows[0].split(",")[0], "timestamp")
+
+    def test_unparseable_date_returns_400(self):
+        self._login()
+        response = self.client.get(self._url("teststation"), {"start": "not-a-date", "end": "2026-01-02"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_end_before_start_returns_400(self):
+        self._login()
+        response = self.client.get(self._url("teststation"), {"start": "2026-01-05", "end": "2026-01-01"})
+        self.assertEqual(response.status_code, 400)
+
+    @patch("pyobs_weather.api.views.read_sensor_values")
+    def test_end_equal_start_is_a_valid_single_day_range(self, mock_read):
+        # a bare end date is exclusive at the Influx layer, so start == end must still yield a
+        # full day's range rather than being rejected as an empty/inverted one
+        mock_read.return_value = []
+        self._login()
+        response = self.client.get(self._url("teststation"), {"start": "2026-01-01", "end": "2026-01-01"})
+        self.assertEqual(response.status_code, 200)
+
+    @patch("pyobs_weather.api.views.read_sensor_values")
+    def test_bare_end_date_is_treated_as_inclusive(self, mock_read):
+        # data timestamped exactly at the end date's midnight must be included -- InfluxDB's
+        # range() stop is exclusive, so this only passes if the view bumps a bare end date by a day
+        def fake_read(sensor, start, end, agg_type="mean"):
+            if sensor.type.code != "temp" or agg_type != "mean":
+                return []
+            return [{"time": "2026-01-02T00:00:00Z", "value": 5.0}]
+
+        mock_read.side_effect = fake_read
+        self._login()
+
+        response = self.client.get(self._url("teststation"), {"start": "2026-01-01", "end": "2026-01-02"})
+
+        content = b"".join(response.streaming_content).decode()
+        self.assertIn("2026-01-02T00:00:00Z", content)
+
+    @patch("pyobs_weather.api.views.read_sensor_values")
+    def test_timezone_aware_input_is_normalized_to_utc(self, mock_read):
+        seen_ranges = []
+
+        def fake_read(sensor, start, end, agg_type="mean"):
+            seen_ranges.append((start, end))
+            return []
+
+        mock_read.side_effect = fake_read
+        self._login()
+
+        # 2026-01-01T00:00:00+02:00 == 2025-12-31T22:00:00Z
+        response = self.client.get(
+            self._url("teststation"), {"start": "2026-01-01T00:00:00+02:00", "end": "2026-01-02"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        start_seen = seen_ranges[0][0]
+        self.assertIsNone(start_seen.tzinfo)
+        self.assertEqual(start_seen.hour, 22)
+        self.assertEqual(start_seen.day, 31)

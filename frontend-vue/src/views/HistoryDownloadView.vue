@@ -2,9 +2,11 @@
 import { onMounted, ref } from 'vue'
 import { fetchJson, historyExportUrl, loginUrl } from '../api/client'
 import { useAuth } from '../composables/useAuth'
+import { useConfig } from '../composables/useConfig'
 import type { StationInfo } from '../api/types'
 
 const { me } = useAuth()
+const { config } = useConfig()
 
 const stations = ref<StationInfo[]>([])
 const stationsError = ref<Error | null>(null)
@@ -27,7 +29,7 @@ onMounted(async () => {
     // public endpoint, safe to fetch regardless of auth state; the download itself is what's
     // actually gated
     const all = await fetchJson<StationInfo[]>('stations/')
-    stations.value = all.filter((s) => s.history)
+    stations.value = all.filter((s) => s.history).sort((a, b) => a.name.localeCompare(b.name))
     if (stations.value.length > 0) selectedStation.value = stations.value[0].code
   } catch (e) {
     stationsError.value = e as Error
@@ -40,8 +42,14 @@ async function download() {
   try {
     const res = await fetch(historyExportUrl(selectedStation.value, start.value, end.value))
     if (!res.ok) {
-      downloadError.value =
-        res.status === 401 ? 'Log in to download historic data.' : `Download failed: ${res.status} ${res.statusText}`
+      if (res.status === 401) {
+        // session expired mid-use (server-side is the real gate, see history_export() in
+        // views.py) - flip back to the logged-out view rather than leaving the form up with a
+        // dead error message next to it
+        me.value = { authenticated: false, username: null }
+      } else {
+        downloadError.value = `Download failed: ${res.status} ${res.statusText}`
+      }
       return
     }
 
@@ -73,7 +81,7 @@ async function download() {
     <div v-else-if="!me.authenticated" class="alert alert-info d-flex align-items-center gap-2">
       <i class="bi bi-lock"></i>
       <span>Log in to download historic data.</span>
-      <a :href="loginUrl()" class="alert-link">Log in</a>
+      <a v-if="config?.keycloak_enabled" :href="loginUrl()" class="alert-link">Log in</a>
     </div>
 
     <div v-else>

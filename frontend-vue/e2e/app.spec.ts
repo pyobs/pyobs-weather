@@ -159,9 +159,21 @@ test('sidebar hides the historic-data link when logged out', async ({ page }) =>
 })
 
 test('historic-data page prompts login when logged out', async ({ page }) => {
+  // CONFIG mock has no keycloak_enabled -> falsy, i.e. a no-Keycloak dev install; the login
+  // prompt must not show a link that has nowhere real to go
   await page.goto('/history')
   await expect(page.getByText('Log in to download historic data.')).toBeVisible()
   await expect(page.getByLabel('Station')).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Log in' })).toHaveCount(0)
+})
+
+test('historic-data page login prompt links out when Keycloak is configured', async ({ page }) => {
+  await page.route(
+    (url) => new URL(url).pathname.endsWith('/config/'),
+    (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...CONFIG, keycloak_enabled: true }) }),
+  )
+  await page.goto('/history')
+  await expect(page.locator('a.alert-link', { hasText: 'Log in' })).toBeVisible()
 })
 
 test('historic-data page lets a logged-in user download a CSV', async ({ page }, testInfo) => {
