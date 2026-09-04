@@ -26,6 +26,13 @@ export function apiUrl(path: string): string {
   return `${rootUrl}api/${path}`
 }
 
+// start/end are plain 'YYYY-MM-DD' values from <input type="date">, sent as-is - the backend
+// parses them with dateutil, which accepts a bare date.
+export function historyExportUrl(stationCode: string, start: string, end: string): string {
+  const params = new URLSearchParams({ start, end })
+  return apiUrl(`history/export/${encodeURIComponent(stationCode)}/?${params}`)
+}
+
 export async function fetchJson<T>(path: string): Promise<T> {
   const url = apiUrl(path)
   const res = await fetch(url)
