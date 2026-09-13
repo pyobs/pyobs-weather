@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic.base import RedirectView
 
 # get root url
 root_url = settings.ROOT_URL
@@ -24,6 +25,12 @@ if root_url.startswith('/'):
 
 # define URLs
 urlpatterns = [
+    # Browsers request this at the site root regardless of STATIC_URL, and the frontend's SPA
+    # catch-all (frontend/urls.py) would otherwise swallow it and serve index.html instead.
+    path(
+        root_url + 'favicon.ico',
+        RedirectView.as_view(url=settings.STATIC_URL + 'frontend/dist/favicon.ico', permanent=True),
+    ),
     path(root_url + 'accounts/keycloak/', include('pyobs_auth.urls')),
     path(root_url, include('pyobs_weather.frontend.urls')),
     path(root_url + 'admin/', admin.site.urls),
