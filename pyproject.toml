@@ -4,6 +4,7 @@ version = "2.2.3"
 description = "robotic telescope software"
 authors = [{name = "Tim-Oliver Husser", email = "thusser@uni-goettingen.de"}]
 license = "MIT"
+readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "astroplan>=0.10.1,<0.11",
@@ -20,6 +21,12 @@ dependencies = [
     "pyobs-auth>=2.1.0,<3",
     "whitenoise>=6.8",
 ]
+
+[project.urls]
+Homepage = "https://www.pyobs.org"
+Documentation = "https://docs.pyobs.org"
+Repository = "https://github.com/pyobs/pyobs-weather"
+Issues = "https://github.com/pyobs/pyobs-weather/issues"
 
 [dependency-groups]
 dev = [
