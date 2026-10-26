@@ -30,7 +30,7 @@ Issues = "https://github.com/pyobs/pyobs-weather/issues"
 
 [dependency-groups]
 dev = [
-    "black>=21.12b0,<22",
+    "black>=21.12b0,<27",
     "Sphinx",
     "sphinx-rtd-theme",
 ]
